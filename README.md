@@ -16,7 +16,7 @@ Non-goals are: Feature completeness, support for every FTP server, complete abst
 
 Node 7.6 or later is the only dependency.
 
-## How to use
+## Examples
 
 The example below shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
 
@@ -50,9 +50,7 @@ If you're thinking that this could be done with fewer lines, you're right! I bet
 
 Note the verbosity setting for the client. Enabling it will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP.
 
-## How to compose
-
-This is an example of a function that you could write. It removes all files and directories of the current working directory recursively.
+The next example removes all files and directories of the current working directory recursively.
 
 ```
 async function cleanDir(client) {
@@ -72,7 +70,7 @@ async function cleanDir(client) {
 }
 ```
 
-## API
+## Basic API
 
 `const client = new Client(timeout = 0)`
 
@@ -114,7 +112,7 @@ Upload data from a readable stream and store it as a file with a given filename.
 
 Download a file and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
 
-## How to extend
+## Extending the library
 
 ### Design
 
