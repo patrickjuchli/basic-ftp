@@ -46,11 +46,13 @@ async function example() {
 example();
 ```
 
-If you're thinking that this could be done with fewer lines, you're right! I bet you already have an idea how this would look like. Go ahead and write some convenience wrappers however you see fit.
+You'll notice that you're not calling methods of the `Client` instance. The instance is only here to hold state shared by all tasks. All FTP operations are then implemented by independent functions defined anywhere else. The library is designed that way to make it easier and cleaner to extend functionality. See further below the section on extending the library.
+
+If you're thinking that the example could be written with fewer lines, you're right! I bet you already have an idea how this would look like. Go ahead and write some convenience wrappers however you see fit.
 
 Note the verbosity setting for the client. Enabling it will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP.
 
-The next example removes all files and directories of the current working directory recursively.
+The next example removes all files and directories of the current working directory recursively. It demonstrates how simple it is to write (and read) more complex operations.
 
 ```
 async function cleanDir(client) {
