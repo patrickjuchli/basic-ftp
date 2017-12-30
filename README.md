@@ -46,7 +46,7 @@ async function example() {
 example();
 ```
 
-You'll notice that you're not calling methods of the `Client` instance. The instance is only here to hold state shared by all tasks. All FTP operations are then implemented by independent functions defined anywhere else. The library is designed that way to make it easier and cleaner to extend functionality. See further below the section on extending the library.
+The `Client` instance holds state shared by all tasks. Specific tasks are then implemented by functions defined anywhere else that use a client instance. The library is designed that way to make it easier to extend functionality: There is no difference between functions already provided and the ones you can add yourself. See the section on extending the library below.
 
 If you're thinking that the example could be written with fewer lines, you're right! I bet you already have an idea how this would look like. Go ahead and write some convenience wrappers however you see fit.
 
