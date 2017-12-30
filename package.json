@@ -1,12 +1,16 @@
 {
   "name": "basic-ftp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "FTP/FTPS client library",
   "main": "./lib/ftp",
   "scripts": {
     "test": "mocha",
     "tdd": "mocha --watch",
     "lint": "eslint lib/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url" : "https://github.com/patrickjuchli/basic-ftp.git"
   },
   "author": "Patrick Juchli <patrickjuchli@gmail.com>",
   "license": "MIT",
