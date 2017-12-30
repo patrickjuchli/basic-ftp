@@ -1,5 +1,7 @@
 # Basic FTP
 
+[![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp)
+
 This is an FTP/FTPS client for NodeJS.
 
 ## Goals and non-goals
