@@ -52,12 +52,12 @@ Note the verbosity setting for the client. Enabling it will log out every commun
 
 ## How to compose
 
-This is an example of a simple function that you could write. It removes all files and directories of the current working directory recursively.
+This is an example of a function that you could write. It removes all files and directories of the current working directory recursively.
 
 ```
 async function cleanDir(client) {
     await enterPassiveMode(client);
-    const files = await getList(client);
+    const files = await list(client);
     for (const file of files) {
         if (file.isDirectory) {
             await send(client, "CWD " + file.name);
