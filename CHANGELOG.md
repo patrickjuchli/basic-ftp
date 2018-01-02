@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- Close data socket explicitly after upload is done.
+
 ## 1.0.4
 
 - List: Some servers send confirmation on control socket before the data arrived.
