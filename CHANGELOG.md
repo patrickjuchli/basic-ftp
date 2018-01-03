@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- Close sockets on timeout.
+
 ## 1.0.5
 
 - Close data socket explicitly after upload is done.
