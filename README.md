@@ -6,11 +6,11 @@ This is an FTP/FTPS client for NodeJS.
 
 ## Goals and non-goals
 
-The main goal is to provide an API that is easy to compose and extend. FTP servers often differ in behavior, a response might not be as expected, a file list may use yet another format or an implementation offers the new feature you need.
+The main goal is to provide an API that is easy to compose and extend. FTP is an old protocol, there are many extensions and server implementations that differ in behavior. A server response might not be as expected, a directory listing might use yet another format because there is no standard for it.
 
-This library does not try to solve all these issues but wants to make it easy for you to solve your specific issues without requiring a change in the library itself (and a subsequent pull request).
+This library does not try to solve all these issues but wants to make it easy for you to solve your specific issues without requiring a change in the library itself and a subsequent pull request.
 
-Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you.
+Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you. It's existing API is intentionally small.
 
 ## Dependencies
 
@@ -108,11 +108,11 @@ List files and directories in the current working directory. You may optionally 
 
 `upload(client, readableStream, remoteFilename)`
 
-Upload data from a readable stream and store it as a file with a given filename.
+Upload data from a readable stream and store it as a file with a given filename in the current working directory.
 
 `download(client, writableStream, remoteFilename, startAt = 0)`
 
-Download a file and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
+Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
 
 ## Extending the library
 
