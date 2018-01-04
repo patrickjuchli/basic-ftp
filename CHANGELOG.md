@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+- Improve documentation
+
 ## 1.0.6
 
 - Close sockets on timeout.
