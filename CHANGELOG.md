@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9
+
+- Listeners using `once` wherever possible.
+
 ## 1.0.8
 
 - Fix result for send command.
