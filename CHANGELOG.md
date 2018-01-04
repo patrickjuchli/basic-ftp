@@ -1,8 +1,12 @@
 # Changelog
 
+## 1.0.8
+
+- Fix result for send command.
+
 ## 1.0.7
 
-- Improve documentation
+- Improve documentation.
 
 ## 1.0.6
 
