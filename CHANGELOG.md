@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Differentiate between Basic API and Convenience API in documentation.
+
 ## 1.1.0
 
 - Add convenience functions to request and change the current working directory.
