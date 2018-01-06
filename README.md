@@ -90,14 +90,6 @@ Send an FTP command. You can optionally choose to ignore error return codes.
 
 Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. There, you may for example set `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections with `enterPassiveMode` will automatically be upgraded to TLS.
 
-`login(client, user, password)`
-
-Login with a username and a password.
-
-`useDefaultSettings(client)`
-
-Sends FTP commands to use binary mode (`TYPE I`) and file structure (`STRU F`). If TLS is enabled it will also send `PBSZ 0` and `PROT P`. This should be called after upgrading to TLS and logging in.
-
 `enterPassiveMode(client, parseResponse = parseIP4VPasvResponse)`
 
 FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This means you have to call this function before each call to `list`, `upload` or `download`. You may optionally provide a custom parser for the PASV response.
@@ -113,6 +105,26 @@ Upload data from a readable stream and store it as a file with a given filename 
 `download(client, writableStream, remoteFilename, startAt = 0)`
 
 Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
+
+## Convenience API
+
+The following functions could be written by you using the basic API above. They are part of the library because it's convenient to have them.
+
+`login(client, user, password)`
+
+Login with a username and a password.
+
+`useDefaultSettings(client)`
+
+Sends FTP commands to use binary mode (`TYPE I`) and file structure (`STRU F`). If TLS is enabled it will also send `PBSZ 0` and `PROT P`. This should be called after upgrading to TLS and logging in.
+
+`cd(client, remotePath)`
+
+Changes the working directory.
+
+`pwd(client)`
+
+Returns the current working directory.
 
 ## Extending the library
 
