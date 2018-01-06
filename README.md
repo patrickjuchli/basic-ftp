@@ -108,7 +108,7 @@ Download a file with a given filename from the current working directory and pip
 
 ## Convenience API
 
-The following functions could be written by you using the basic API above. They are part of the library because it's convenient to have them.
+The following functions could've been written by you using the Basic API above. They're part of the library because they are convenient shortcuts for frequent tasks.
 
 `login(client, user, password)`
 
@@ -127,6 +127,8 @@ Changes the working directory.
 Returns the current working directory.
 
 ## Extending the library
+
+For most tasks you'll write custom functions using the Basic API. The Convenience API provides some examples how to do that. It can happen that the Basic API is not enough, though, and you need to go one level lower. The following section describes how you can do that.
 
 ### Design
 
