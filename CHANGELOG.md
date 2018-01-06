@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0
+
+- Add convenience functions to request and change the current working directory.
+- Return positive response results whenever reasonable.
+
 ## 1.0.9
 
 - Listeners using `once` wherever possible.
