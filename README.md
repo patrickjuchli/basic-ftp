@@ -128,7 +128,7 @@ Returns the current working directory.
 
 ## Extending the library
 
-For most tasks you'll write custom functions using the Basic API. The Convenience API provides some examples how to do that. It can happen that the Basic API is not enough, though, and you need to go one level lower. The following section describes how you can do that.
+For most tasks you'll write custom functions using the Basic API, the Convenience API provides some examples. It's possible that you need to go one level lower, though. The following section describes how you can do that.
 
 ### Design
 
@@ -139,7 +139,7 @@ The library consists of 2 parts.
 
 ### Example
 
-This is how uploading a file is implemented in the library. Your own custom functions should follow the same pattern. The example assumes that a `dataSocket` on the client is ready, for example by using `enterPassiveMode`.
+This is how uploading a file is implemented in the Basic API. Your own custom functions should follow the same pattern. The example assumes that a `dataSocket` on the client is ready, for example by using `enterPassiveMode`.
 
 ```
 function upload(client, readableStream, remoteFilename) {
