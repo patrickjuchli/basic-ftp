@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- Add functions to upload, download and remove whole directories.
+- Add function to ensure a given remote path, creating all directories as necessary.
+
 ## 1.1.1
 
 - Differentiate between Basic API and Convenience API in documentation.
