@@ -48,9 +48,7 @@ example();
 
 The `Client` instance holds state shared by all tasks. Specific tasks are then implemented by functions defined anywhere else that use a client instance. The library is designed that way to make it easier to extend functionality: There is no difference between functions already provided and the ones you can add yourself. See the section on extending the library below.
 
-If you're thinking that the example could be written with fewer lines, you're right! I bet you already have an idea how this would look like. Go ahead and write some convenience wrappers however you see fit.
-
-Note the verbosity setting for the client. Enabling it will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP.
+The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP.
 
 The next example removes all files and directories of the current working directory recursively. It demonstrates how simple it is to write (and read) more complex operations.
 
@@ -108,7 +106,7 @@ Download a file with a given filename from the current working directory and pip
 
 ## Convenience API
 
-The following functions could've been written by you using the Basic API above. They're part of the library because they are convenient shortcuts for frequent tasks.
+The following functions are written using the Basic API above. They are convenient shortcuts for frequent tasks.
 
 `login(client, user, password)`
 
@@ -124,7 +122,23 @@ Changes the working directory.
 
 `pwd(client)`
 
-Returns the current working directory.
+Returns the path of the current working directory.
+
+`removeDir(client, remoteDirPath)`
+
+Removes a directory at a given path, including all of its files and directories.
+
+`uploadDir(client, localDirPath, remoteDirName = undefined)`
+
+Uploads all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
+
+`downloadDir(client, localDirPath)`
+
+Downloads all files and directories of the current working directory to a given local directory.
+
+`ensureDir(client, remoteDirPath)`
+
+Makes sure that the given `remoteDirPath` exists on the server, creating all directories as necessary.
 
 ## Extending the library
 
