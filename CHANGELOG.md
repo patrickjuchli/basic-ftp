@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0
+
+- Complete redesign: Better separation between a simple object-oriented client, clear customization points and access to internals. Better discovery of features. This release is very much not backwards-compatible.
+
 ## 1.2.0
 
 - Add functions to upload, download and remove whole directories.

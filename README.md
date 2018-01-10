@@ -6,9 +6,9 @@ This is an FTP/FTPS client for NodeJS.
 
 ## Goals and non-goals
 
-The main goal is to provide an API that is easy to compose and extend. FTP is an old protocol, there are many features, quirks and server implementations. A server response might not be as expected, a directory listing might use yet another format as there is no standard for it.
+The main goal is to provide an API that is easy to compose and extend. FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
 
-This library does not try to solve all these issues. The goal is to provide a solid foundation and a simple extension pattern for you to solve your specific issues without requiring a change in the library itself.
+This library does not try to solve all these issues. The goal is to provide a solid foundation and a clean extension pattern for you to solve your specific issues without requiring a change in the library itself.
 
 Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you.
 
@@ -25,17 +25,14 @@ const ftp = require("basic-ftp");
 
 async function example() {
     const client = new ftp.Client();
-    client.verbose = true;
+    client.ftp.verbose = true;
     try {
-        await ftp.connect(client, "192.168.0.10", 21);
-        await ftp.useTLS(client);
-        await ftp.login(client, "very", "password");
-        await ftp.useDefaultSettings(client);
-        await ftp.enterPassiveMode(client);
-        const list = await ftp.list(client);
-        console.log(list);
-        await ftp.enterPassiveMode(client);
-        await ftp.upload(client, fs.createReadStream("README.md"), "README.md");
+        await client.connect("192.168.0.10", 21);
+        await client.useTLS();
+        await client.login("very", "password");
+        await client.useDefaultSettings();
+        console.log(await client.list());
+        await client.upload(fs.createReadStream("README.md"), "README.md");
     }
     catch(err) {
         console.log(err);
@@ -46,69 +43,29 @@ async function example() {
 example();
 ```
 
-The `Client` instance holds state shared by all tasks. Specific tasks are then implemented by functions defined anywhere else that use a client instance. The library is designed that way to make it easier to extend functionality: There is no difference between functions already provided and the ones you can add yourself. See the section on extending the library below.
+The `Client` provides a minimal API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use commands directly fairly soon, using for example `await client.send("CDUP")`.
 
-The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP.
+The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP. Why is the setting behind an `client.ftp` property? This will be answered in the section about extending the library below.
 
-The next example removes all files and directories of the current working directory recursively. It demonstrates how simple it is to write (and read) more complex operations.
+## Client API
 
-```
-async function cleanDir(client) {
-    await enterPassiveMode(client);
-    const files = await list(client);
-    for (const file of files) {
-        if (file.isDirectory) {
-            await send(client, "CWD " + file.name);
-            await cleanDir(client);
-            await send(client, "CDUP");
-            await send(client, "RMD " + file.name);
-        }
-        else {
-            await send(client, "DELE " + file.name);
-        }
-    }
-}
-```
+`new Client(timeout = 0)`
 
-## Basic API
+Create a client instance using an optional timeout in milliseconds that will be used for control and data connections.
 
-`const client = new Client(timeout = 0)`
+`close()`
 
-Create a client instance using an optional timeout in milliseconds that will be used for control and data connections. When you're done with a client, you should call `client.close()`. For everything else you won't use the client directly but the functions listed below.
+Close all socket connections. The client can't be used anymore after calling this method.
 
-`connect(client, host, port)`
+`connect(host, port)`
 
-Connects to an FTP server using a client.
+Connect to an FTP server.
 
-`send(client, command, ignoreErrorCodes = false)`
+`useTLS(options)`
 
-Send an FTP command. You can optionally choose to ignore error return codes.
+Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. There, you may for example set `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
-`useTLS(client, options)`
-
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. There, you may for example set `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections with `enterPassiveMode` will automatically be upgraded to TLS.
-
-`enterPassiveMode(client, parseResponse = parseIP4VPasvResponse)`
-
-FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This means you have to call this function before each call to `list`, `upload` or `download`. You may optionally provide a custom parser for the PASV response.
-
-`list(client, parseResponse = parseUnixList)`
-
-List files and directories in the current working directory. You may optionally provide a custom parser to parse the listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses can be regarded as the central piece of every FTP client because there is no standard that all servers adhere to. It is here where libraries spend their lines-of-code and it might be here where you run into problems.
-
-`upload(client, readableStream, remoteFilename)`
-
-Upload data from a readable stream and store it as a file with a given filename in the current working directory.
-
-`download(client, writableStream, remoteFilename, startAt = 0)`
-
-Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
-
-## Convenience API
-
-The following functions are written using the Basic API above. They are convenient shortcuts for frequent tasks.
-
-`login(client, user, password)`
+`login(user, password)`
 
 Login with a username and a password.
 
@@ -116,69 +73,71 @@ Login with a username and a password.
 
 Sends FTP commands to use binary mode (`TYPE I`) and file structure (`STRU F`). If TLS is enabled it will also send `PBSZ 0` and `PROT P`. This should be called after upgrading to TLS and logging in.
 
-`cd(client, remotePath)`
+`send(command, ignoreErrorCodes = false)`
+
+Send an FTP command. You can optionally choose to ignore error return codes.
+
+`cd(remotePath)`
 
 Changes the working directory.
 
-`pwd(client)`
+`pwd()`
 
 Returns the path of the current working directory.
 
-`removeDir(client, remoteDirPath)`
+`list()`
+
+List files and directories in the current working directory.
+
+`upload(readableStream, remoteFilename)`
+
+Upload data from a readable stream and store it as a file with a given filename in the current working directory.
+
+`download(writableStream, remoteFilename, startAt = 0)`
+
+Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
+
+`removeDir(remoteDirPath)`
 
 Removes a directory at a given path, including all of its files and directories.
 
-`uploadDir(client, localDirPath, remoteDirName = undefined)`
+`clearWorkingDir()`
+
+Removes all files and directories from the working directory.
+
+`uploadDir(localDirPath, remoteDirName = undefined)`
 
 Uploads all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
 
-`downloadDir(client, localDirPath)`
+`downloadDir(localDirPath)`
 
 Downloads all files and directories of the current working directory to a given local directory.
 
-`ensureDir(client, remoteDirPath)`
+`ensureDir(remoteDirPath)`
 
 Makes sure that the given `remoteDirPath` exists on the server, creating all directories as necessary.
 
-## Extending the library
+## Customize
 
-For most tasks you'll write custom functions using the Basic API, the Convenience API provides some examples. It's possible that you need to go one level lower, though. The following section describes how you can do that.
+`get/set client.prepareTransfer` 
 
-### Design
+FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Right now the library only offers Passive Mode over IPv4. The signature of the function is `(ftp: FTPContext) => Promise<void>`. The section below about extending functionality explains what `FTPContext` is.
 
-The library consists of 2 parts.
+`get/set client.parseList`
 
-1. A small class `Client` holds state common to all tasks, namely the control and current data socket. It also offers some API for the functions described in the next part and simplifies response and event handling.
-2. Asynchronous functions that use the client above as a resource. All functions described in the API section above are implemented using this pattern. If you're missing some functionality or want to simplify a workflow, you will write the same kind of function and never change or extend `Client` itself.
+You may optionally provide a custom parser to parse the listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses can be regarded as the central piece of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
 
-### Example
+## Extend
 
-This is how uploading a file is implemented in the Basic API. Your own custom functions should follow the same pattern. The example assumes that a `dataSocket` on the client is ready, for example by using `enterPassiveMode`.
+For most tasks you can use `client.send` to send any FTP command and get its result. This might not be good enough, though. FTP can return multiple responses after a command, so a simple command-response pattern doesn't always work. You might also want to have access to sockets.
 
-```
-function upload(client, readableStream, remoteFilename) {
-    const command = "STOR " + remoteFilename;
-    return client.handle(command, (res, task) => {
-        if (res.code === 150) { // Ready to upload
-            readableStream.pipe(client.dataSocket)
-        }
-        else if (res.code === 226) { // Transfer complete
-            task.resolve();
-        }
-        else if (res.code > 400 || res.error) {
-            task.reject(res);
-        }
-    });
-}
-```
+The client is just a collection of convenience functions using an underlying `FTPContext`. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides a pattern to handle responses and simplifies event handling. Through `client.ftp` you get access to this context.
 
-This function represents an asynchronously executed task. It uses a method offered by the client: `handle(command, callback)`. This will send a command to the FTP server and register a callback that is in charge for handling all responses from now on. The callback function might be called several times as in the example above. Error and timeout events from both the control and data socket will be rerouted through this callback as well. Also, `client.handle` returns a `Promise` that is created for you and which the upload function then returns as well. That is why the function `upload` can now be used with async/await. The promise is resolved or rejected when you call `resolve` or `reject` on the `task` reference passed to you as a callback argument. The callback function will not be called anymore after resolving or rejecting the task.
+### FTPContext API
 
-To see more examples have a look at this library's source code. All FTP operations are implemented the same way as the example above.
+`get/set verbose`
 
-### Client Extension API
-
-When writing these custom functions you will use some methods the `Client` provides.
+Set the verbosity level to optionally log out all communication between the client and the server.
 
 `get/set socket`
 
@@ -188,14 +147,40 @@ Get or set the socket for the control connection.
 
 Get or set the socket for the data connection.
 
-`send(command)`
-
-Send an FTP command.
-
 `handle(command, handler)`
 
-Send an FTP command and register a callback to handle all subsequent responses until the task is rejected or resolved. `command` may be undefined.
+Send an FTP command and register a callback to handle all subsequent responses, error and timeout events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. (See example below).
+
+`send(command)`
+
+Send an FTP command without waiting for or handling the response.
 
 `log(message)`
 
 Log a message if the client is set to be `verbose`.
+
+### Example
+
+The best source of examples is the implementation of the `Client` itself, since it's using the same implementation pattern you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
+
+```
+function myUpload(ftp, readableStream, remoteFilename) {
+	const command = "STOR " + remoteFilename;
+	return ftp.handle(command, (res, task) => {
+	    if (res.code === 150) { // Ready to upload
+	        readableStream.pipe(ftp.dataSocket)
+	    }
+	    else if (res.code === 226) { // Transfer complete
+	        task.resolve(res);
+	    }
+	    else if (res.code > 400 || res.error) {
+	        task.reject(res);
+	    }
+	});
+}
+
+await myUpload(client.ftp, myStream, myName);
+```
+
+This function represents an asynchronously executed task. It uses a method offered by the FTPContext: `handle(command, callback)`. This will send a command to the FTP server and register a callback that is in charge for handling all responses from now on. The callback function might be called several times as in the example above. Error and timeout events from both the control and data socket will be rerouted through this callback as well. Also, `client.handle` returns a `Promise` that is created for you and which the upload function above returns. That is why the function `myUpload` can now be used with async/await. The promise is resolved or rejected when you call `resolve` or `reject` on the `task` reference passed to you as a callback argument. The callback function will not be called anymore after resolving or rejecting the task.
+
