@@ -16,7 +16,7 @@ Non-goals are: Feature completeness, support for every FTP server, complete abst
 
 Node 7.6 or later is the only dependency.
 
-## Examples
+## Example
 
 The example below shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
 
@@ -43,9 +43,9 @@ async function example() {
 example();
 ```
 
-The `Client` provides a minimal API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use commands directly fairly soon, using for example `await client.send("CDUP")`.
+The `Client` provides a minimal API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use most commands directly, using for example `await client.send("CDUP")`.
 
-The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also great to learn about FTP. Why is the setting behind an `client.ftp` property? This will be answered in the section about extending the library below.
+The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why is the setting behind a property `.ftp`? This will be answered in the section about extending the library below.
 
 ## Client API
 
@@ -161,7 +161,7 @@ Log a message if the client is set to be `verbose`.
 
 ### Example
 
-The best source of examples is the implementation of the `Client` itself, since it's using the same implementation pattern you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
+The best source of examples is the implementation of the `Client` itself as it's using the same patterns you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
 
 ```
 function myUpload(ftp, readableStream, remoteFilename) {
