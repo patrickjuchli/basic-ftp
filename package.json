@@ -22,7 +22,7 @@
     "await"
   ],
   "devDependencies": {
-    "eslint": "^4.14.0",
-    "mocha": "^4.0.1"
+    "eslint": "^4.15.0",
+    "mocha": "^4.1.0"
   }
 }
