@@ -165,18 +165,18 @@ The best source of examples is the implementation of the `Client` itself, since 
 
 ```
 function myUpload(ftp, readableStream, remoteFilename) {
-	const command = "STOR " + remoteFilename;
-	return ftp.handle(command, (res, task) => {
-	    if (res.code === 150) { // Ready to upload
-	        readableStream.pipe(ftp.dataSocket)
-	    }
-	    else if (res.code === 226) { // Transfer complete
-	        task.resolve(res);
-	    }
-	    else if (res.code > 400 || res.error) {
-	        task.reject(res);
-	    }
-	});
+    const command = "STOR " + remoteFilename;
+    return ftp.handle(command, (res, task) => {
+        if (res.code === 150) { // Ready to upload
+            readableStream.pipe(ftp.dataSocket)
+        }
+        else if (res.code === 226) { // Transfer complete
+            task.resolve(res);
+        }
+        else if (res.code > 400 || res.error) {
+            task.reject(res);
+        }
+    });
 }
 
 await myUpload(client.ftp, myStream, myName);
