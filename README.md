@@ -20,7 +20,7 @@ Node 7.6 or later is the only dependency.
 
 The example below shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
 
-```
+```js
 const ftp = require("basic-ftp");
 
 async function example() {
@@ -163,7 +163,7 @@ Log a message if the client is set to be `verbose`.
 
 The best source of examples is the implementation of the `Client` itself as it's using the same patterns you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
 
-```
+```js
 function myUpload(ftp, readableStream, remoteFilename) {
     const command = "STOR " + remoteFilename;
     return ftp.handle(command, (res, task) => {
