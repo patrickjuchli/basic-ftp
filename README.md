@@ -173,7 +173,7 @@ function myUpload(ftp, readableStream, remoteFilename) {
         else if (res.code === 226) { // Transfer complete
             task.resolve(res);
         }
-        else if (res.code > 400 || res.error) {
+        else if (res.code >= 400 || res.error) {
             task.reject(res);
         }
     });
