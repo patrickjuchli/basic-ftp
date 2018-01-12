@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+
+- Support multiline responses.
+- Get user access to some internal utility functions useful in custom contexts.
+
 ## 2.0.0
 
 - Complete redesign: Better separation between a simple object-oriented client, clear customization points and access to internals. Better discovery of features. This release is very much not backwards-compatible.
