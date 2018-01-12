@@ -8,7 +8,7 @@ This is an FTP/FTPS client for NodeJS.
 
 The main goal is to provide an API that is easy to compose and extend. FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
 
-This library does not try to solve all these issues. The goal is to provide a solid foundation and a clean extension pattern for you to solve your specific issues without requiring a change in the library itself.
+This library does not try to solve all these issues. The goal is to provide a solid foundation and a clean extension API for you to solve your specific issues without requiring a change in the library itself.
 
 Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you.
 
@@ -129,9 +129,9 @@ You may optionally provide a custom parser to parse the listing data, for exampl
 
 ## Extend
 
-For most tasks you can use `client.send` to send any FTP command and get its result. This might not be good enough, though. FTP can return multiple responses after a command, so a simple command-response pattern doesn't always work. You might also want to have access to sockets.
+You can use `client.send` to send any FTP command and get its result. This might not be good enough, though. FTP can return multiple responses after a command and a simple command-response pattern won't work. You might also want to have access to sockets.
 
-The client is just a collection of convenience functions using an underlying `FTPContext`. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides a pattern to handle responses and simplifies event handling. Through `client.ftp` you get access to this context.
+The client described above is just a collection of convenience functions using an underlying `FTPContext`. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides an API to handle responses and simplifies event handling. Through `client.ftp` you get access to this context.
 
 ### FTPContext API
 
@@ -141,15 +141,15 @@ Set the verbosity level to optionally log out all communication between the clie
 
 `get/set socket`
 
-Get or set the socket for the control connection.
+Get or set the socket for the control connection. When setting a new socket the current one will *not* be closed because you might be just upgrading the control socket. All listeners will be removed, though.
 
 `get/set dataSocket`
 
-Get or set the socket for the data connection.
+Get or set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
 
 `handle(command, handler)`
 
-Send an FTP command and register a callback to handle all subsequent responses, error and timeout events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. (See example below).
+Send an FTP command and register a handler function to handle all subsequent responses and socket events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. This is the central method of this library, see the example below for a more detailed explanation.
 
 `send(command)`
 
@@ -161,7 +161,7 @@ Log a message if the client is set to be `verbose`.
 
 ### Example
 
-The best source of examples is the implementation of the `Client` itself as it's using the same patterns you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
+The best source of examples is the implementation of the `Client` itself as it's using the same single pattern you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
 
 ```js
 function myUpload(ftp, readableStream, remoteFilename) {
