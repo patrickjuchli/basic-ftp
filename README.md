@@ -83,7 +83,11 @@ Changes the working directory.
 
 `pwd()`
 
-Returns the path of the current working directory.
+Get the path of the current working directory.
+
+`features()`
+
+Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
 
 `list()`
 
@@ -99,23 +103,23 @@ Download a file with a given filename from the current working directory and pip
 
 `removeDir(remoteDirPath)`
 
-Removes a directory at a given path, including all of its files and directories.
+Remove a directory at a given path, including all of its files and directories.
 
 `clearWorkingDir()`
 
-Removes all files and directories from the working directory.
+Remove all files and directories from the working directory.
 
 `uploadDir(localDirPath, remoteDirName = undefined)`
 
-Uploads all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
+Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
 
 `downloadDir(localDirPath)`
 
-Downloads all files and directories of the current working directory to a given local directory.
+Download all files and directories of the current working directory to a given local directory.
 
 `ensureDir(remoteDirPath)`
 
-Makes sure that the given `remoteDirPath` exists on the server, creating all directories as necessary.
+Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary.
 
 ## Customize
 

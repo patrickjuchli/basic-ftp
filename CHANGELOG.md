@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0
+
+- Add features() method to client that returns a parsed result of the FEAT command.
+- Give access to internal list, upload and download functions for reuse in custom contexts.
+
 ## 2.2.1
 
 - Handle case when downloading, a server might report transfer complete when it isn't.
