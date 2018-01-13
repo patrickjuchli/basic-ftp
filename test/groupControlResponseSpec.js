@@ -12,6 +12,11 @@ describe("Parse multiline response", function() {
             exp: { groups: [`200 A`], rest: "" }
         },
         {
+            title: "Single line with an extra CRLF",
+            res: `200 A${CRLF}`,
+            exp: { groups: [`200 A`], rest: "" }
+        },
+        {
             title: "Multiline: 1 response group",
             res: `150-A${CRLF}B${CRLF}150 C`,
             exp: { groups: [`150-A${LF}B${LF}150 C`], rest: "" }
