@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.1
+
+- Handle case when downloading, a server might report transfer complete when it isn't.
+- Document encoding property on FTPContext.
+
 ## 2.2.0
 
 - Encoding can be set explicitly, defaults to UTF-8.
