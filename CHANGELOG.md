@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+
+- Encoding can be set explicitly, defaults to UTF-8.
+- Handle multiline responses arriving in multiple chunks.
+
 ## 2.1.0
 
 - Support multiline responses.
