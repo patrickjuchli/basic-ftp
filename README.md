@@ -147,6 +147,10 @@ Get or set the socket for the control connection. When setting a new socket the 
 
 Get or set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
 
+`get/set encoding`
+
+Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also applied to parsing a list response over the data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8`.
+
 `handle(command, handler)`
 
 Send an FTP command and register a handler function to handle all subsequent responses and socket events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. This is the central method of this library, see the example below for a more detailed explanation.
