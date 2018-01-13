@@ -29,7 +29,7 @@ describe("Parse multiline response", function() {
         {
             title: "Multline: No closing tag",
             res: `150-A${CRLF}160-B${CRLF}150 C${CRLF}200-D`,
-            exp: { groups: [`150-A${LF}160-B${LF}150 C`], rest: `200-D` }
+            exp: { groups: [`150-A${LF}160-B${LF}150 C`], rest: `200-D${LF}` }
         },               
     ];
     for (const test of tests) {
