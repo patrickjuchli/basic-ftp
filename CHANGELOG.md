@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.1
+
+- Wait for both data and control connection reporting completion for list, upload and download.
+
 ## 2.3.0
 
 - Add features() method to client that returns a parsed result of the FEAT command.
