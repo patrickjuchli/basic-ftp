@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.3
+
+- Accept more positive preliminary and completion replies for transfers.
+
 ## 2.3.2
 
 - Documentation improvements
