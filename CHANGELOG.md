@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.2
+
+- Documentation improvements
+- More internal functions made available for custom extensions.
+
 ## 2.3.1
 
 - Wait for both data and control connection reporting completion for list, upload and download.
