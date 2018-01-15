@@ -6,9 +6,9 @@ This is an FTP/FTPS client for NodeJS.
 
 ## Goals and non-goals
 
-The main goal is to provide an API that is easy to compose and extend. FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
+FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
 
-This library does not try to solve all these issues. The goal is to provide a solid foundation and a clean extension API for you to solve your specific issues without requiring a change in the library itself.
+This library does not try to solve all possible issues. The main goal is to provide a solid foundation and a clean extension API for you to solve your specific issues without requiring a change in the library itself.
 
 Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you.
 
