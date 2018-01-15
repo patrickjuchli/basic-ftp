@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.0
+
+- Add default port for connect().
+- Add default anonymous credentials for login().
+- Improve documentation
+
 ## 2.3.3
 
 - Accept more positive preliminary and completion replies for transfers.
