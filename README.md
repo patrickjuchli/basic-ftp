@@ -43,9 +43,9 @@ async function example() {
 example();
 ```
 
-The `Client` provides a minimal API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use most commands directly, using for example `await client.send("CDUP")`.
+The `Client` provides a minimal API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use a number of them directly, for example `await client.send("CDUP")`.
 
-The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why is the setting behind a property `.ftp`? This will be answered in the section about extending the library below.
+The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
 ## Client API
 
@@ -63,7 +63,7 @@ Connect to an FTP server.
 
 `useTLS(options)`
 
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. There, you may for example set `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections will automatically be upgraded to TLS.
+Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. For example `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
 `login(user, password)`
 
@@ -169,7 +169,7 @@ Log a message if the client is set to be `verbose`.
 
 ### Example
 
-The best source of examples is the implementation of the `Client` itself as it's using the same single pattern you will use. The code below shows a custom file upload. Let's assume a transfer connection has already been established.
+The best source of examples is the implementation of the `Client` itself as it's using the same single pattern you will use. The code below shows a simplified file upload. Let's assume a transfer connection has already been established.
 
 ```js
 function myUpload(ftp, readableStream, remoteFilename) {
