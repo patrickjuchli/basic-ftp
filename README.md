@@ -153,7 +153,7 @@ Get or set the socket for the data connection. When setting a new socket the cur
 
 `get/set encoding`
 
-Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8`.
+Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8` because most modern servers support this and some of them don't even list this feature in the response of the FEAT command.
 
 `handle(command, handler)`
 
