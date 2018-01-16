@@ -8,7 +8,7 @@ This is an FTP/FTPS client for NodeJS.
 
 FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
 
-This library does not try to solve all possible issues. The main goal is to provide a solid foundation and an extension API for you to solve your specific issues without requiring a change in the library itself.
+This library does not try to solve all possible issues. The main goal is to provide a solid foundation and an extension API for you to solve your specific issues without requiring a change in the library.
 
 Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you.
 
@@ -43,9 +43,9 @@ async function example() {
 example();
 ```
 
-The `Client` provides a convenience API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use a number of them directly, for example `await client.send("CDUP")`.
+`Client` provides a convenience API to interact with an FTP server. Not all FTP commands are backed by a method, you're expected to use a number of them directly, like `await client.send("CDUP")`.
 
-The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
+The example also sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
 ## Client API
 
@@ -129,7 +129,7 @@ FTP uses a dedicated socket connection for each single data transfer. Data trans
 
 `get/set client.parseList`
 
-You may optionally provide a custom parser to parse the listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses can be regarded as the central piece of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+You may provide a custom parser to parse directory listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
 
 ## Extend
 
@@ -153,7 +153,7 @@ Get or set the socket for the data connection. When setting a new socket the cur
 
 `get/set encoding`
 
-Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8` because most modern servers support this and some of them don't even list this feature in the response of the FEAT command.
+Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8` because most modern servers support this and some of them don't even list this feature in the response of the FEAT command. You can change this setting at any time.
 
 `handle(command, handler)`
 
