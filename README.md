@@ -8,7 +8,7 @@ This is an FTP/FTPS client for NodeJS.
 
 FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
 
-This library does not try to solve all possible issues. The main goal is to provide a solid foundation and a clean extension API for you to solve your specific issues without requiring a change in the library itself.
+This library does not try to solve all possible issues. The main goal is to provide a solid foundation and an extension API for you to solve your specific issues without requiring a change in the library itself.
 
 Non-goals are: Feature completeness, support for every FTP server, complete abstraction from FTP details. If you're not interested in how FTP works at all, this library might not be for you.
 
@@ -43,7 +43,7 @@ async function example() {
 example();
 ```
 
-The `Client` provides a minimal API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use a number of them directly, for example `await client.send("CDUP")`.
+The `Client` provides a convenience API to interact with an FTP server. Not all FTP commands are backed by a method. You're expected to use a number of them directly, for example `await client.send("CDUP")`.
 
 The example also sets the client to be `verbose`. This will log out every communication detail, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
@@ -75,11 +75,11 @@ Sends FTP commands to use binary mode (`TYPE I`) and file structure (`STRU F`). 
 
 `send(command, ignoreErrorCodes = false)`
 
-Send an FTP command. You can optionally choose to ignore error return codes.
+Send an FTP command. You can optionally choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still throw an exception.
 
 `cd(remotePath)`
 
-Changes the working directory.
+Change the working directory.
 
 `pwd()`
 
@@ -101,13 +101,13 @@ Upload data from a readable stream and store it as a file with a given filename 
 
 Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
 
-`removeDir(remoteDirPath)`
-
-Remove a directory at a given path, including all of its files and directories.
-
 `clearWorkingDir()`
 
 Remove all files and directories from the working directory.
+
+`removeDir(remoteDirPath)`
+
+Remove all files and directories from a given directory, including the directory itself.
 
 `uploadDir(localDirPath, remoteDirName = undefined)`
 
