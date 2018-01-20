@@ -6,19 +6,17 @@ This is an FTP/FTPS client for NodeJS.
 
 ## Goals and non-goals
 
-FTP is an old protocol, there are many features, quirks and server implementations. A response might not be as expected, a directory listing use yet another format.
+This library has two goals: Provide a solid foundation that covers most needs and make it easy to extend functionality if necessary.
 
-The main goal of this library is to provide a solid foundation and an extension API for you to solve your specific issues should they arise.
-
-It's not a goal to support every FTP feature or server implementation. But it should be possible for you to change or implement a detail without changing the library itself.
+FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them but it should be easy for you to solve your specific issues without changing the library.
 
 ## Dependencies
 
 Node 7.6 or later is the only dependency.
 
-## Example
+## Introduction
 
-The example below shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
+`Client` provides a convenience API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
 
 ```js
 const ftp = require("basic-ftp");
@@ -43,9 +41,25 @@ async function example() {
 example();
 ```
 
-`Client` provides a convenience API to interact with an FTP server. Not all FTP commands are backed by a method, you're expected to use a number of them directly, like `await client.send("CDUP")`.
+The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
-The example also sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
+Here is another example to show how to compose more complex operations like recursively removing all files and directories. This function is already part of the Client API.
+
+```js
+async clearWorkingDir() {
+    for (const file of await this.list()) {
+        if (file.isDirectory) {
+            await this.cd(file.name);
+            await this.clearWorkingDir();
+            await this.send("CDUP");
+            await this.send("RMD " + file.name);
+        }
+        else {
+            await this.send("DELE " + file.name);
+        }
+    }
+}
+```
 
 ## Client API
 
@@ -57,15 +71,15 @@ Create a client instance using an optional timeout in milliseconds that will be 
 
 Close all socket connections. The client can't be used anymore after calling this method.
 
-`connect(host, port)`
+`connect(host, port = 21)`
 
 Connect to an FTP server.
 
-`useTLS(options)`
+`useTLS([options])`
 
 Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. For example `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
-`login(user, password)`
+`login(user = "guest", password = "anonymous")`
 
 Login with a username and a password.
 
@@ -109,7 +123,7 @@ Remove all files and directories from the working directory.
 
 Remove all files and directories from a given directory, including the directory itself.
 
-`uploadDir(localDirPath, remoteDirName = undefined)`
+`uploadDir(localDirPath, [remoteDirName])`
 
 Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
 
@@ -125,11 +139,11 @@ Make sure that the given `remoteDirPath` exists on the server, creating all dire
 
 `get/set client.prepareTransfer` 
 
-FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Right now the library only offers Passive Mode over IPv4. The signature of the function is `(ftp: FTPContext) => Promise<void>`. The section below about extending functionality explains what `FTPContext` is.
+You can provide a custom function that prepares the data connection for a transfer. FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Right now the library only offers Passive Mode over IPv4. The signature of the function is `(ftp: FTPContext) => Promise<void>`. The section below about extending functionality explains what `FTPContext` is.
 
 `get/set client.parseList`
 
-You may provide a custom parser to parse directory listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+You can provide a custom parser to parse directory listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
 
 ## Extend
 
