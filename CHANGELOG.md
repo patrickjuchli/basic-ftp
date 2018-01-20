@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.1
+
+- Improve introduction in README
+
 ## 2.4.0
 
 - Add default port for connect().
