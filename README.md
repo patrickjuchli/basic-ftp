@@ -85,7 +85,7 @@ Login with a username and a password.
 
 `useDefaultSettings(client)`
 
-Sends FTP commands to use binary mode (`TYPE I`) and file structure (`STRU F`). If TLS is enabled it will also send `PBSZ 0` and `PROT P`. This should be called after upgrading to TLS and logging in.
+Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. This should be called after upgrading to TLS and logging in.
 
 `send(command, ignoreErrorCodes = false)`
 
