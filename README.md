@@ -79,7 +79,7 @@ Connect to an FTP server.
 
 Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. For example `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
-`login(user = "guest", password = "anonymous")`
+`login(user = "anonymous", password = "guest")`
 
 Login with a username and a password.
 

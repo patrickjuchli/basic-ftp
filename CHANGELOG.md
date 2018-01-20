@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.2
+
+- Fix documentation of default arguments for login().
+
 ## 2.4.1
 
 - Improve introduction in README
