@@ -43,19 +43,19 @@ example();
 
 The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
-Here is another example to show how to compose more complex operations like recursively removing all files and directories. This function is already part of the Client API.
+Here is another example to show how to compose more complex operations like recursively removing all files and directories. It also shows that not all FTP commands are backed by a method. A similar function is already part of the Client API.
 
 ```js
-async clearWorkingDir() {
-    for (const file of await this.list()) {
+async clearWorkingDir(client) {
+    for (const file of await client.list()) {
         if (file.isDirectory) {
-            await this.cd(file.name);
-            await this.clearWorkingDir();
-            await this.send("CDUP");
-            await this.send("RMD " + file.name);
+            await client.cd(file.name);
+            await clearWorkingDir(client);
+            await client.send("CDUP");
+            await client.send("RMD " + file.name);
         }
         else {
-            await this.send("DELE " + file.name);
+            await client.send("DELE " + file.name);
         }
     }
 }
