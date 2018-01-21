@@ -6,9 +6,9 @@ This is an FTP/FTPS client for NodeJS.
 
 ## Goals and non-goals
 
-This library has two goals: Provide a solid foundation that covers the usual needs and make it easy to extend functionality if necessary.
+This library has two goals: Provide a solid foundation that covers the usual needs and make it easy for the user to extend functionality if necessary.
 
-FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them but it should be easy for you to solve your specific issues without changing the library.
+FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them but it should be possible for you to solve your specific issues without changing the library.
 
 ## Dependencies
 
@@ -43,7 +43,7 @@ example();
 
 The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
-Here is another example to show how to compose more complex operations like recursively removing all files and directories. It also shows that not all FTP commands are backed by a method. A similar function is already part of the Client API.
+Here is another example showing how to recursively remove all files and directories. It also shows that not all FTP commands are backed by a method. A similar function is already part of the Client API.
 
 ```js
 async clearWorkingDir(client) {
@@ -105,7 +105,7 @@ Get a description of supported features. This will return a Map where keys corre
 
 `list()`
 
-List files and directories in the current working directory.
+List files and directories in the current working directory. Currently, this library only supports Unix-style directory listings.
 
 `upload(readableStream, remoteFilename)`
 
