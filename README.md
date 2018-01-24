@@ -8,7 +8,7 @@ This is an FTP/FTPS client for NodeJS.
 
 This library has two goals: Provide a solid foundation that covers the usual needs and make it easy for the user to extend functionality if necessary.
 
-FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them but it should be possible for you to solve your specific issues without changing the library.
+FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, it should be possible for you to solve your specific issues without changing the library.
 
 ## Dependencies
 
@@ -43,7 +43,7 @@ example();
 
 The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
 
-Here is another example showing how to recursively remove all files and directories. It also shows that not all FTP commands are backed by a method. A similar function is already part of the Client API.
+Here is another example showing how to recursively remove all files and directories. It also shows that not all FTP commands are backed by a method.
 
 ```js
 async clearWorkingDir(client) {
@@ -77,7 +77,7 @@ Connect to an FTP server.
 
 `useTLS([options])`
 
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for `tls.connect()` in NodeJS. For example `rejectUnauthorized: false` if you must. Call this function before you log in. Subsequently created data connections will automatically be upgraded to TLS.
+Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
 `login(user = "anonymous", password = "guest")`
 
@@ -89,7 +89,7 @@ Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If T
 
 `send(command, ignoreErrorCodes = false)`
 
-Send an FTP command. You can optionally choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still throw an exception.
+Send an FTP command. You can choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still reject the Promise returned.
 
 `cd(remotePath)`
 
@@ -139,17 +139,17 @@ Make sure that the given `remoteDirPath` exists on the server, creating all dire
 
 `get/set client.prepareTransfer` 
 
-You can provide a custom function that prepares the data connection for a transfer. FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Right now the library only offers Passive Mode over IPv4. The signature of the function is `(ftp: FTPContext) => Promise<void>`. The section below about extending functionality explains what `FTPContext` is.
+You can provide a custom function that prepares the data connection for a transfer. FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Right now the library only offers Passive Mode over IPv4. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
 
 `get/set client.parseList`
 
-You can provide a custom parser to parse directory listing data, for example to support the DOS format. This library only supports the Unix and DOS formats for now. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+You can provide a custom parser to parse directory listing data. This library only supports Unix and DOS formats out-of-the-box. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
 
 ## Extend
 
 You can use `client.send` to send any FTP command and get its result. This might not be good enough, though. FTP can return multiple responses after a command and a simple command-response pattern won't work. You might also want to have access to sockets.
 
-The client described above is just a collection of convenience functions using an underlying `FTPContext`. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides an API to handle responses and simplifies event handling. Through `client.ftp` you get access to this context.
+The `Client` described above is just a collection of convenience functions using an underlying `FTPContext`. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides an API to handle responses and events in a simplified way. Through `client.ftp` you get access to this context.
 
 ### FTPContext API
 
