@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.2
+
+- Don't report unexpected positive completion codes as errors.
+- Improve documentation. 
+
 ## 2.5.1
 
 - Mention DOS-style directory listing support in README.
