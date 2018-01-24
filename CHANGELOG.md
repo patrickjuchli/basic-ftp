@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0
+
+- Add support for DOS-style directory listing.
+- Select a compatible directory listing parser automatically.
+- Throw an exception with a detailed description if the directory listing can't be parsed.
+
 ## 2.4.2
 
 - Fix documentation of default arguments for login().
