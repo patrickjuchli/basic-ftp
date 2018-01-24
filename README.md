@@ -105,7 +105,7 @@ Get a description of supported features. This will return a Map where keys corre
 
 `list()`
 
-List files and directories in the current working directory. Currently, this library only supports Unix-style directory listings.
+List files and directories in the current working directory. Currently, this library only supports Unix- and DOS-style directory listings.
 
 `upload(readableStream, remoteFilename)`
 
@@ -143,7 +143,7 @@ You can provide a custom function that prepares the data connection for a transf
 
 `get/set client.parseList`
 
-You can provide a custom parser to parse directory listing data, for example to support the DOS format. This library only supports the Unix format for now. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+You can provide a custom parser to parse directory listing data, for example to support the DOS format. This library only supports the Unix and DOS formats for now. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
 
 ## Extend
 
