@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.1
+
+- Mention DOS-style directory listing support in README.
+
 ## 2.5.0
 
 - Add support for DOS-style directory listing.
