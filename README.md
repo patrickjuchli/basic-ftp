@@ -87,9 +87,17 @@ Login with a username and a password.
 
 Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. This should be called after upgrading to TLS and logging in.
 
+`features()`
+
+Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
+
 `send(command, ignoreErrorCodes = false)`
 
 Send an FTP command. You can choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still reject the Promise returned.
+
+`size(filename)`
+
+Get the size of a file in the working directory.
 
 `cd(remotePath)`
 
@@ -98,10 +106,6 @@ Change the working directory.
 `pwd()`
 
 Get the path of the current working directory.
-
-`features()`
-
-Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
 
 `list()`
 
