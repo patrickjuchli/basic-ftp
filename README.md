@@ -77,7 +77,7 @@ Connect to an FTP server.
 
 `useTLS([options])`
 
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS.
+Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
 `login(user = "anonymous", password = "guest")`
 
