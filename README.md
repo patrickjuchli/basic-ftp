@@ -8,7 +8,7 @@ This is an FTP/FTPS client for NodeJS.
 
 This library has two goals: Provide a solid foundation that covers the usual needs and make it easy for the user to extend functionality if necessary.
 
-FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, it should be possible for you to solve your specific issues without changing the library.
+FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, it should be possible for you to solve your specific issues without requiring a change in the library.
 
 ## Dependencies
 
@@ -75,7 +75,7 @@ Close all socket connections. The client can't be used anymore after calling thi
 
 Connect to an FTP server.
 
-`useTLS([options])`
+`useTLS(options = undefined)`
 
 Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS.
 
@@ -83,7 +83,7 @@ Upgrade the existing control connection with TLS. You may provide options that a
 
 Login with a username and a password.
 
-`useDefaultSettings(client)`
+`useDefaultSettings()`
 
 Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. This should be called after upgrading to TLS and logging in.
 
