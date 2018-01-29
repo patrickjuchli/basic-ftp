@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.1
+
+- Handle TLS upgrade error by reporting it to the current task handler.
+
 ## 2.6.0
 
 - Add method to retrieve file size.
