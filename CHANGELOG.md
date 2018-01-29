@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.0
+
+- Add method to retrieve file size.
+
 ## 2.5.2
 
 - Don't report unexpected positive completion codes as errors.
