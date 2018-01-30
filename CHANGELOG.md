@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.2
+
+- Fix TLS upgrade for data connections. (#4)
+
 ## 2.6.1
 
 - Handle TLS upgrade error by reporting it to the current task handler.
