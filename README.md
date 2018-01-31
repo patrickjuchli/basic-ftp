@@ -55,7 +55,7 @@ async clearWorkingDir(client) {
             await client.send("RMD " + file.name);
         }
         else {
-            await client.send("DELE " + file.name);
+            await client.remove(file.name);
         }
     }
 }
