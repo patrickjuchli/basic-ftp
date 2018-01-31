@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.1
+
+- Fix linter complaint.
+
 ## 2.7.0
 
 - Add method to remove a file.
