@@ -147,7 +147,7 @@ Errors originating from a connection or described by a server response as well a
 
 ```
 {
-	error: "Timeout"
+    error: "Timeout"
 }
 ```
 
@@ -156,7 +156,7 @@ Errors originating from a connection or described by a server response as well a
 
 ```
 {
-	error: [Error object by Node]
+    error: [Error object by Node]
 }
 ```
 
@@ -164,8 +164,8 @@ Errors originating from a connection or described by a server response as well a
 
 ```
 {
-	code: [FTP error code],
-	message: [Complete FTP response including code]
+    code: [FTP error code],
+    message: [Complete FTP response including code]
 }
 ```
 
