@@ -41,9 +41,9 @@ async function example() {
 example();
 ```
 
-The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library below.
+The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library.
 
-Here is another example showing how to recursively remove all files and directories. It also shows that not all FTP commands are backed by a method.
+Here is another example showing how to remove all files and directories recursively. It also shows that not all FTP commands are backed by a method.
 
 ```js
 async clearWorkingDir(client) {
@@ -71,73 +71,104 @@ Create a client instance using an optional timeout in milliseconds that will be 
 
 Close all socket connections. The client can't be used anymore after calling this method.
 
-`connect(host, port = 21)`
+`connect(host, port = 21): Promise<Response>`
 
 Connect to an FTP server.
 
-`useTLS(options = undefined)`
+`useTLS(options = undefined): Promise<Response>`
 
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS.
+Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS reusing the session negotiated by the control connection.
 
-`login(user = "anonymous", password = "guest")`
+`login(user = "anonymous", password = "guest"): Promise<Response>`
 
 Login with a username and a password.
 
-`useDefaultSettings()`
+`useDefaultSettings(): Promise<Response>`
 
-Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. This should be called after upgrading to TLS and logging in.
+Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. It's recommended that you call this method  after upgrading to TLS and logging in.
 
-`features()`
+`features(): Promise<Map<string, string>>`
 
 Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
 
-`send(command, ignoreErrorCodes = false)`
+`send(command, ignoreErrorCodes = false): Promise<Response>`
 
 Send an FTP command. You can choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still reject the Promise returned.
 
-`size(filename)`
+`size(filename): Promise<number>`
 
 Get the size of a file in the working directory.
 
-`cd(remotePath)`
+`cd(remotePath): Promise<Response>`
 
 Change the working directory.
 
-`pwd()`
+`pwd(): Promise<string>`
 
 Get the path of the current working directory.
 
-`list()`
+`list(): Promise<FileInfo[]>`
 
 List files and directories in the current working directory. Currently, this library only supports Unix- and DOS-style directory listings.
 
-`upload(readableStream, remoteFilename)`
+`upload(readableStream, remoteFilename): Promise<Response>`
 
 Upload data from a readable stream and store it as a file with a given filename in the current working directory.
 
-`download(writableStream, remoteFilename, startAt = 0)`
+`download(writableStream, remoteFilename, startAt = 0): Promise<Response>`
 
 Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
 
-`clearWorkingDir()`
+`clearWorkingDir(): Promise<void>`
 
 Remove all files and directories from the working directory.
 
-`removeDir(remoteDirPath)`
+`removeDir(remoteDirPath): Promise<void>`
 
 Remove all files and directories from a given directory, including the directory itself.
 
-`uploadDir(localDirPath, [remoteDirName])`
+`uploadDir(localDirPath, [remoteDirName]): Promise<void>`
 
 Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
 
-`downloadDir(localDirPath)`
+`downloadDir(localDirPath): Promise<void>`
 
 Download all files and directories of the current working directory to a given local directory.
 
-`ensureDir(remoteDirPath)`
+`ensureDir(remoteDirPath): Promise<void>`
 
 Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary.
+
+## Error Handling
+
+Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise aka raise an exception. Use `try-catch` when using async-await or `catch()` when using Promises. The error will be described by an object literal depending on the type of error.
+
+### Timeout
+
+```
+{
+	error: "Timeout"
+}
+```
+
+
+### Connection error
+
+```
+{
+	error: [Error object by Node]
+}
+```
+
+### FTP response
+
+```
+{
+	code: [FTP error code],
+	message: [Complete FTP response including code]
+}
+```
+
 
 ## Customize
 
@@ -173,7 +204,7 @@ Get or set the socket for the data connection. When setting a new socket the cur
 
 Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8` because most modern servers support this and some of them don't even list this feature in the response of the FEAT command. You can change this setting at any time.
 
-`handle(command, handler)`
+`handle(command, handler): Promise<Response>`
 
 Send an FTP command and register a handler function to handle all subsequent responses and socket events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. This is the central method of this library, see the example below for a more detailed explanation.
 
@@ -190,7 +221,7 @@ Log a message if the client is set to be `verbose`.
 The best source of examples is the implementation of the `Client` itself as it's using the same single pattern you will use. The code below shows a simplified file upload. Let's assume a transfer connection has already been established.
 
 ```js
-function myUpload(ftp, readableStream, remoteFilename) {
+function mySimpleUpload(ftp, readableStream, remoteFilename) {
     const command = "STOR " + remoteFilename;
     return ftp.handle(command, (res, task) => {
         if (res.code === 150) { // Ready to upload
@@ -205,7 +236,7 @@ function myUpload(ftp, readableStream, remoteFilename) {
     });
 }
 
-await myUpload(client.ftp, myStream, myName);
+await mySimpleUpload(client.ftp, myStream, myName);
 ```
 
 This function represents an asynchronously executed task. It uses a method offered by the FTPContext: `handle(command, callback)`. This will send a command to the FTP server and register a callback that is in charge for handling all responses from now on. The callback function might be called several times as in the example above. Error and timeout events from both the control and data socket will be rerouted through this callback as well. Also, `client.handle` returns a `Promise` that is created for you and which the upload function above returns. That is why the function `myUpload` can now be used with async/await. The promise is resolved or rejected when you call `resolve` or `reject` on the `task` reference passed to you as a callback argument. The callback function will not be called anymore after resolving or rejecting the task.
