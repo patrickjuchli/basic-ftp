@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.7.0
+
+- Add method to remove a file.
+- Fix listing parser autodetection by filtering out empty lines.
+- Fix upload with TLS, wait for secureConnect if necessary.
+
 ## 2.6.2
 
 - Fix TLS upgrade for data connections. (#4)

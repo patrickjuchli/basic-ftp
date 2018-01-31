@@ -1,6 +1,6 @@
 {
   "name": "basic-ftp",
-  "version": "2.6.2",
+  "version": "2.7.0",
   "description": "FTP/FTPS client library",
   "main": "./lib/ftp",
   "scripts": {
