@@ -133,7 +133,7 @@ Remove all files and directories from a given directory, including the directory
 
 `uploadDir(localDirPath, [remoteDirName]): Promise<void>`
 
-Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name.
+Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name. This will overwrite existing files with the same names and reuse existing directories. Unrelated files and directories will remain untouched.
 
 `downloadDir(localDirPath): Promise<void>`
 
