@@ -131,9 +131,9 @@ Remove all files and directories from the working directory.
 
 Remove all files and directories from a given directory, including the directory itself.
 
-`uploadDir(localDirPath, [remoteDirName], [filterFunc]): Promise<void>`
+`uploadDir(localDirPath, [remoteDirName]): Promise<void>`
 
-Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name. This will overwrite existing files with the same names and reuse existing directories. Unrelated files and directories will remain untouched. You can provide a filter function that takes a filename and should return true if the file should be included. A filter function is provided by default filtering out e.g. `.DS_Store`, see [the source code](lib/uploadDirFileFilter.js) for details.
+Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name. This will overwrite existing files with the same names and reuse existing directories. Unrelated files and directories will remain untouched.
 
 `downloadDir(localDirPath): Promise<void>`
 
