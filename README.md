@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP/FTPS client for NodeJS.
+This is an FTP client for NodeJS with support for explicit FTPS over TLS.
 
 ## Goals and non-goals
 
