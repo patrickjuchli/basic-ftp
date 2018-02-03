@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for NodeJS with support for explicit FTPS over TLS.
+This is an FTP client for Node.js with support for explicit FTPS over TLS.
 
 ## Goals and non-goals
 
@@ -77,7 +77,7 @@ Connect to an FTP server.
 
 `useTLS(options = undefined): Promise<Response>`
 
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in NodeJS. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS reusing the session negotiated by the control connection.
+Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS reusing the session negotiated by the control connection.
 
 `login(user = "anonymous", password = "guest"): Promise<Response>`
 
