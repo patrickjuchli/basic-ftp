@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0
+
+- Change uploadDir() so that it reuses directories on the FTP server if they already exist. (#5)
+
 ## 2.7.1
 
 - Fix linter complaint.
