@@ -176,13 +176,15 @@ Errors originating from a connection or described by a server response as well a
 
 ## Customize
 
+`Client` offers a number of extension points that allow you to change a detail and continue to use existing functionality.
+
 `get/set client.prepareTransfer` 
 
-You can provide a custom function that prepares the data connection for a transfer. FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Right now the library only offers Passive Mode over IPv4. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
+Provide a custom function that prepares the data connection for a transfer. FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Currently, the library only offers Passive Mode over IPv4, but this extension point makes support for Active Mode or IPv6 possible. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
 
 `get/set client.parseList`
 
-You can provide a custom parser to parse directory listing data. This library only supports Unix and DOS formats out-of-the-box. Parsing these list responses is a central part of every FTP client because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+You can provide a custom parser to parse directory listing data. This library only supports Unix and DOS formats out-of-the-box. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
 
 ## Extend
 
