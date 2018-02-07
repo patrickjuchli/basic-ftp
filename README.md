@@ -2,11 +2,11 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for Node.js with support for explicit FTPS over TLS.
+This is an FTP client for Node.js. It supports explicit FTPS over TLS.
 
-## Goals and non-goals
+## Goals
 
-This library has two goals: Provide a solid foundation that covers the usual needs and make it easy for the user to extend functionality if necessary.
+There are two goals: Provide a foundation that covers the usual needs and make it easy to extend functionality if necessary.
 
 FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, it should be possible for you to solve your specific issues without requiring a change in the library.
 
@@ -16,7 +16,7 @@ Node 7.6 or later is the only dependency.
 
 ## Introduction
 
-`Client` provides a convenience API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
+`Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
 
 ```js
 const ftp = require("basic-ftp");
@@ -41,9 +41,9 @@ async function example() {
 example();
 ```
 
-The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. It's also a great way to learn about FTP. Why the setting is behind a property `.ftp` will be answered in the section about extending the library.
+The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. Why the setting is behind a property `.ftp` will be explained in a later section.
 
-Here is another example showing how to remove all files and directories recursively. It also shows that not all FTP commands are backed by a method.
+Here is another example that removes all files and directories recursively. It shows that not all FTP commands are backed by a method. Also, be aware that the FTP protocol doesn't allow you to make parallel requests.
 
 ```js
 async clearWorkingDir(client) {
@@ -176,15 +176,16 @@ Errors originating from a connection or described by a server response as well a
 
 ## Customize
 
-`Client` offers a number of extension points that allow you to change a detail and continue to use existing functionality.
+`Client` offers a number of extension points that allow you to change a detail and continue to use existing functionality like uploading a whole directory.
 
 `get/set client.prepareTransfer` 
 
-Provide a custom function that prepares the data connection for a transfer. FTP uses a dedicated socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Currently, the library only offers Passive Mode over IPv4, but this extension point makes support for Active Mode or IPv6 possible. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
+FTP creates a socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Currently, this library only offers Passive Mode over IPv4, but this extension point makes support for Active Mode or IPv6 possible. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
 
 `get/set client.parseList`
 
-You can provide a custom parser to parse directory listing data. This library only supports Unix and DOS formats out-of-the-box. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+You can provide a custom parser to parse directory listing data. This library supports Unix and DOS formats out-of-the-box. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+
 
 ## Extend
 
@@ -208,7 +209,7 @@ Get or set the socket for the data connection. When setting a new socket the cur
 
 `get/set encoding`
 
-Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Possible values are `utf8`, `latin1`, `ascii`. Default is `utf8` because most modern servers support this and some of them don't even list this feature in the response of the FEAT command. You can change this setting at any time.
+Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Node supports `utf8`, `latin1` and `ascii`. Default is `utf8` because it's backwards-compatible with `ascii` and many modern servers support it, some of them without mentioning it when requesting features. You can change this setting at any time.
 
 `handle(command, handler): Promise<Response>`
 
