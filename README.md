@@ -2,13 +2,13 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for Node.js. It supports explicit FTPS over TLS.
+This is an FTP client for Node.js, it supports explicit FTPS over TLS.
 
 ## Goals
 
-There are two goals: Provide a foundation that covers the usual needs and make it easy to extend functionality if necessary.
+Provide a foundation that covers the usual needs and make it possible to extend functionality.
 
-FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, it should be possible for you to solve your specific issues without requiring a change in the library.
+FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, make it possible to extend behaviour without requiring a change in the library itself.
 
 ## Dependencies
 
@@ -43,7 +43,7 @@ example();
 
 The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. Why the setting is behind a property `.ftp` will be explained in a later section.
 
-Here is another example that removes all files and directories recursively. It shows that not all FTP commands are backed by a method. Also, be aware that the FTP protocol doesn't allow you to make parallel requests.
+Here is another example that removes all files and directories recursively. It shows that not all FTP commands are backed by a method. Also, be aware that the FTP protocol doesn't allow parallel requests.
 
 ```js
 async clearWorkingDir(client) {
@@ -61,15 +61,16 @@ async clearWorkingDir(client) {
 }
 ```
 
+
 ## Client API
 
 `new Client(timeout = 0)`
 
-Create a client instance using an optional timeout in milliseconds that will be used for control and data connections.
+Create a client instance using an optional timeout in milliseconds that will be used for control and data connections. Use 0 to disable timeouts.
 
 `close()`
 
-Close all socket connections. The client can't be used anymore after calling this method.
+Close all socket connections.
 
 `connect(host, port = 21): Promise<Response>`
 
@@ -85,7 +86,7 @@ Login with a username and a password.
 
 `useDefaultSettings(): Promise<Response>`
 
-Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. It's recommended that you call this method  after upgrading to TLS and logging in.
+Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. It's recommended that you call this method after upgrading to TLS and logging in.
 
 `features(): Promise<Map<string, string>>`
 
