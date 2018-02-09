@@ -131,4 +131,12 @@ describe("FTPContext", function() {
         });
         ftp.send("HELLO TEST");
     });
+
+    it("is using UTF-8 by default", function(done) {
+        ftp.socket.once("didSend", buf => {
+            assert.equal(buf.toString(), "HELLO 直己\r\n");
+            done();
+        }); 
+        ftp.send("HELLO 直己");
+    });
 });
