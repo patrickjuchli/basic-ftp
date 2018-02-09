@@ -16,7 +16,8 @@ class SocketMock extends EventEmitter {
     destroy() {
         this.destroyed = true;
     }
-    write() {
+    write(buf) {
+        this.emit("didSend", buf);
     }
 }
 
@@ -29,13 +30,19 @@ describe("FTPContext", function() {
         ftp.dataSocket = new SocketMock();
     });
 
-    it("Setting data socket undefined destroys current", function() {
-        const old = ftp.dataSocket;
-        ftp.dataSocket = undefined;
-        assert.equal(old.destroyed, true, "Socket not destroyed.");
+    it("Setting new control socket doesn't destroy current", function() {
+        const old = ftp.socket;
+        ftp.socket = undefined;
+        assert.equal(old.destroyed, false, "Socket not destroyed.");                
     });
 
-    it("Relays control timeout event", function(done) {
+    it("Setting new data socket destroys current", function() {
+        const old = ftp.dataSocket;
+        ftp.dataSocket = undefined;
+        assert.equal(old.destroyed, true, "Socket destroyed.");
+    });
+
+    it("Relays control socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
             assert.deepEqual(res, { error: "Timeout" });
             done();
@@ -43,12 +50,28 @@ describe("FTPContext", function() {
         ftp.socket.emit("timeout");
     });
 
-    it("Relays control error event", function(done) {
+    it("Relays control socket error event", function(done) {
         ftp.handle(undefined, (res, task) => {
             assert.deepEqual(res, { error: { foo: "bar" } });
             done();
         });
         ftp.socket.emit("error", { foo: "bar" });
+    });
+
+    it("Relays data socket timeout event", function(done) {
+        ftp.handle(undefined, (res, task) => {
+            assert.deepEqual(res, { error: "Timeout" });
+            done();
+        });
+        ftp.dataSocket.emit("timeout");
+    });
+
+    it("Relays data socket error event", function(done) {
+        ftp.handle(undefined, (res, task) => {
+            assert.deepEqual(res, { error: { foo: "bar" } });
+            done();
+        });
+        ftp.dataSocket.emit("error", { foo: "bar" });
     });
 
     it("Relays single line control response", function(done) {
@@ -99,5 +122,13 @@ describe("FTPContext", function() {
             done();
         });
         ftp.socket.emit("data", Buffer.from("200 OK"));  
+    });
+
+    it("can send a command", function(done) {
+        ftp.socket.once("didSend", buf => {
+            assert.equal(buf.toString(), "HELLO TEST\r\n");
+            done();
+        });
+        ftp.send("HELLO TEST");
     });
 });
