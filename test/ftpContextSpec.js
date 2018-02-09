@@ -1,25 +1,6 @@
 const assert = require("assert");
 const FTPContext = require("../lib/ftp").FTPContext;
-const EventEmitter = require("events");
-
-class SocketMock extends EventEmitter {
-    constructor() {
-        super();
-        this.destroyed = false;
-    }
-    removeAllListeners() {
-    }
-    setKeepAlive() {
-    }
-    setTimeout() {
-    }
-    destroy() {
-        this.destroyed = true;
-    }
-    write(buf) {
-        this.emit("didSend", buf);
-    }
-}
+const SocketMock = require("./SocketMock");
 
 describe("FTPContext", function() {
 
