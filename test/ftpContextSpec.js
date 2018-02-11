@@ -1,6 +1,8 @@
 const assert = require("assert");
 const FTPContext = require("../lib/ftp").FTPContext;
 const SocketMock = require("./SocketMock");
+const tls = require("tls");
+const net = require("net");
 
 describe("FTPContext", function() {
 
@@ -119,5 +121,18 @@ describe("FTPContext", function() {
             done();
         }); 
         ftp.send("HELLO 直己");
+    });
+
+    it("destroys sockets when closing", function() {
+        ftp.close();
+        assert(ftp.socket.destroyed, "Control socket");
+        assert(ftp.dataSocket.destroyed, "Data socket");
+    });
+
+    it("reports whether socket has TLS", function() {
+        ftp.socket = new net.Socket();
+        assert(!ftp.hasTLS);
+        ftp.socket = new tls.TLSSocket();
+        assert(ftp.hasTLS);
     });
 });
