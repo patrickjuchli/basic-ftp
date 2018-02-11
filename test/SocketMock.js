@@ -17,4 +17,11 @@ module.exports = class SocketMock extends EventEmitter {
     write(buf) {
         this.emit("didSend", buf);
     }
+    end() {
+        this.emit("end");
+        this.destroyed = true;
+    }
+    pipe(target) {
+        this.on("data", chunk => target.write(chunk));
+    }
 }
