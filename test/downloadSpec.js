@@ -12,16 +12,11 @@ describe("Download directory listing", function() {
     
     const bufList = Buffer.from("12-05-96  05:03PM       <DIR>          myDir");
     const expList = [
-        {
-            name: 'myDir',
-            type: 1,
-            size: 0,
-            hardLinkCount: 0,
-            permissions: { user: 0, group: 0, world: 0 },
-            link: '',
-            group: '',
-            user: '',
-            date: '12-05-96 05:03PM' }
+        (f = new FileInfo("myDir"), 
+        f.size = 0,
+        f.date = "12-05-96 05:03PM",
+        f.type = FileInfo.Type.Directory, 
+        f)
     ];
  
     let client;
