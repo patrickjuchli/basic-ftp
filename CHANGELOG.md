@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.2
+
+- When downloading, handle incoming data before announcement from control socket arrives.
+- More tests for uploading and downloading data including directory listings.
+- Use download mechanism for directory listings as well.
+
 ## 2.8.1
 
 - Improve documentation.
