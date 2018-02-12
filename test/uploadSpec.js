@@ -56,8 +56,8 @@ describe("Upload", function() {
             });
         });
     });
-
-    it("explicitly closes the data socket when all has been transmitted", function() {
+    
+    it("handles control confirmation before data sent completely", function() {
         client.ftp.dataSocket.on("didSend", buf => {
             client.ftp.dataSocket.emit("finish");
             setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 Done"))); 
@@ -67,7 +67,7 @@ describe("Upload", function() {
         return promise;        
     });
 
-    it("handles control confirmation before data sent completely", function(done) {
+    it("explicitly closes the data socket when all has been transmitted", function(done) {
         client.ftp.dataSocket.on("didSend", buf => {
             // Finish event should trigger closing of data socket.
             client.ftp.dataSocket.emit("finish");
