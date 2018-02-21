@@ -87,6 +87,11 @@ describe("Directory listing", function() {
             title: "Unknown format (MVS)",
             list: listUnknownMVS,
             exp: undefined
+        },
+        {
+            title: "Empty list",
+            list: "  \r\n  \r\n      \r\n  ",
+            exp: []
         }
     ];
     for (const test of tests) {
