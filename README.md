@@ -130,7 +130,7 @@ Remove all files and directories from the working directory.
 
 `removeDir(remoteDirPath): Promise<void>`
 
-Remove all files and directories from a given directory, including the directory itself.
+Remove all files and directories from a given directory, including the directory itself. When this task is done, the working directory will be the parent directory of `remoteDirPath`.
 
 `uploadDir(localDirPath, [remoteDirName]): Promise<void>`
 
@@ -142,7 +142,7 @@ Download all files and directories of the current working directory to a given l
 
 `ensureDir(remoteDirPath): Promise<void>`
 
-Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary.
+Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary. The working directory is at `remoteDirPath` after calling this method.
 
 ## Error Handling
 
