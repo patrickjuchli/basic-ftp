@@ -52,9 +52,9 @@ You can always use Promises instead of async/await. Be aware that the FTP protoc
 
 ```js
 client.ensureDir("my/remote/path")
-	.then(() => client.clearWorkingDir())
-	.then(() => client.uploadDir("my/local/path"))
-	.catch(err => console.log("Oh no!", err))
+    .then(() => client.clearWorkingDir())
+    .then(() => client.uploadDir("my/local/path"))
+    .catch(err => console.log("Oh no!", err))
 ```
 
 If you encounter a problem, it can be helpful to let the client log out all communication with the FTP server.
