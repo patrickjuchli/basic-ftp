@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.3
+
+- Improve introduction.
+- More unit tests.
+
 ## 2.8.2
 
 - When downloading, handle incoming data before announcement from control socket arrives.
