@@ -19,48 +19,49 @@ Node 7.6 or later is the only dependency.
 `Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
 
 ```js
-const ftp = require("basic-ftp");
+const ftp = require("basic-ftp")
 
 async function example() {
-    const client = new ftp.Client();
-    client.ftp.verbose = true;
+    const client = new ftp.Client()
     try {
-        await client.connect("192.168.0.10", 21);
-        await client.useTLS();
-        await client.login("very", "password");
-        await client.useDefaultSettings();
-        console.log(await client.list());
-        await client.upload(fs.createReadStream("README.md"), "README.md");
+        await client.connect("192.168.0.10", 21)
+        await client.useTLS()
+        await client.login("very", "password")
+        await client.useDefaultSettings()
+        console.log(await client.list())
+        await client.upload(fs.createReadStream("README.md"), "README.md")
     }
     catch(err) {
-        console.log(err);
+        console.log(err)
     }
-    client.close();
+    client.close()
 }
 
-example();
+example()
 ```
 
-The example sets the client to be `verbose`. This will log out all communication, making it easier to spot an issue and address it. Why the setting is behind a property `.ftp` will be explained in a later section.
-
-Here is another example that removes all files and directories recursively. It shows that not all FTP commands are backed by a method. Also, be aware that the FTP protocol doesn't allow parallel requests.
+You can also work with directories and their content. The next example makes sure a remote path exists, creating all intermediate directories as necessary. It makes sure the target directory is empty and uploads the contents of a local one.
 
 ```js
-async clearWorkingDir(client) {
-    for (const file of await client.list()) {
-        if (file.isDirectory) {
-            await client.cd(file.name);
-            await clearWorkingDir(client);
-            await client.send("CDUP");
-            await client.send("RMD " + file.name);
-        }
-        else {
-            await client.remove(file.name);
-        }
-    }
-}
+await client.ensureDir("my/remote/path")
+await client.clearWorkingDir()
+await client.uploadDir("my/local/path")
 ```
 
+You can always use Promises instead of async/await. Be aware that the FTP protocol doesn't allow multiple parallel requests.
+
+```js
+client.ensureDir("my/remote/path")
+	.then(() => client.clearWorkingDir())
+	.then(() => client.uploadDir("my/local/path"))
+	.catch(err => console.log("Oh no!", err))
+```
+
+If you encounter a problem, it can be helpful to let the client log out all communication with the FTP server.
+
+```js
+client.ftp.verbose = true
+```
 
 ## Client API
 
@@ -230,21 +231,21 @@ The best source of examples is the implementation of the `Client` itself as it's
 
 ```js
 function mySimpleUpload(ftp, readableStream, remoteFilename) {
-    const command = "STOR " + remoteFilename;
+    const command = "STOR " + remoteFilename
     return ftp.handle(command, (res, task) => {
         if (res.code === 150) { // Ready to upload
             readableStream.pipe(ftp.dataSocket)
         }
         else if (res.code === 226) { // Transfer complete
-            task.resolve(res);
+            task.resolve(res)
         }
         else if (res.code >= 400 || res.error) {
-            task.reject(res);
+            task.reject(res)
         }
-    });
+    })
 }
 
-await mySimpleUpload(client.ftp, myStream, myName);
+await mySimpleUpload(client.ftp, myStream, myName)
 ```
 
 This function represents an asynchronously executed task. It uses a method offered by the FTPContext: `handle(command, callback)`. This will send a command to the FTP server and register a callback that is in charge for handling all responses from now on. The callback function might be called several times as in the example above. Error and timeout events from both the control and data socket will be rerouted through this callback as well. Also, `client.handle` returns a `Promise` that is created for you and which the upload function above returns. That is why the function `myUpload` can now be used with async/await. The promise is resolved or rejected when you call `resolve` or `reject` on the `task` reference passed to you as a callback argument. The callback function will not be called anymore after resolving or rejecting the task.
