@@ -2,13 +2,13 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for Node.js, it supports explicit FTPS over TLS.
+This is an FTP client for Node.js. It supports explicit FTPS over TLS, has a Promise-based API and can operate on whole directories.
 
 ## Goals
 
-Provide a foundation that covers the usual needs and make it possible to extend functionality.
+Provide a foundation that covers the usual needs.
 
-FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, make it possible to extend behaviour without requiring a change in the library itself.
+FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, the library should focus on being easy to read, tinker with and extend.
 
 ## Dependencies
 
@@ -16,7 +16,7 @@ Node 7.6 or later is the only dependency.
 
 ## Introduction
 
-`Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file.
+`Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. Be aware that the FTP protocol doesn't allow multiple parallel requests.
 
 ```js
 const ftp = require("basic-ftp")
@@ -46,15 +46,6 @@ You can also work with directories and their content. The next example makes sur
 await client.ensureDir("my/remote/path")
 await client.clearWorkingDir()
 await client.uploadDir("my/local/path")
-```
-
-You can always use Promises instead of async/await. Be aware that the FTP protocol doesn't allow multiple parallel requests.
-
-```js
-client.ensureDir("my/remote/path")
-    .then(() => client.clearWorkingDir())
-    .then(() => client.uploadDir("my/local/path"))
-    .catch(err => console.log("Oh no!", err))
 ```
 
 If you encounter a problem, it can be helpful to let the client log out all communication with the FTP server.
