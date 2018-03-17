@@ -28,6 +28,10 @@ describe("Download directory listing", function() {
         client.ftp.socket = new SocketMock();
     });
 
+    afterEach(function() {
+        client.close();
+    });
+
     function requestListAndVerify(done) {
         client.list().then(result => {
             assert.deepEqual(result, expList);

@@ -16,6 +16,10 @@ describe("Upload", function() {
         client.ftp.dataSocket = new SocketMock();
     });
 
+    afterEach(function() {
+        client.close();
+    });
+
     it("sends the correct command", function(done) {
         client.ftp.socket.once("didSend", buf => {
             assert.equal(buf.toString(), "STOR NAME.TXT\r\n");

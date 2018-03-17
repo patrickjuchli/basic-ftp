@@ -4,6 +4,8 @@ module.exports = class SocketMock extends EventEmitter {
     constructor() {
         super();
         this.destroyed = false;
+        this.bytesWritten = 0;
+        this.bytesRead = 0;
     }
     removeAllListeners() {
     }

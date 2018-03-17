@@ -15,8 +15,14 @@ describe("FTPContext", function() {
 
     it("Setting new control socket doesn't destroy current", function() {
         const old = ftp.socket;
-        ftp.socket = undefined;
+        ftp.socket = new SocketMock();
         assert.equal(old.destroyed, false, "Socket not destroyed.");                
+    });
+
+    it("Setting control socket to undefined destroys current", function() {
+        const old = ftp.socket;
+        ftp.socket = undefined;
+        assert.equal(old.destroyed, true, "Socket destroyed.");                
     });
 
     it("Setting new data socket destroys current", function() {
@@ -27,7 +33,7 @@ describe("FTPContext", function() {
 
     it("Relays control socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: "Timeout" });
+            assert.deepEqual(res, { error: "Timeout control socket" });
             done();
         });
         ftp.socket.emit("timeout");
@@ -43,7 +49,7 @@ describe("FTPContext", function() {
 
     it("Relays data socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: "Timeout" });
+            assert.deepEqual(res, { error: "Timeout data socket" });
             done();
         });
         ftp.dataSocket.emit("timeout");

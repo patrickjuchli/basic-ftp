@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.9.0
+
+- Added: Report transfer progress with client.trackProgress().
+- Added: Error return codes can be ignored when removing a single file.
+- Fixed: Timeout behaviour of control and data socket.
+
 ## 2.8.3
 
 - Improve introduction.

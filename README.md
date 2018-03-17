@@ -136,6 +136,39 @@ Download all files and directories of the current working directory to a given l
 
 Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary. The working directory is at `remoteDirPath` after calling this method.
 
+`trackProgress(handler)`
+
+Report any transfer progress using the given handler function. See the next section for more details.
+
+## Transfer Progress
+
+You can set a callback function with `client.trackProgress` to track the progress of all uploads and downloads. To disable progress reporting, call `trackProgress` with an undefined handler.
+
+```
+// Log progress for any transfer from now on.
+client.trackProgress(info => {
+    console.log("File", info.name);
+    console.log("Type", info.type);
+    console.log("Transferred", info.bytes);
+    console.log("Transferred Overall", info.bytesOverall);
+});
+
+// Transfer some data
+await client.upload(someStream, "test.txt");
+await client.upload(someOtherStream, "test2.txt");
+
+// Reset overall counter
+client.trackProgress(info => console.log(info.bytesOverall));
+await client.downloadDir("local/path");
+
+// Stop logging
+client.trackProgress();
+```
+
+For each transfer, the callback function will receive a name, the transfer type (upload/download) and the number of bytes transferred so far. The function will be called at a regular interval during a transfer.
+
+In addition to that, there is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
+
 ## Error Handling
 
 Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise aka raise an exception. Use `try-catch` when using async-await or `catch()` when using Promises. The error will be described by an object literal depending on the type of error.

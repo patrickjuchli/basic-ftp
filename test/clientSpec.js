@@ -22,11 +22,16 @@ class MockError {
 describe("Convenience API", function() {
     this.timeout(100);
     let client;
+
     beforeEach(function() {
         client = new Client();
         client.prepareTransfer = () => {}; // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
+    });
+
+    afterEach(function() {
+        client.close();
     });
 
     /** 
@@ -135,5 +140,11 @@ describe("Convenience API", function() {
                 return promise.then(result => assert.deepEqual(result, test.result));
             }               
         });
+    });
+
+    it("resets overall bytes of progress tracker on trackProgress()", function() {
+        client._progressTracker.bytesOverall = 5;
+        client.trackProgress();
+        assert.equal(client._progressTracker.bytesOverall, 0, "bytesOverall after reset");
     });
 });
