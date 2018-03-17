@@ -144,7 +144,7 @@ Report any transfer progress using the given handler function. See the next sect
 
 You can set a callback function with `client.trackProgress` to track the progress of all uploads and downloads. To disable progress reporting, call `trackProgress` with an undefined handler.
 
-```
+```js
 // Log progress for any transfer from now on.
 client.trackProgress(info => {
     console.log("File", info.name);
