@@ -171,7 +171,7 @@ In addition to that, there is also a counter for all bytes transferred since the
 
 ## Error Handling
 
-Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise aka raise an exception. Use `try-catch` when using async-await or `catch()` when using Promises. The error will be described by an object literal depending on the type of error.
+Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise aka raise an exception. Use `try-catch` when using async-await or `catch()` when using Promises. The error will be described by an object depending on the type of error.
 
 ### Timeout
 
