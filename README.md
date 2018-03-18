@@ -104,7 +104,7 @@ Get the path of the current working directory.
 
 List files and directories in the current working directory. Currently, this library only supports Unix- and DOS-style directory listings.
 
-`remove(filename): Promise<Response>`
+`remove(filename, ignoreErrorCodes = false): Promise<Response>`
 
 Remove a file from the working directory.
 
