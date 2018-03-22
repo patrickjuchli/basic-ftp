@@ -147,22 +147,22 @@ You can set a callback function with `client.trackProgress` to track the progres
 ```js
 // Log progress for any transfer from now on.
 client.trackProgress(info => {
-    console.log("File", info.name);
-    console.log("Type", info.type);
-    console.log("Transferred", info.bytes);
-    console.log("Transferred Overall", info.bytesOverall);
-});
+    console.log("File", info.name)
+    console.log("Type", info.type)
+    console.log("Transferred", info.bytes)
+    console.log("Transferred Overall", info.bytesOverall)
+})
 
 // Transfer some data
-await client.upload(someStream, "test.txt");
-await client.upload(someOtherStream, "test2.txt");
+await client.upload(someStream, "test.txt")
+await client.upload(someOtherStream, "test2.txt")
 
 // Reset overall counter
-client.trackProgress(info => console.log(info.bytesOverall));
-await client.downloadDir("local/path");
+client.trackProgress(info => console.log(info.bytesOverall))
+await client.downloadDir("local/path")
 
 // Stop logging
-client.trackProgress();
+client.trackProgress()
 ```
 
 For each transfer, the callback function will receive a name, the transfer type (upload/download) and the number of bytes transferred so far. The function will be called at a regular interval during a transfer.
