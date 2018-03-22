@@ -163,4 +163,27 @@ describe("Convenience API", function() {
         }
         return client.connect("host", 22).catch(result => assert.deepEqual(result, { code: 120, message: "120 Ready in 5 hours"}));
     });
+
+    it("can login", function() {
+        let step = 1;
+        client.ftp.socket.on("didSend", buf => {
+            if (step === 1) {
+                step = 2;
+                assert.equal(buf.toString().trim(), "USER user");
+                client.ftp.socket.emit("data", Buffer.from("331 Go on"));
+            }
+            else if (step === 2) {
+                assert.equal(buf.toString().trim(), "PASS pass");
+                client.ftp.socket.emit("data", Buffer.from("200 OK"));                
+            }
+        });
+        return client.login("user", "pass").then(result => assert.deepEqual(result, { code: 200, message: "200 OK" }));
+    });
+
+    it("declines login on '332 Account needed'", function() {
+        client.ftp.socket.once("didSend", buf => {
+            client.ftp.socket.emit("data", Buffer.from("332 Account needed"));
+        });
+        return client.login("user", "pass").catch(result => assert.deepEqual(result, { code: 332, message: "332 Account needed" }));
+    });
 });
