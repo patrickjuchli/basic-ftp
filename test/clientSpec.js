@@ -147,4 +147,20 @@ describe("Convenience API", function() {
         client.trackProgress();
         assert.equal(client._progressTracker.bytesOverall, 0, "bytesOverall after reset");
     });
+
+    it("can connect", function() {
+        client.ftp.socket.connect = (port, host) => {
+            assert.equal(host, "host", "Socket host");
+            assert.equal(port, 22, "Socket port");
+            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 OK")));
+        }
+        return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));
+    });
+
+    it("declines connect for code 120", function() {
+        client.ftp.socket.connect = () => {
+            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("120 Ready in 5 hours")));
+        }
+        return client.connect("host", 22).catch(result => assert.deepEqual(result, { code: 120, message: "120 Ready in 5 hours"}));
+    });
 });
