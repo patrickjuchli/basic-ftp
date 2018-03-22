@@ -175,7 +175,7 @@ Errors originating from a connection or described by a server response as well a
 
 ### Timeout
 
-```js
+```
 {
     error: "Timeout control socket"
 }
@@ -184,7 +184,7 @@ Errors originating from a connection or described by a server response as well a
 
 ### Connection error
 
-```js
+```
 {
     error: [Error object by Node]
 }
@@ -192,7 +192,7 @@ Errors originating from a connection or described by a server response as well a
 
 ### FTP response
 
-```js
+```
 {
     code: [FTP error code],
     message: [Complete FTP response including code]
