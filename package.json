@@ -21,6 +21,9 @@
     "async",
     "await"
   ],
+  "engines": {
+    "node": ">=7.6.0"
+  },
   "devDependencies": {
     "eslint": "4.18.1",
     "mocha": "5.0.1"
