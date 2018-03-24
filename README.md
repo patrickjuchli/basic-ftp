@@ -169,6 +169,8 @@ For each transfer, the callback function will receive a name, the transfer type 
 
 In addition to that, there is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
+**Important:** Due to a bug in Node.js since version 9.7.0, the reported number of uploaded bytes might be incorrect. The issue has been confirmed and [is tracked by the Node.js project](https://github.com/nodejs/node/issues/19562).
+
 ## Error Handling
 
 Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise aka raise an exception. Use `try-catch` when using async-await or `catch()` when using Promises. The error will be described by an object depending on the type of error.
