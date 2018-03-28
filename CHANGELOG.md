@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.9.1
+
+- Mention regression in Node.js negatively affecting upload progress reporting.
+- Small fixes in documentation.
+
 ## 2.9.0
 
 - Added: Report transfer progress with client.trackProgress().
