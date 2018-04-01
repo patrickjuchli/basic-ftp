@@ -16,7 +16,7 @@ Node 7.6 or later is the only dependency.
 
 ## Introduction
 
-`Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. Be aware that the FTP protocol doesn't allow multiple requests in parallel.
+`Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. **Be aware that the FTP protocol doesn't allow multiple requests in parallel.**
 
 ```js
 const ftp = require("basic-ftp")
