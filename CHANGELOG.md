@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.9.2
+
+- Improved documentation of client methods.
+- Fixed: Reason for error when parsing PASV response was not reported.
+
 ## 2.9.1
 
 - Mention regression in Node.js negatively affecting upload progress reporting.
