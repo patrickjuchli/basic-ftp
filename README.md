@@ -6,9 +6,9 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, has a Pro
 
 ## Goals
 
-Provide a foundation that covers the usual needs.
+Provide a foundation that covers the basic needs.
 
-FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. Instead, the library should focus on being easy to read, tinker with and extend.
+FTP is an old legacy protocol. There are many features, quirks and server implementations. It's not a goal to support all of them. Instead, the library should focus on ways to let users add custom functionality.
 
 ## Dependencies
 
