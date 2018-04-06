@@ -165,7 +165,7 @@ await client.downloadDir("local/path")
 client.trackProgress()
 ```
 
-For each transfer, the callback function will receive the filename, transfer type (upload/download) and number of bytes transferred so far. The function will be called at a regular interval during a transfer.
+For each transfer, the callback function will receive the filename, transfer type (upload/download) and number of bytes transferred. The function will be called at a regular interval during a transfer.
 
 There is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
