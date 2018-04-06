@@ -8,7 +8,7 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, has a Pro
 
 Provide a foundation that covers the basic needs.
 
-FTP is an old legacy protocol. There are many features, quirks and server implementations. It's not a goal to support all of them. Instead, the library should focus on ways to let users add custom functionality.
+FTP is an old legacy protocol. There are many features, quirks and server implementations. It's not a goal to support all of them. Instead, the library should focus on ways to let the user extend functionality.
 
 ## Dependencies
 
@@ -48,7 +48,7 @@ await client.clearWorkingDir()
 await client.uploadDir("my/local/path")
 ```
 
-If you encounter a problem, it can be helpful to let the client log out all communication with the FTP server.
+If you encounter a problem, it can be helpful to log out all communication with the FTP server.
 
 ```js
 client.ftp.verbose = true
@@ -142,7 +142,7 @@ Report any transfer progress using the given handler function. See the next sect
 
 ## Transfer Progress
 
-You can set a callback function with `client.trackProgress` to track the progress of all uploads and downloads. To disable progress reporting, call `trackProgress` with an undefined handler.
+Set a callback function with `client.trackProgress` to track the progress of all uploads and downloads. To disable progress reporting, call `trackProgress` with an undefined handler.
 
 ```js
 // Log progress for any transfer from now on.
@@ -165,15 +165,15 @@ await client.downloadDir("local/path")
 client.trackProgress()
 ```
 
-For each transfer, the callback function will receive a name, the transfer type (upload/download) and the number of bytes transferred so far. The function will be called at a regular interval during a transfer.
+For each transfer, the callback function will receive the filename, transfer type (upload/download) and number of bytes transferred so far. The function will be called at a regular interval during a transfer.
 
-In addition to that, there is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
+There is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
-**Important:** Due to a bug in Node.js since version 9.7.0, the reported number of uploaded bytes might be too low. The issue has been confirmed and [is tracked by the Node.js project](https://github.com/nodejs/node/issues/19562).
+**Important:** Due to a bug in Node.js since version 9.7.0, the reported number of uploaded bytes might be too low. The issue has been confirmed and [is tracked by the Node.js project](https://github.com/nodejs/node/issues/19562). As soon as the fix landed in a release, this section will be updated.
 
 ## Error Handling
 
-Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise aka raise an exception. Use `try-catch` when using async-await or `catch()` when using Promises. The error will be described by an object depending on the type of error.
+Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. Use a try-catch-clause when using async-await or `catch()` when using Promises directly. The error description depends on the type of error.
 
 ### Timeout
 
@@ -204,7 +204,7 @@ Errors originating from a connection or described by a server response as well a
 
 ## Customize
 
-`Client` offers a number of extension points that allow you to change a detail and continue to use existing functionality like uploading a whole directory.
+The `Client` offers extension points that allow you to change a detail while still using existing functionality like uploading a whole directory.
 
 `get/set client.prepareTransfer` 
 
