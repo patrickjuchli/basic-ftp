@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.10.0
+
+- Added: Resolve simple NAT issues with PASV.
+- Added: Log socket encryption right before login.
+- Fixed: Remove obsolete socket connection error listener.
+
 ## 2.9.2
 
 - Improved documentation of client methods.
