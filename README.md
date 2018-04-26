@@ -24,10 +24,13 @@ const ftp = require("basic-ftp")
 async function example() {
     const client = new ftp.Client()
     try {
-        await client.connect("192.168.0.10", 21)
-        await client.useTLS()
-        await client.login("very", "password")
-        await client.useDefaultSettings()
+        await client.access({
+            host: "192.168.0.10",
+            port: 21,
+            user: "very"
+            password: "password",
+            secure: true
+        })
         console.log(await client.list())
         await client.upload(fs.createReadStream("README.md"), "README.md")
     }
@@ -79,6 +82,17 @@ Login with a username and a password.
 `useDefaultSettings(): Promise<Response>`
 
 Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. It's recommended that you call this method after upgrading to TLS and logging in.
+
+`access(options): Promise<Response>`
+
+Convenience method to get access to an FTP server. This method calls `connect`, `useTLS`, `login` and `useDefaultSettings`. The available options are:
+
+- `host`: Host to connect to
+- `port`: Port to connect to
+- `user`: Username for login
+- `password`: Password for login
+- `secure`: Use explicit FTPS over TLS
+- `secureOptions`: Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
 
 `features(): Promise<Map<string, string>>`
 
