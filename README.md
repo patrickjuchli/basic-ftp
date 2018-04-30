@@ -24,7 +24,6 @@ async function example() {
     try {
         await client.access({
             host: "192.168.0.10",
-            port: 21,
             user: "very"
             password: "password",
             secure: true
