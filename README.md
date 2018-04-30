@@ -176,7 +176,7 @@ client.trackProgress(info => {
 await client.upload(someStream, "test.txt")
 await client.upload(someOtherStream, "test2.txt")
 
-// Set a new callback function which resets the overall counter
+// Set a new callback function which also resets the overall counter
 client.trackProgress(info => console.log(info.bytesOverall))
 await client.downloadDir("local/path")
 
