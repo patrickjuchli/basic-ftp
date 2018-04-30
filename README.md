@@ -6,9 +6,7 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, has a Pro
 
 ## Goals
 
-Provide a foundation that covers the basic needs.
-
-FTP is an old legacy protocol. There are many features, quirks and server implementations. It's not a goal to support all of them. Instead, the library should focus on ways to let the user extend functionality.
+Provide a foundation that covers the basic needs. FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them.
 
 ## Dependencies
 
@@ -16,7 +14,7 @@ Node 7.6 or later is the only dependency.
 
 ## Introduction
 
-`Client` provides an API to interact with an FTP server. The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. **Be aware that the FTP protocol doesn't allow multiple requests in parallel.**
+The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. Be aware that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
 const ftp = require("basic-ftp")
@@ -43,7 +41,7 @@ async function example() {
 example()
 ```
 
-You can also work with directories and their content. The next example makes sure a remote path exists, creating all intermediate directories as necessary. It makes sure the target directory is empty and uploads the contents of a local one.
+The next example shows how to work with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. We then remove any existing directories or files from it and upload the contents of a local one.
 
 ```js
 await client.ensureDir("my/remote/path")
@@ -67,11 +65,13 @@ Create a client instance using an optional timeout in milliseconds that will be 
 
 Close all socket connections.
 
-`connect(host, port = 21): Promise<Response>`
+---
+
+`connect(host = localhost, port = 21): Promise<Response>`
 
 Connect to an FTP server.
 
-`useTLS(options = undefined): Promise<Response>`
+`useTLS([options]): Promise<Response>`
 
 Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS reusing the session negotiated by the control connection.
 
@@ -94,6 +94,8 @@ Convenience method to get access to an FTP server. This method calls `connect`, 
 - `secure`: Use explicit FTPS over TLS
 - `secureOptions`: Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
 
+---
+
 `features(): Promise<Map<string, string>>`
 
 Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
@@ -101,10 +103,6 @@ Get a description of supported features. This will return a Map where keys corre
 `send(command, ignoreErrorCodes = false): Promise<Response>`
 
 Send an FTP command. You can choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still reject the Promise returned.
-
-`size(filename): Promise<number>`
-
-Get the size of a file in the working directory.
 
 `cd(remotePath): Promise<Response>`
 
@@ -118,6 +116,10 @@ Get the path of the current working directory.
 
 List files and directories in the current working directory. Currently, this library only supports Unix- and DOS-style directory listings.
 
+`size(filename): Promise<number>`
+
+Get the size of a file in the working directory.
+
 `remove(filename, ignoreErrorCodes = false): Promise<Response>`
 
 Remove a file from the working directory.
@@ -129,6 +131,12 @@ Upload data from a readable stream and store it as a file with a given filename 
 `download(writableStream, remoteFilename, startAt = 0): Promise<Response>`
 
 Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
+
+---
+
+`ensureDir(remoteDirPath): Promise<void>`
+
+Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary. The working directory is at `remoteDirPath` after calling this method.
 
 `clearWorkingDir(): Promise<void>`
 
@@ -146,9 +154,7 @@ Upload all files and directories of a local directory to the current working dir
 
 Download all files and directories of the current working directory to a given local directory.
 
-`ensureDir(remoteDirPath): Promise<void>`
-
-Make sure that the given `remoteDirPath` exists on the server, creating all directories as necessary. The working directory is at `remoteDirPath` after calling this method.
+---
 
 `trackProgress(handler)`
 
@@ -171,7 +177,7 @@ client.trackProgress(info => {
 await client.upload(someStream, "test.txt")
 await client.upload(someOtherStream, "test2.txt")
 
-// Reset overall counter
+// Set a new callback function which resets the overall counter
 client.trackProgress(info => console.log(info.bytesOverall))
 await client.downloadDir("local/path")
 
