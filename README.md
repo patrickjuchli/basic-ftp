@@ -84,7 +84,7 @@ Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If T
 
 `access(options): Promise<Response>`
 
-Convenience method to get access to an FTP server. This method calls *connect*, *useTLS*, *login* and *useDefaultSettings*. The available options are:
+Convenience method to get access to an FTP server. This method calls *connect*, *useTLS*, *login* and *useDefaultSettings*. It returns the response of the initial connect command. The available options are:
 
 - `host`: Host to connect to
 - `port`: Port to connect to
