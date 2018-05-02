@@ -43,9 +43,9 @@ example()
 The next example shows how to work with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. We then remove any existing directories or files from it and upload the contents of a local one.
 
 ```js
-await client.ensureDir("my/remote/path")
+await client.ensureDir("my/remote/directory")
 await client.clearWorkingDir()
-await client.uploadDir("my/local/path")
+await client.uploadDir("my/local/directory")
 ```
 
 If you encounter a problem, it can be helpful to log out all communication with the FTP server.
