@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.11.0
+
+- Added: Convenience method `client.access` to simplify access to an FTP(S) server.
+- Updated API documentation.
+- Stop using Yarn for internal dev-dependencies.
+
 ## 2.10.0
 
 - Added: Resolve simple NAT issues with PASV.
