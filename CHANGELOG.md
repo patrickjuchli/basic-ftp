@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.12.0
+
+- Added: Support IPv6 for passive mode (EPSV).
+- Added: Detect automatically whether to use EPSV or PASV.
+- Added: Log server IP when connected.
+
 ## 2.11.0
 
 - Added: Convenience method `client.access` to simplify access to an FTP(S) server.
