@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for Node.js. It supports explicit FTPS over TLS, has a Promise-based API and offers methods to operate on whole directories.
+This is an FTP client for Node.js. It supports explicit FTPS over TLS, IPv6, has a Promise-based API, and offers methods to operate on whole directories.
 
 ## Goals
 
@@ -23,7 +23,7 @@ async function example() {
     const client = new ftp.Client()
     try {
         await client.access({
-            host: "192.168.0.10",
+            host: "myftpserver.com",
             user: "very"
             password: "password",
             secure: true
@@ -225,7 +225,7 @@ The `Client` offers extension points that allow you to change a detail while sti
 
 `get/set client.prepareTransfer` 
 
-FTP creates a socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Currently, this library only offers Passive Mode over IPv4, but this extension point makes support for Active Mode or IPv6 possible. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
+FTP creates a socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Currently, this library offers Passive Mode over IPv4 (PASV) and IPv6 (EPSV) but this extension point makes support for Active Mode possible. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
 
 `get/set client.parseList`
 

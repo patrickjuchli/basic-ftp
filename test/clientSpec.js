@@ -25,7 +25,7 @@ describe("Convenience API", function() {
 
     beforeEach(function() {
         client = new Client();
-        client.prepareTransfer = () => {}; // Don't change
+        client.prepareTransfer = () => Promise.resolve(); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
     });
@@ -149,9 +149,9 @@ describe("Convenience API", function() {
     });
 
     it("can connect", function() {
-        client.ftp.socket.connect = (port, host) => {
-            assert.equal(host, "host", "Socket host");
-            assert.equal(port, 22, "Socket port");
+        client.ftp.socket.connect = (options) => {
+            assert.equal(options.host, "host");
+            assert.equal(options.port, 22, "Socket port");
             setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 OK")));
         }
         return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));

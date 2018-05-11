@@ -9,7 +9,7 @@ const SocketMock = require("./SocketMock");
  */
 describe("Download directory listing", function() {
     this.timeout(100);
-    
+    var f;
     const bufList = Buffer.from("12-05-96  05:03PM       <DIR>          myDir");
     const expList = [
         (f = new FileInfo("myDir"), 
@@ -22,8 +22,9 @@ describe("Download directory listing", function() {
     let client;
     beforeEach(function() {
         client = new Client();
-        client.prepareTransfer = ftp => {
-            ftp.dataSocket = new SocketMock();
+        client.prepareTransfer = client => {
+            client.ftp.dataSocket = new SocketMock();
+            return Promise.resolve();
         };
         client.ftp.socket = new SocketMock();
     });
