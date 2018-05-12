@@ -18,6 +18,9 @@ The following example shows how to connect, upgrade to TLS, login, get a directo
 
 ```js
 const ftp = require("basic-ftp")
+const fs = require("fs")
+
+example()
 
 async function example() {
     const client = new ftp.Client()
@@ -36,8 +39,6 @@ async function example() {
     }
     client.close()
 }
-
-example()
 ```
 
 The next example shows how to work with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. We then remove any existing directories or files from it and upload the contents of a local one.
