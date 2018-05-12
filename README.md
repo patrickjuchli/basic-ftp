@@ -17,8 +17,8 @@ Node 7.6 or later is the only dependency.
 The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. Be aware that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
-const ftp = require("basic-ftp")
 const fs = require("fs")
+const ftp = require("basic-ftp")
 
 example()
 
