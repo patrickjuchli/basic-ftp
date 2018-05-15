@@ -20,7 +20,8 @@
     "promise",
     "async",
     "await",
-    "tls"
+    "tls",
+    "ipv6"
   ],
   "engines": {
     "node": ">=7.6.0"
