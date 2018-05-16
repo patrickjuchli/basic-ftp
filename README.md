@@ -4,10 +4,6 @@
 
 This is an FTP client for Node.js. It supports explicit FTPS over TLS, IPv6, has a Promise-based API, and offers methods to operate on whole directories.
 
-## Goals
-
-Provide a foundation that covers the basic needs. FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them.
-
 ## Dependencies
 
 Node 7.6 or later is the only dependency.

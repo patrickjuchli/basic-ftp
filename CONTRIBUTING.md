@@ -2,7 +2,7 @@
 
 Contributions are welcome!
 
-Please keep in mind that this project has specific [goals and non-goals](README.md). There are many features one could add to an FTP library. The main feature of this one is being easy to compose and extend while the API should stay small.
+This library has specific goals. FTP is an old protocol, there are many features, quirks and server implementations. It's not a goal to support all of them. It should provide a foundation that covers the basic needs.
 
 ## Testing
 
