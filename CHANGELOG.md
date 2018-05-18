@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.1
+
+- Fixed: Don't prefer IPv6 by default.
+
 ## 2.12.0
 
 - Added: Support IPv6 for passive mode (EPSV).
