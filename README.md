@@ -10,10 +10,9 @@ Node 7.6 or later is the only dependency.
 
 ## Introduction
 
-The following example shows how to connect, upgrade to TLS, login, get a directory listing and upload a file. Note that the FTP protocol doesn't allow multiple requests running in parallel.
+The following example will connect to a server, upgrade to TLS, login, get a directory listing, and upload a file. Note that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
-const fs = require("fs")
 const ftp = require("basic-ftp")
 
 example()
@@ -37,7 +36,7 @@ async function example() {
 }
 ```
 
-The next example shows how to work with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. We then remove any existing directories or files from it and upload the contents of a local one.
+The next example shows how to work with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. Then, we remove any existing directories and files from it and upload the contents of a local one.
 
 ```js
 await client.ensureDir("my/remote/directory")
