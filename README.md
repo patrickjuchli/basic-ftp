@@ -63,9 +63,24 @@ Close all socket connections.
 
 ---
 
+`access(options): Promise<Response>`
+
+Convenience method to get access to an FTP server. This method calls *connect*, *useTLS*, *login* and *useDefaultSettings* described below. It returns the response of the initial connect command. The available options are:
+
+- `host`: Host to connect to
+- `port`: Port to connect to
+- `user`: Username for login
+- `password`: Password for login
+- `secure`: Use explicit FTPS over TLS
+- `secureOptions`: Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
+
+---
+
+The following setup methods are for advanced users who want to customize an aspect of accessing an FTP server. If you use *client.access* you won't need them.
+
 `connect(host = localhost, port = 21): Promise<Response>`
 
-Connect to an FTP server.
+ Connect to an FTP server.
 
 `useTLS([options]): Promise<Response>`
 
@@ -78,17 +93,6 @@ Login with a username and a password.
 `useDefaultSettings(): Promise<Response>`
 
 Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. It's recommended that you call this method after upgrading to TLS and logging in.
-
-`access(options): Promise<Response>`
-
-Convenience method to get access to an FTP server. This method calls *connect*, *useTLS*, *login* and *useDefaultSettings*. It returns the response of the initial connect command. The available options are:
-
-- `host`: Host to connect to
-- `port`: Port to connect to
-- `user`: Username for login
-- `password`: Password for login
-- `secure`: Use explicit FTPS over TLS
-- `secureOptions`: Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
 
 ---
 
@@ -241,14 +245,6 @@ The `Client` described above is just a collection of convenience functions using
 
 Set the verbosity level to optionally log out all communication between the client and the server.
 
-`get/set socket`
-
-Get or set the socket for the control connection. When setting a new socket the current one will *not* be closed because you might be just upgrading the control socket. All listeners will be removed, though.
-
-`get/set dataSocket`
-
-Get or set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
-
 `get/set encoding`
 
 Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Node supports `utf8`, `latin1` and `ascii`. Default is `utf8` because it's backwards-compatible with `ascii` and many modern servers support it, some of them without mentioning it when requesting features. You can change this setting at any time.
@@ -256,6 +252,14 @@ Get or set the encoding applied to all incoming and outgoing messages of the con
 `get/set ipFamily`
 
 Set the preferred version of the IP stack: `4` (IPv4), `6` (IPv6) or `undefined` (Node.js default). Set to `undefined` by default.
+
+`get/set socket`
+
+Get or set the socket for the control connection. When setting a new socket the current one will *not* be closed because you might be just upgrading the control socket. All listeners will be removed, though.
+
+`get/set dataSocket`
+
+Get or set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
 
 `handle(command, handler): Promise<Response>`
 
