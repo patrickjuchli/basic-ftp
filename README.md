@@ -14,7 +14,7 @@ The following example will connect to a server, upgrade to TLS, login, get a dir
 
 ```js
 const ftp = require("basic-ftp")
-const fs = require("fs");
+const fs = require("fs")
 
 example()
 
