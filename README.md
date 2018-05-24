@@ -14,6 +14,7 @@ The following example will connect to a server, upgrade to TLS, login, get a dir
 
 ```js
 const ftp = require("basic-ftp")
+const fs = require("fs");
 
 example()
 
@@ -22,7 +23,7 @@ async function example() {
     try {
         await client.access({
             host: "myftpserver.com",
-            user: "very"
+            user: "very",
             password: "password",
             secure: true
         })
