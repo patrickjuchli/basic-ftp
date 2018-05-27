@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.3
+
+- Minor changes to documentation.
+
 ## 2.12.2
 
 - Fixed: Don't deny EPSV over IPv4. This can help in some circumstances with a NAT.
