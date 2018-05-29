@@ -6,7 +6,7 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, Passive M
 
 ## Dependencies
 
-Node 7.6 or later is the only dependency.
+Node 8.0 or later is the only dependency.
 
 ## Introduction
 
