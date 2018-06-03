@@ -120,6 +120,10 @@ List files and directories in the current working directory. Currently, this lib
 
 Get the size of a file in the working directory.
 
+`rename(path, newPath): Promise<Response>`
+
+Rename a file. Depending on the server you may also use this to move a file to another directory by providing full paths.
+
 `remove(filename, ignoreErrorCodes = false): Promise<Response>`
 
 Remove a file from the working directory.
