@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.13.0
+
+- Added: Use client.rename() to rename or move a file.
+- Changed: Default timeout set to 30 seconds.
+- Changed: Timeouts are tracked exlusively by data connection during transfer.
+- Fixed: Node's socket.removeAllListeners() doesn't work, see https://github.com/nodejs/node/issues/20923
+- Fixed: Node 8 is required, correct documentation and CI.
+
 ## 2.12.3
 
 - Minor changes to documentation.
