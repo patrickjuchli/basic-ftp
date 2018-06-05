@@ -53,9 +53,9 @@ client.ftp.verbose = true
 
 ## Client API
 
-`new Client(timeout = 0)`
+`new Client(timeout = 30000)`
 
-Create a client instance using an optional timeout in milliseconds that will be used for control and data connections. Use 0 to disable timeouts.
+Create a client instance using an optional timeout in milliseconds that will be used for control and data connections. Use 0 to disable timeouts, default is 30 seconds.
 
 `close()`
 
