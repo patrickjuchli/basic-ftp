@@ -33,7 +33,7 @@ describe("FTPContext", function() {
 
     it("Relays control socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: "Timeout control socket" });
+            assert.deepEqual(res, { error: "Timeout control connection" });
             done();
         });
         ftp.socket.emit("timeout");
@@ -49,7 +49,7 @@ describe("FTPContext", function() {
 
     it("Relays data socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: "Timeout data socket" });
+            assert.deepEqual(res, { error: "Timeout data connection" });
             done();
         });
         ftp.dataSocket.emit("timeout");
