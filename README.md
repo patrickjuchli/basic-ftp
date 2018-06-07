@@ -195,7 +195,7 @@ There is also a counter for all bytes transferred since the last time `trackProg
 
 ## Timeout & Error Handling
 
-Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. The client fails completely after such an exception and closes any connection. You have to instantiate a new client and reconnect.
+Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. If the client fails because of a connection error or timeout, it fails completely and closes any connection. You have to instantiate a new client and reconnect. This is not the case with errors reported by an FTP response.
 
 Here are examples for the 3 different types of error messages you'll receive:
 
