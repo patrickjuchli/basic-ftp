@@ -193,7 +193,7 @@ For each transfer, the callback function will receive the filename, transfer typ
 
 There is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
-## Timeout & Error Handling
+## Errors and Timeouts
 
 Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. If the client fails because of a connection error or timeout, it fails completely and closes any connection. You have to instantiate a new client and reconnect. This is not the case with errors reported by an FTP response.
 
