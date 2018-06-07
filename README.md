@@ -193,26 +193,11 @@ For each transfer, the callback function will receive the filename, transfer typ
 
 There is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
-## Error Handling
+## Timeout & Error Handling
 
-Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. Use a try-catch-clause when using async-await or `catch()` when using Promises directly. The error description depends on the type of error.
+Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. The client fails completely after such an exception. You have to instantiate a new client and reconnect.
 
-### Timeout
-
-```
-{
-    error: "Timeout control socket"
-}
-```
-
-
-### Connection error
-
-```
-{
-    error: [Error object by Node]
-}
-```
+Here are examples for the 3 different types of error messages you'll receive:
 
 ### FTP response
 
@@ -223,6 +208,21 @@ Errors originating from a connection or described by a server response as well a
 }
 ```
 
+### Timeout
+
+```
+{
+    error: "Timeout control socket"
+}
+```
+
+### Connection error or else
+
+```
+{
+    error: [Error object by Node]
+}
+```
 
 ## Customize
 
