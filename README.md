@@ -37,7 +37,7 @@ async function example() {
 }
 ```
 
-The next example deals with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. Then, we make sure its empty and upload the contents of a local directory.
+The next example deals with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. Then, we make sure it's empty and upload the contents of a local directory.
 
 ```js
 await client.ensureDir("my/remote/directory")
