@@ -10,7 +10,7 @@ Node 8.0 or later is the only dependency.
 
 ## Introduction
 
-The following example will connect to a server, upgrade to TLS, login, get a directory listing, and upload a file. Note that the FTP protocol doesn't allow multiple requests running in parallel.
+The first example will connect to an FTP server using TLS, get a directory listing, and upload a file. Note that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
 const ftp = require("basic-ftp")
@@ -37,7 +37,7 @@ async function example() {
 }
 ```
 
-The next example shows how to work with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. Then, we remove any existing directories and files from it and upload the contents of a local one.
+The next example deals with directories and their content. First, we make sure a remote path exists, creating all directories as necessary. Then, we make sure its empty and upload the contents of a local directory.
 
 ```js
 await client.ensureDir("my/remote/directory")
@@ -45,7 +45,7 @@ await client.clearWorkingDir()
 await client.uploadDir("my/local/directory")
 ```
 
-If you encounter a problem, it can be helpful to log out all communication with the FTP server.
+If you encounter a problem, it may help to log out all communication with the FTP server.
 
 ```js
 client.ftp.verbose = true
@@ -55,13 +55,11 @@ client.ftp.verbose = true
 
 `new Client(timeout = 30000)`
 
-Create a client instance using an optional timeout in milliseconds that will be used for control and data connections. Use 0 to disable timeouts, default is 30 seconds.
+Create a client instance using a timeout in milliseconds that will be used for control and data connections. Use 0 to disable timeouts, default is 30 seconds.
 
 `close()`
 
 Close all socket connections.
-
----
 
 `access(options): Promise<Response>`
 
@@ -195,7 +193,9 @@ There is also a counter for all bytes transferred since the last time `trackProg
 
 ## Errors and Timeouts
 
-Errors originating from a connection or described by a server response as well as timeouts will reject the associated Promise. If the client fails because of a connection error or timeout, it fails completely and closes any connection. You have to instantiate a new client and reconnect. This is not the case with errors reported by an FTP response.
+Errors reported by the FTP server will throw an exception. The connection to the FTP server stays intact and can still be used.
+
+A timeout, connection or any other error will throw an exception as well but also close any connection to the FTP server. You have to instantiate a new client and reconnect to resume any operation.
 
 Here are examples for the 3 different types of error messages you'll receive:
 
