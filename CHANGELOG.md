@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.13.1
+
+- Fixed: Exception thrown if tasks will run in parallel because the user forget to use 'await'.
+- Fixed: Describe in documentation what exactly happens if there is a timeout.
+
 ## 2.13.0
 
 - Added: Use client.rename() to rename or move a file.
