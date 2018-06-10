@@ -4,6 +4,10 @@
 
 This is an FTP client for Node.js. It supports explicit FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories.
 
+## Advisory
+
+Prefer alternative transfer protocols like SFTP if you can. Use this library when you have no choice and need to use FTP. Try to use FTPS whenever possible, FTP alone does not encrypt your data.
+
 ## Dependencies
 
 Node 8.0 or later is the only dependency.
