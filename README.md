@@ -69,10 +69,10 @@ Close all socket connections.
 
 Convenience method to get access to an FTP server. This method calls *connect*, *useTLS*, *login* and *useDefaultSettings* described below. It returns the response of the initial connect command. The available options are:
 
-- `host (string)`: Host to connect to
-- `port (number)`: Port to connect to
-- `user (string)`: Username for login
-- `password (string)`: Password for login
+- `host (string)`: Server host
+- `port (number)`: Server port
+- `user (string)`: Username
+- `password (string)`: Password
 - `secure (boolean)`: Use explicit FTPS over TLS
 - `secureOptions`: Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
 
