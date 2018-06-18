@@ -67,7 +67,7 @@ Close all socket connections.
 
 `access(options): Promise<Response>`
 
-Convenience method to get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. The available options are:
+Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. The available options are:
 
 - `host (string)` Server host, default: localhost
 - `port (number)` Server port, default: 21
