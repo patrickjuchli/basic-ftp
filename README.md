@@ -67,34 +67,14 @@ Close all socket connections.
 
 `access(options): Promise<Response>`
 
-Convenience method to get access to an FTP server. This method calls *connect*, *useTLS*, *login* and *useDefaultSettings* described below. It returns the response of the initial connect command. The available options are:
+Convenience method to get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. The available options are:
 
-- `host (string)`: Server host
-- `port (number)`: Server port
-- `user (string)`: Username
-- `password (string)`: Password
-- `secure (boolean)`: Use explicit FTPS over TLS
-- `secureOptions`: Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
-
----
-
-The following setup methods are for advanced users who want to customize an aspect of accessing an FTP server. If you use *client.access* you won't need them.
-
-`connect(host = "localhost", port = 21): Promise<Response>`
-
- Connect to an FTP server.
-
-`useTLS([options]): Promise<Response>`
-
-Upgrade the existing control connection with TLS. You may provide options that are the same you'd use for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node. Remember to upgrade before you log in. Subsequently created data connections will automatically be upgraded to TLS reusing the session negotiated by the control connection.
-
-`login(user = "anonymous", password = "guest"): Promise<Response>`
-
-Login with a username and a password.
-
-`useDefaultSettings(): Promise<Response>`
-
-Sends FTP commands to use binary mode (TYPE I) and file structure (STRU F). If TLS is enabled it will also send PBSZ 0 and PROT P. It's recommended that you call this method after upgrading to TLS and logging in.
+- `host (string)` Server host, default: localhost
+- `port (number)` Server port, default: 21
+- `user (string)` Username, default: anonymous
+- `password (string)` Password, default: guest
+- `secure (boolean)` Explicit FTPS over TLS, default: false
+- `secureOptions` Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
 
 ---
 
