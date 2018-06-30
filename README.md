@@ -208,26 +208,22 @@ Here are examples for the 3 different types of error messages you'll receive:
 }
 ```
 
-## Customize
+## Extend
 
-The `Client` offers extension points that allow you to change a detail while still using existing functionality like uploading a whole directory.
+### Custom strategies
 
-`get/set client.prepareTransfer` 
+`get/set client.prepareTransfer`
 
-FTP creates a socket connection for each single data transfer. Data transfers include directory listings, file uploads and downloads. This property holds the function that prepares this connection. Currently, this library offers Passive Mode over IPv4 (PASV) and IPv6 (EPSV) but this extension point makes support for Active Mode possible. The signature of the function is `(ftp: FTPContext) => Promise<void>` and its job is to set `ftp.dataSocket`. The section below about extending functionality explains what `FTPContext` is.
+Provide a function that initializes a data connection. FTP uses a dedicated socket connection for each file upload, download and directory listing. This library supports two strategies: Passive Mode over IPv4 (PASV) and IPv6 (EPSV). Active Mode is not supported but could be added using this extension point. The signature of the function is `(client: Client) => Promise<void>` and its job is to set `client.ftp.dataSocket`.
 
 `get/set client.parseList`
 
-You can provide a custom parser to parse directory listing data. This library supports Unix and DOS formats out-of-the-box. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`. `FileInfo` is also exported by the library.
+Provide a function to parse directory listing data. This library supports Unix and DOS formats. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`.
 
 
-## Extend
+### FTPContext
 
-You can use `client.send` to send any FTP command and get its result. This might not be good enough, though. FTP can return multiple responses after a command and a simple command-response pattern won't work. You might also want to have access to sockets.
-
-The `Client` described above is just a collection of convenience functions using an underlying `FTPContext`. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides an API to handle responses and events in a simplified way. Through `client.ftp` you get access to this context.
-
-### FTPContext API
+The Client API described so far is implemented using an FTPContext. An FTPContext provides the foundation to write an FTP client. It holds the socket connections and provides an API to handle responses and events in a simplified way. Through `client.ftp` you get access to this context.
 
 `get/set verbose`
 
@@ -235,7 +231,7 @@ Set the verbosity level to optionally log out all communication between the clie
 
 `get/set encoding`
 
-Get or set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Node supports `utf8`, `latin1` and `ascii`. Default is `utf8` because it's backwards-compatible with `ascii` and many modern servers support it, some of them without mentioning it when requesting features. You can change this setting at any time.
+Set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Node supports `utf8`, `latin1` and `ascii`. Default is `utf8` because it's backwards-compatible with `ascii` and many modern servers support it, some of them without mentioning it when requesting features.
 
 `get/set ipFamily`
 
@@ -243,11 +239,11 @@ Set the preferred version of the IP stack: `4` (IPv4), `6` (IPv6) or `undefined`
 
 `get/set socket`
 
-Get or set the socket for the control connection. When setting a new socket the current one will *not* be closed because you might be just upgrading the control socket. All listeners will be removed, though.
+Set the socket for the control connection. When setting a new socket the current one will *not* be closed because you might be just upgrading the control socket. All listeners will be removed, though.
 
 `get/set dataSocket`
 
-Get or set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
+Set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
 
 `handle(command, handler): Promise<Response>`
 
@@ -261,7 +257,7 @@ Send an FTP command without waiting for or handling the response.
 
 Log a message if the client is set to be `verbose`.
 
-### Example
+### Using FTPContext
 
 The best source of examples is the implementation of the `Client` itself as it's using the same single pattern you will use. The code below shows a simplified file upload. Let's assume a transfer connection has already been established.
 
