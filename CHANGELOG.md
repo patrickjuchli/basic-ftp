@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.13.2
+
+- Various improvements to documentation.
+
 ## 2.13.1
 
 - Fixed: Exception thrown if tasks will run in parallel because the user forget to use 'await'.
