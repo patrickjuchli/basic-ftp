@@ -208,7 +208,7 @@ Here are examples for the 3 different types of error messages you'll receive:
 }
 ```
 
-## Extend
+## Extending the library
 
 ### Custom strategies
 
