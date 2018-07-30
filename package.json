@@ -1,5 +1,5 @@
 {
-  "name": "basic-ftp",
+  "name": "@ownzones/basic-ftp",
   "version": "2.13.2",
   "description": "FTP client for Node.js with support for explicit FTPS over TLS.",
   "main": "./lib/ftp",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/patrickjuchli/basic-ftp.git"
+    "url": "https://github.com/OwnZones/basic-ftp.git"
   },
   "author": "Patrick Juchli <patrickjuchli@gmail.com>",
   "license": "MIT",
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "eslint": "5.0.1",
-    "mocha": "5.2.0"
+    "mocha": "5.2.0",
+    "publish": "^0.6.0"
   }
 }

@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8.9.1
+    steps:
+      - checkout
+
+      - run:
+          name: Configure NPM token
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
+
+      - restore_cache:
+          keys:
+            - npm-cache-{{ .Branch }}-{{ checksum "package.json" }}
+
+      - run:
+          name: Install dependencies
+          command: npm install -s
+
+      - save_cache:
+          key: npm-cache-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+
+      - run: npm run test
+
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              node_modules/publish/bin/publish.js
+            fi
