@@ -6,7 +6,9 @@ jobs:
     steps:
       - checkout
 
-      - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
+      - run:
+          name: Configure NPM token
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
 
       - restore_cache:
           keys:
@@ -22,3 +24,9 @@ jobs:
             - node_modules
 
       - run: npm run test
+
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              node_modules/publish/bin/publish.js
+            fi
