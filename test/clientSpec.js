@@ -96,7 +96,7 @@ describe("Convenience API", function() {
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: undefined,
-            result: new MockError({ error: { info: "SocketError" } })
+            result: new MockError({ error: { info: "SocketError", ftpSocket: "control" } })
         },
         {
             name: "can get the working directory",

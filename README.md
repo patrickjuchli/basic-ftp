@@ -182,30 +182,46 @@ Errors reported by the FTP server will throw an exception. The connection to the
 
 This is different with a timeout or connection error: In addition to an exception being thrown, any connection to the FTP server will be closed. You have to instantiate a new client and reconnect to resume any operation.
 
-Here are examples for the 3 different types of error messages you'll receive:
+Here are examples for the different types of error messages you'll receive:
 
-### FTP response
+### FTP error response
 
-```
+FTP response messages that have been interpreted as errors will throw an exception that holds an object describing the response message and the FTP response code.
+
+```js
 {
-    code: [FTP error code],
-    message: [Complete FTP response including code]
+    code: 530, // FTP response code
+    message: '530 Login failed.' // Complete FTP response message including code
 }
 ```
 
-### Timeout
+### Timeouts
 
-```
+The following format will be encountered for timeouts or closed connections due to transmission error.
+
+```js
 {
-    error: "Timeout control socket"
+    error: {
+        info: 'socket timeout', // Error type
+        ftpSocket: 'data' // Responsible socket, 'data' or 'control'.
+    }
 }
 ```
 
-### Connection error or else
+### General connection or other errors
 
-```
+Error objects from Node.js also have an additional field `ftpSocket` that says which socket was responsible for the error. There are two identifiers: `control` for control connections and `data` for data connections. 
+
+```js
 {
-    error: [Error object by Node]
+    error: {
+        errno: 'ENETUNREACH', // Typical Node.js error object…
+        code: 'ENETUNREACH',
+        syscall: 'connect',
+        address: '192.168.1.123',
+        port: 21
+        ftpSocket: 'control' // Responsible socket
+    }
 }
 ```
 

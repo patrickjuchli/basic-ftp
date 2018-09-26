@@ -33,7 +33,7 @@ describe("FTPContext", function() {
 
     it("Relays control socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: "Timeout control connection" });
+            assert.deepEqual(res, { error: { info: "socket timeout", ftpSocket: "control" }});
             done();
         });
         ftp.socket.emit("timeout");
@@ -41,7 +41,7 @@ describe("FTPContext", function() {
 
     it("Relays control socket error event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: { foo: "bar" } });
+            assert.deepEqual(res, { error: { foo: "bar", ftpSocket: "control" } });
             done();
         });
         ftp.socket.emit("error", { foo: "bar" });
@@ -49,7 +49,7 @@ describe("FTPContext", function() {
 
     it("Relays data socket timeout event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: "Timeout data connection" });
+            assert.deepEqual(res, { error: { info: "socket timeout", ftpSocket: "data" }});
             done();
         });
         ftp.dataSocket.emit("timeout");
@@ -57,7 +57,7 @@ describe("FTPContext", function() {
 
     it("Relays data socket error event", function(done) {
         ftp.handle(undefined, (res, task) => {
-            assert.deepEqual(res, { error: { foo: "bar" } });
+            assert.deepEqual(res, { error: { foo: "bar", ftpSocket: "data" } });
             done();
         });
         ftp.dataSocket.emit("error", { foo: "bar" });
