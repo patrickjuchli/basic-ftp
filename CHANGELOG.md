@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.14.0
+
+- Improved error handling and reporting.
+
 ## 2.13.2
 
 - Various improvements to documentation.
