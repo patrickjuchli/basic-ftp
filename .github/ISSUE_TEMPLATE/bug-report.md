@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Standard form
+about: Use this template if you want to report a bug.
 
 ---
 
