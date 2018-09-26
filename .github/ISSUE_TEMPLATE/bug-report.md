@@ -5,10 +5,10 @@ about: Standard form
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is and why you think the library is responsible for it.
+A clear and concise description of what the bug is. Did you rule out network issues or problems specific to the FTP server you are using?
 
 **Example code**
-The shortest possible, standalone code example that shows the issue. Don't paste a couple of lines of your larger code-base. It makes it difficult to rule out issues in other parts of your code.
+The shortest possible, standalone code example that shows the issue. Please don't just copy-paste some lines from your project. It makes it difficult to rule out issues in other parts of your code.
 
 **Console output**
 Use `client.ftp.verbose = true` to log every communication detail. Copy-paste the output of your console here. Make sure to redact IPs, URLs or passwords.
