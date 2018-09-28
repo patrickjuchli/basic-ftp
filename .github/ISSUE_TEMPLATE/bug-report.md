@@ -5,10 +5,10 @@ about: Use this template if you want to report a bug.
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is. Did you rule out network issues or problems specific to the FTP server you are using?
+A clear and concise description of what the bug is. Did you rule out network issues? Do you encounter the same issue when using another FTP server?
 
 **Example code**
-The shortest possible, standalone code example that shows the issue. Please don't just copy-paste some lines from your project. It makes it difficult to rule out issues in other parts of your code.
+A short and standalone code example that demonstrates the issue. Don't copy-paste a few lines from your project, it makes it difficult to rule out issues in other parts of your code.
 
 **Console output**
 Use `client.ftp.verbose = true` to log every communication detail. Copy-paste the output of your console here. Make sure to redact IPs, URLs or passwords.
