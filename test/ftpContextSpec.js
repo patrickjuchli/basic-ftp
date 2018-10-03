@@ -129,10 +129,11 @@ describe("FTPContext", function() {
         ftp.send("HELLO 直己");
     });
 
-    it("destroys sockets when closing", function() {
+    it("creates a new control socket when closing", function() {
+        const oldSocket = ftp.socket;
         ftp.close();
-        assert(ftp.socket.destroyed, "Control socket");
-        assert(ftp.dataSocket.destroyed, "Data socket");
+        assert.notEqual(ftp.socket, oldSocket, "Control socket");
+        assert.equal(ftp.dataSocket, undefined, "Data socket");
     });
 
     it("reports whether socket has TLS", function() {
