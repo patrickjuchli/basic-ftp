@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.14.1
+
+- Make it possible to reconnect after closing the FTP context.
+
 ## 2.14.0
 
 - Improved error handling and reporting.
