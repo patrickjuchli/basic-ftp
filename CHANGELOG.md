@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.14.2
+
+- Fix unit test for adjusted behavior when closing context.
+
 ## 2.14.1
 
 - Make it possible to reconnect after closing the FTP context.
