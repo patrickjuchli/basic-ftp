@@ -180,7 +180,7 @@ There is also a counter for all bytes transferred since the last time `trackProg
 
 Errors reported by the FTP server will throw an exception. The connection to the FTP server stays intact and you can continue to use it.
 
-This is different with a timeout or connection error: In addition to an exception being thrown, any connection to the FTP server will be closed. You have to instantiate a new client and reconnect to resume any operation.
+This is different with a timeout or connection error: In addition to an exception being thrown, any connection to the FTP server will be closed. You'll have to reconnect to resume any operation.
 
 Here are examples for the different types of error messages you'll receive:
 
