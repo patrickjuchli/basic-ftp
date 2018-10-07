@@ -1,20 +1,25 @@
 # Changelog
 
+## 2.14.3
+
+- Fixed: JSDoc type annotations.
+- Fixed: Minor fixes to documentation.
+
 ## 2.14.2
 
-- Fix unit test for adjusted behavior when closing context.
+- Fixed: Unit test for adjusted behavior when closing context.
 
 ## 2.14.1
 
-- Make it possible to reconnect after closing the FTP context.
+- Fixed: Make it possible to reconnect after closing the FTP context.
 
 ## 2.14.0
 
-- Improved error handling and reporting.
+- Added: Improved error handling and reporting.
 
 ## 2.13.2
 
-- Various improvements to documentation.
+- Fixed: Various improvements to documentation.
 
 ## 2.13.1
 
@@ -31,7 +36,7 @@
 
 ## 2.12.3
 
-- Minor changes to documentation.
+- Fixed: Minor changes to documentation.
 
 ## 2.12.2
 
