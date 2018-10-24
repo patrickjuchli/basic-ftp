@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.14.4
+
+- Fixed: Regression where closed clients throws timeout because of idle socket. (#26)
+
 ## 2.14.3
 
 - Fixed: JSDoc type annotations.
