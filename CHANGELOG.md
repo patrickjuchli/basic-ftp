@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.15.0
+
+- Changed: Timeout on control socket is only considered during active task, not when idle. This also fixes #27, as well as #26.
+
 ## 2.14.4
 
 - Fixed: Regression where closed clients throws timeout because of idle socket. (#26)
