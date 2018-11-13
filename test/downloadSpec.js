@@ -48,6 +48,15 @@ describe("Download directory listing", function() {
         client.list();
     });
 
+    it("includes hidden files when requested", function(done) {
+        client.ftp.socket.once("didSend", command => {
+            assert.equal(command, "LIST -a\r\n");
+            done();
+        });
+        client.includeHiddenFiles = true;
+        client.list();
+    });
+
     it("handles data socket ending before control confirms", function(done) {
         requestListAndVerify(done);
         setTimeout(() => {
