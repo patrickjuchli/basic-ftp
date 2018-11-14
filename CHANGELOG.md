@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.16.0
+
+- Changed: Include hidden files in file listings, fixes `removeDir` and `clearWorkingDir`. Changes behaviour for `downloadDir` and `list`. (#29, @conlanpatrek)
+
 ## 2.15.0
 
 - Changed: Timeout on control socket is only considered during active task, not when idle. This also fixes #27, as well as #26.
