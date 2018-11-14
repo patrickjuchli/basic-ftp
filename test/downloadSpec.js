@@ -42,7 +42,7 @@ describe("Download directory listing", function() {
 
     it("sends the right command", function(done) {
         client.ftp.socket.once("didSend", command => {
-            assert.equal(command, "LIST\r\n");
+            assert.equal(command, "LIST -a\r\n");
             done();
         });
         client.list();
