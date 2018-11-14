@@ -42,18 +42,9 @@ describe("Download directory listing", function() {
 
     it("sends the right command", function(done) {
         client.ftp.socket.once("didSend", command => {
-            assert.equal(command, "LIST\r\n");
-            done();
-        });
-        client.list();
-    });
-
-    it("includes hidden files when requested", function(done) {
-        client.ftp.socket.once("didSend", command => {
             assert.equal(command, "LIST -a\r\n");
             done();
         });
-        client.includeHiddenFiles = true;
         client.list();
     });
 
