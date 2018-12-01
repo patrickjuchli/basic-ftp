@@ -17,6 +17,7 @@ describe("Upload", function() {
     });
 
     afterEach(function() {
+        client.ftp._reset();
         client.close();
     });
 
