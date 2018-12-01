@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.16.1
+
+- Fixed: Closing client during task will reject associated promise. (#34)
+
 ## 2.16.0
 
 - Changed: Include hidden files in file listings, fixes `removeDir` and `clearWorkingDir`. Changes behaviour for `downloadDir` and `list`. (#29, @conlanpatrek)
