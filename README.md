@@ -99,6 +99,10 @@ Get the path of the current working directory.
 
 List files and directories in the current working directory. Currently, this library only supports Unix- and DOS-style directory listings.
 
+`lastMod(filename): Promise<Date>`
+
+Get the last modified time of a file in the working directory.
+
 `size(filename): Promise<number>`
 
 Get the size of a file in the working directory.
