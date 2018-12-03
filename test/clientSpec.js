@@ -50,6 +50,13 @@ describe("Convenience API", function() {
             result: 1234
         },
         {
+            name: "can get last modified time",
+            func: c => c.lastMod("file.txt"),
+            command: "MDTM file.txt\r\n",
+            reply: "213 19951217032400\r\n",
+            result: new Date("1995-12-17T03:24:00+0000")
+        },
+        {
             name: "can get features",
             func: c => c.features(),
             command: "FEAT\r\n",
