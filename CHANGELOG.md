@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.0
+
+- Added: Get last modification time of a file. (#32, @AnsonYeung)
+
 ## 2.16.1
 
 - Fixed: Closing client during task will reject associated promise. (#34)
