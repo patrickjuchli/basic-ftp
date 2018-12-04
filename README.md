@@ -101,7 +101,7 @@ List files and directories in the current working directory. Currently, this lib
 
 `lastMod(filename): Promise<Date>`
 
-Get the last modified time of a file in the working directory.
+Get the last modification time of a file in the working directory. This command might not be supported by your FTP server and throw an exception.
 
 `size(filename): Promise<number>`
 
