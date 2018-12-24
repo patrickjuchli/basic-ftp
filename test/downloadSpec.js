@@ -48,7 +48,6 @@ describe("Download directory listing", function() {
         client.list();
     });
 
-/*
     it("handles data socket ending before control confirms", function(done) {
         requestListAndVerify(done);
         setTimeout(() => {
@@ -122,5 +121,4 @@ describe("Download directory listing", function() {
             client.ftp.socket.emit("data", Buffer.from("500 Error"));
         });
     });
-*/
 });
