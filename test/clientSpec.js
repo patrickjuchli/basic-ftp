@@ -1,5 +1,5 @@
 const assert = require("assert");
-const Client = require("../lib/ftp").Client;
+const {Client, FTPError} = require("../lib/ftp");
 const SocketMock = require("./SocketMock");
 
 const featReply = `
@@ -12,12 +12,6 @@ const featReply = `
 const featEmptyReply = `
 211 No features
 `;
-
-class MockError {
-    constructor(info) {
-        this.info = info;
-    }
-}
 
 describe("Convenience API", function() {
     this.timeout(100);
@@ -34,12 +28,12 @@ describe("Convenience API", function() {
         client.close();
     });
 
-    /** 
+    /**
      * Testing simple convenience functions follows the same pattern:
      * 1. Call some method on client (func)
      * 2. This makes client send an FTP command (command)
      * 3. Which then results in a reply (reply). Use undefined to simulate a socket error.
-     * 4. The tested client method will translate this into a result (result). Use MockError to expect exception to be thrown.
+     * 4. The tested client method will translate this into a result (result). Use FTPError to expect exception to be thrown.
      */
     const tests = [
         {
@@ -89,21 +83,21 @@ describe("Convenience API", function() {
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "500 Error\r\n",
-            result: new MockError({ code: 500, message: '500 Error' })
+            result: new FTPError('500 Error', {code: 500})
         },
         {
             name: "send command: can optionally ignore error response (>=400)",
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: "400 Error\r\n",
-            result: { code: 400, message: '400 Error' }
+            result: {message: '400 Error', code: 400}
         },
         {
             name: "send command: ignoring error responses still throws error for connection errors",
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: undefined,
-            result: new MockError({ error: { info: "SocketError", ftpSocket: "control" } })
+            result: FTPError.prependIdentifier(Error('SocketError'), 'control')
         },
         {
             name: "can get the working directory",
@@ -125,27 +119,33 @@ describe("Convenience API", function() {
             command: "DELE foo.txt\r\n",
             reply: "250 Okay",
             result: { code: 250, message: "250 Okay" }
-        },             
+        },
     ];
 
     tests.forEach(test => {
-        it(test.name, function() {               
+        it(test.name, function() {
             client.ftp.socket.once("didSend", buf => {
                 assert.equal(buf.toString(), test.command);
                 if (test.reply) {
                     client.ftp.socket.emit("data", Buffer.from(test.reply));
                 }
                 else {
-                    client.ftp.socket.emit("error", { info: "SocketError" })
+                    client.ftp.socket.emit("error", new Error('SocketError'))
                 }
              });
-            const promise = test.func(client);
-            if (test.result instanceof MockError) {
-                return promise.catch(err => assert.deepEqual(err, test.result.info));
-            }
-            else {
-                return promise.then(result => assert.deepEqual(result, test.result));
-            }               
+
+            return test.func(client)
+                .catch(err => {
+                    if (!(test.result instanceof Error)) throw err;
+                    assert.equal(err.constructor, test.result.constructor,
+                      `Unexpected error type = ${err.constructor.name} (${test.name})`)
+
+                    // Expected error, continue on (deepEqual() below checks message & code values)
+                    return err;
+                })
+                .then(result => {
+                    assert.deepEqual(result, test.result);
+                });
         });
     });
 
@@ -181,7 +181,7 @@ describe("Convenience API", function() {
             }
             else if (step === 2) {
                 assert.equal(buf.toString().trim(), "PASS pass");
-                client.ftp.socket.emit("data", Buffer.from("200 OK"));                
+                client.ftp.socket.emit("data", Buffer.from("200 OK"));
             }
         });
         return client.login("user", "pass").then(result => assert.deepEqual(result, { code: 200, message: "200 OK" }));
