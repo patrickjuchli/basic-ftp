@@ -22,61 +22,62 @@ const listDOS = `
 const listUnknown = `
 a
 b
-`
+`;
 const listUnknownMVS = `
 SAVE00 3390   2004/06/23  1    1  FB     128  6144  PS    INCOMING.RPTBM023.D061704
 SAVE01 3390   2004/06/23  1    1  FB     128  6144  PO    INCOMING.RPTBM024.D061704
 `;
 
 describe("Directory listing", function() {
+    let f;
     const tests = [
         {
             title: "Regular Unix list",
             list: listUnix,
             exp: [
-                (f = new FileInfo("LICENSE.txt"), 
-                    f.group = "staff", 
-                    f.size = 1057, 
-                    f.user = "patrick",
-                    f.permissions = {
-                        user: FileInfo.Permission.Read + FileInfo.Permission.Write,
-                        group: FileInfo.Permission.Read,
-                        world: FileInfo.Permission.Read
-                    },
-                    f.hardLinkCount = 1,
-                    f.date = "Dec 11 14:35",
-                    f.type = FileInfo.Type.File,
-                    f),
-                (f = new FileInfo("lib"), 
-                    f.group = "staff", 
-                    f.size = 170, 
-                    f.user = "patrick", 
-                    f.permissions = {
-                        user: FileInfo.Permission.Read + FileInfo.Permission.Write + FileInfo.Permission.Execute,
-                        group: FileInfo.Permission.Read + FileInfo.Permission.Execute,
-                        world: FileInfo.Permission.Read + FileInfo.Permission.Execute
-                    },
-                    f.hardLinkCount = 5,
-                    f.date = "Dec 11 17:24",
-                    f.type = FileInfo.Type.Directory, 
-                    f),
-            ]  
+                (f = new FileInfo("LICENSE.txt"),
+                f.group = "staff",
+                f.size = 1057,
+                f.user = "patrick",
+                f.permissions = {
+                    user: FileInfo.Permission.Read + FileInfo.Permission.Write,
+                    group: FileInfo.Permission.Read,
+                    world: FileInfo.Permission.Read
+                },
+                f.hardLinkCount = 1,
+                f.date = "Dec 11 14:35",
+                f.type = FileInfo.Type.File,
+                f),
+                (f = new FileInfo("lib"),
+                f.group = "staff",
+                f.size = 170,
+                f.user = "patrick",
+                f.permissions = {
+                    user: FileInfo.Permission.Read + FileInfo.Permission.Write + FileInfo.Permission.Execute,
+                    group: FileInfo.Permission.Read + FileInfo.Permission.Execute,
+                    world: FileInfo.Permission.Read + FileInfo.Permission.Execute
+                },
+                f.hardLinkCount = 5,
+                f.date = "Dec 11 17:24",
+                f.type = FileInfo.Type.Directory,
+                f),
+            ]
         },
         {
             title: "Regular DOS list",
             list: listDOS,
             exp: [
-                (f = new FileInfo("myDir"), 
-                    f.size = 0,
-                    f.date = "12-05-96 05:03PM",
-                    f.type = FileInfo.Type.Directory, 
-                    f),
-                (f = new FileInfo("MYFILE.INI"), 
-                    f.size = 953,
-                    f.date = "11-14-97 04:21PM",
-                    f.type = FileInfo.Type.File, 
-                    f),
-            ]  
+                (f = new FileInfo("myDir"),
+                f.size = 0,
+                f.date = "12-05-96 05:03PM",
+                f.type = FileInfo.Type.Directory,
+                f),
+                (f = new FileInfo("MYFILE.INI"),
+                f.size = 953,
+                f.date = "11-14-97 04:21PM",
+                f.type = FileInfo.Type.File,
+                f),
+            ]
         },
         {
             title: "Unknown format",
@@ -98,13 +99,13 @@ describe("Directory listing", function() {
         it(test.title, function() {
             if (test.exp) {
                 const actual = parseList(test.list);
-                assert.deepEqual(actual, test.exp);    
+                assert.deepEqual(actual, test.exp);
             }
             else {
                 assert.throws(function() {
                     parseList(test.list);
                 });
             }
-        });        
+        });
     }
 });

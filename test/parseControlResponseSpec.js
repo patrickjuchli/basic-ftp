@@ -8,13 +8,13 @@ describe("Parse multiline response", function() {
     const tests = [
         {
             title: "Single line",
-            res: `200 A`,
-            exp: { messages: [`200 A`], rest: "" }
+            res: "200 A",
+            exp: { messages: ["200 A"], rest: "" }
         },
         {
             title: "Single line with an extra CRLF",
             res: `200 A${CRLF}`,
-            exp: { messages: [`200 A`], rest: "" }
+            exp: { messages: ["200 A"], rest: "" }
         },
         {
             title: "Multiline: 1 response group",
