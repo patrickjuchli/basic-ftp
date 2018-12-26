@@ -4,7 +4,7 @@ const SocketMock = require("./SocketMock");
 
 describe("ProgressTracker", function() {
     this.timeout(100);
-    
+
     let socket, tracker;
     beforeEach(function() {
         socket = new SocketMock();
@@ -27,7 +27,7 @@ describe("ProgressTracker", function() {
 
     it("can stop without update on more time", function() {
         tracker.start(socket);
-        tracker.reportTo(info => {
+        tracker.reportTo(() => {
             assert.fail("This update should not be called.");
         });
         tracker.stop();
@@ -44,7 +44,7 @@ describe("ProgressTracker", function() {
             }, "Final values");
             done();
         });
-        tracker.updateAndStop();        
+        tracker.updateAndStop();
     });
 
     it("reports correct values at stop after no intermediate updates", function(done) {
@@ -60,7 +60,7 @@ describe("ProgressTracker", function() {
         });
         socket.bytesWritten = 2;
         socket.bytesRead = 3;
-        tracker.updateAndStop();                
+        tracker.updateAndStop();
     });
 
     it("does progress reports at an interval", function(done) {
@@ -73,7 +73,7 @@ describe("ProgressTracker", function() {
                 type: "type",
                 bytes: count,
                 bytesOverall: count
-            }, "Progress info")
+            }, "Progress info");
             socket.bytesWritten += 1;
             if (++count === 3) {
                 tracker.reportTo();
@@ -98,12 +98,12 @@ describe("ProgressTracker", function() {
 
     it("can stop within the callback", function() {
         let firstTime = true;
-        tracker.reportTo(info => {
+        tracker.reportTo(() => {
             // Will be called on start
             tracker.reportTo();
             assert(firstTime, "Should not be called twice.");
             firstTime = false;
-        })
+        });
         tracker.start(socket);
         tracker.updateAndStop();
     });

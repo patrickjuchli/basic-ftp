@@ -4,9 +4,9 @@
   "description": "FTP client for Node.js with support for explicit FTPS over TLS.",
   "main": "./lib/ftp",
   "scripts": {
-    "test": "mocha",
+    "test": "eslint . && mocha",
     "tdd": "mocha --watch",
-    "lint": "eslint lib/*.js"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",

@@ -26,7 +26,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "STOR NAME.TXT\r\n");
             done();
         });
-        const promise = client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT");
     });
 
     it("starts uploading after receiving 'ready to upload'", function(done) {
@@ -36,7 +36,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "123", "Wrong data sent");
             done();
         });
-        const promise = client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT");
         setTimeout(() => {
             didSendReady = true;
             client.ftp.socket.emit("data", Buffer.from("150 Ready"));
@@ -52,18 +52,18 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "123", "Wrong data sent");
             done();
         });
-        const promise = client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT");
         setTimeout(() => {
             client.ftp.socket.emit("data", Buffer.from("150 Ready"));
             setTimeout(() => {
                 client.ftp.dataSocket.emit("secureConnect");
-                didWait = true;    
+                didWait = true;
             });
         });
     });
-    
+
     it("explicitly closes the data socket when all has been transmitted", function(done) {
-        client.ftp.dataSocket.on("didSend", buf => {
+        client.ftp.dataSocket.on("didSend", () => {
             // Finish event should trigger closing of data socket.
             client.ftp.dataSocket.emit("finish");
             setTimeout(() => {
@@ -71,7 +71,7 @@ describe("Upload", function() {
                 done();
             });
         });
-        const promise = client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT");
         setTimeout(() => {
             client.ftp.socket.emit("data", Buffer.from("150 Ready"));
             // Don't send completion message, we don't want the TransferResolver
@@ -80,23 +80,23 @@ describe("Upload", function() {
     });
 
     it("handles control confirmation before data sent completely", function() {
-        client.ftp.dataSocket.on("didSend", buf => {
+        client.ftp.dataSocket.on("didSend", () => {
             client.ftp.dataSocket.emit("finish");
-            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 Done"))); 
+            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 Done")));
         });
         const promise = client.upload(readable, "NAME.TXT");
         setTimeout(() => client.ftp.socket.emit("data", Buffer.from("150 Ready")));
-        return promise;        
+        return promise;
     });
 
     it("handles data sent completely before control confirmation", function() {
-        client.ftp.dataSocket.on("didSend", buf => {
+        client.ftp.dataSocket.on("didSend", () => {
             client.ftp.dataSocket.emit("finish");
-            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 Done"))); 
+            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 Done")));
         });
         const promise = client.upload(readable, "NAME.TXT");
         setTimeout(() => client.ftp.socket.emit("data", Buffer.from("150 Ready")));
-        return promise;        
+        return promise;
     });
 
     it("handles errors", function(done) {
@@ -110,4 +110,4 @@ describe("Upload", function() {
             client.ftp.socket.emit("data", Buffer.from("500 Error"));
         });
     });
-}); 
+});

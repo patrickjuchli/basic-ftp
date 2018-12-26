@@ -2,7 +2,7 @@ const assert = require("assert");
 const FileInfo = require("../lib/FileInfo");
 
 describe("FileInfo", function() {
-    
+
     it("can report type of file", function() {
         const f = new FileInfo("");
         f.type = FileInfo.Type.File;
@@ -18,6 +18,6 @@ describe("FileInfo", function() {
     it("can report type of symbolic link", function() {
         const f = new FileInfo("");
         f.type = FileInfo.Type.SymbolicLink;
-        assert(f.isSymbolicLink); 
+        assert(f.isSymbolicLink);
     });
 });

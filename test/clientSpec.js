@@ -34,7 +34,7 @@ describe("Convenience API", function() {
         client.close();
     });
 
-    /** 
+    /**
      * Testing simple convenience functions follows the same pattern:
      * 1. Call some method on client (func)
      * 2. This makes client send an FTP command (command)
@@ -82,21 +82,21 @@ describe("Convenience API", function() {
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "200 Ok\r\n",
-            result: { code: 200, message: '200 Ok' }
+            result: { code: 200, message: "200 Ok" }
         },
         {
             name: "send command: can handle error",
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "500 Error\r\n",
-            result: new MockError({ code: 500, message: '500 Error' })
+            result: new MockError({ code: 500, message: "500 Error" })
         },
         {
             name: "send command: can optionally ignore error response (>=400)",
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: "400 Error\r\n",
-            result: { code: 400, message: '400 Error' }
+            result: { code: 400, message: "400 Error" }
         },
         {
             name: "send command: ignoring error responses still throws error for connection errors",
@@ -109,7 +109,7 @@ describe("Convenience API", function() {
             name: "can get the working directory",
             func: c => c.pwd(),
             command: "PWD\r\n",
-            reply: `257 "/this/that" is current directory.\r\n`,
+            reply: "257 \"/this/that\" is current directory.\r\n",
             result: "/this/that"
         },
         {
@@ -125,27 +125,27 @@ describe("Convenience API", function() {
             command: "DELE foo.txt\r\n",
             reply: "250 Okay",
             result: { code: 250, message: "250 Okay" }
-        },             
+        },
     ];
 
     tests.forEach(test => {
-        it(test.name, function() {               
+        it(test.name, function() {
             client.ftp.socket.once("didSend", buf => {
                 assert.equal(buf.toString(), test.command);
                 if (test.reply) {
                     client.ftp.socket.emit("data", Buffer.from(test.reply));
                 }
                 else {
-                    client.ftp.socket.emit("error", { info: "SocketError" })
+                    client.ftp.socket.emit("error", { info: "SocketError" });
                 }
-             });
+            });
             const promise = test.func(client);
             if (test.result instanceof MockError) {
                 return promise.catch(err => assert.deepEqual(err, test.result.info));
             }
             else {
                 return promise.then(result => assert.deepEqual(result, test.result));
-            }               
+            }
         });
     });
 
@@ -160,14 +160,14 @@ describe("Convenience API", function() {
             assert.equal(options.host, "host");
             assert.equal(options.port, 22, "Socket port");
             setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 OK")));
-        }
+        };
         return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));
     });
 
     it("declines connect for code 120", function() {
         client.ftp.socket.connect = () => {
             setTimeout(() => client.ftp.socket.emit("data", Buffer.from("120 Ready in 5 hours")));
-        }
+        };
         return client.connect("host", 22).catch(result => assert.deepEqual(result, { code: 120, message: "120 Ready in 5 hours"}));
     });
 
@@ -181,14 +181,14 @@ describe("Convenience API", function() {
             }
             else if (step === 2) {
                 assert.equal(buf.toString().trim(), "PASS pass");
-                client.ftp.socket.emit("data", Buffer.from("200 OK"));                
+                client.ftp.socket.emit("data", Buffer.from("200 OK"));
             }
         });
         return client.login("user", "pass").then(result => assert.deepEqual(result, { code: 200, message: "200 OK" }));
     });
 
     it("declines login on '332 Account needed'", function() {
-        client.ftp.socket.once("didSend", buf => {
+        client.ftp.socket.once("didSend", () => {
             client.ftp.socket.emit("data", Buffer.from("332 Account needed"));
         });
         return client.login("user", "pass").catch(result => assert.deepEqual(result, { code: 332, message: "332 Account needed" }));

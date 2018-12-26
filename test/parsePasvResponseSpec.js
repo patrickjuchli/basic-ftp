@@ -5,6 +5,6 @@ describe("Parse PASV response", function() {
     it("can parse IPv4", function() {
         const result = parseIPv4("227 Entering Passive Mode (192,168,1,100,10,229)");
         assert.equal(result.host, "192.168.1.100", "Host");
-        assert.equal(result.port, 2789, "Port")
+        assert.equal(result.port, 2789, "Port");
     });
 });

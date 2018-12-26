@@ -8,13 +8,13 @@ describe("Parse multiline response", function() {
     const tests = [
         {
             title: "Single line",
-            res: `200 A`,
-            exp: { messages: [`200 A`], rest: "" }
+            res: "200 A",
+            exp: { messages: ["200 A"], rest: "" }
         },
         {
             title: "Single line with an extra CRLF",
             res: `200 A${CRLF}`,
-            exp: { messages: [`200 A`], rest: "" }
+            exp: { messages: ["200 A"], rest: "" }
         },
         {
             title: "Multiline: 1 response group",
@@ -40,7 +40,7 @@ describe("Parse multiline response", function() {
             title: "Multline: No closing tag",
             res: `150-A${CRLF}160-B${CRLF}150 C${CRLF}200-D`,
             exp: { messages: [`150-A${LF}160-B${LF}150 C`], rest: `200-D${LF}` }
-        },               
+        },
     ];
     for (const test of tests) {
         it(test.title, function() {
