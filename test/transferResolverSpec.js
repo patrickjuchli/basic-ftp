@@ -9,7 +9,7 @@ describe("TransferResolver", function() {
             dataSocket: true
         });
     });
-    
+
     it("handles resolve, then confirm", function(done) {
         let bothCalled = false;
         const task = {

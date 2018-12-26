@@ -12,13 +12,13 @@ describe("Download directory listing", function() {
     var f;
     const bufList = Buffer.from("12-05-96  05:03PM       <DIR>          myDir");
     const expList = [
-        (f = new FileInfo("myDir"), 
+        (f = new FileInfo("myDir"),
         f.size = 0,
         f.date = "12-05-96 05:03PM",
-        f.type = FileInfo.Type.Directory, 
+        f.type = FileInfo.Type.Directory,
         f)
     ];
- 
+
     let client;
     beforeEach(function() {
         client = new Client();
@@ -37,7 +37,7 @@ describe("Download directory listing", function() {
         client.list().then(result => {
             assert.deepEqual(result, expList);
             done();
-        });        
+        });
     }
 
     it("sends the right command", function(done) {
@@ -54,7 +54,7 @@ describe("Download directory listing", function() {
             client.ftp.socket.emit("data", Buffer.from("125 Sending"));
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
-            client.ftp.socket.emit("data", Buffer.from("250 Done"));    
+            client.ftp.socket.emit("data", Buffer.from("250 Done"));
         });
     });
 
@@ -62,7 +62,7 @@ describe("Download directory listing", function() {
         requestListAndVerify(done);
         setTimeout(() => {
             client.ftp.socket.emit("data", Buffer.from("125 Sending"));
-            client.ftp.socket.emit("data", Buffer.from("250 Done"));    
+            client.ftp.socket.emit("data", Buffer.from("250 Done"));
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
         });
@@ -74,8 +74,8 @@ describe("Download directory listing", function() {
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.socket.emit("data", Buffer.from("125 Sending"));
             client.ftp.dataSocket.end();
-            client.ftp.socket.emit("data", Buffer.from("250 Done"));    
-        });     
+            client.ftp.socket.emit("data", Buffer.from("250 Done"));
+        });
     });
 
     it("handles data transmission being complete before control announces beginning", function(done) {
@@ -84,8 +84,8 @@ describe("Download directory listing", function() {
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", Buffer.from("125 Sending"));
-            client.ftp.socket.emit("data", Buffer.from("250 Done"));    
-        });     
+            client.ftp.socket.emit("data", Buffer.from("250 Done"));
+        });
     });
 
     it("handles control announcing with 150 instead of 125", function(done) {
@@ -94,7 +94,7 @@ describe("Download directory listing", function() {
             client.ftp.socket.emit("data", Buffer.from("150 Sending"));
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
-            client.ftp.socket.emit("data", Buffer.from("250 Done"));    
+            client.ftp.socket.emit("data", Buffer.from("250 Done"));
         });
     });
 
@@ -104,7 +104,7 @@ describe("Download directory listing", function() {
             client.ftp.socket.emit("data", Buffer.from("125 Sending"));
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
-            client.ftp.socket.emit("data", Buffer.from("200 Done"));    
+            client.ftp.socket.emit("data", Buffer.from("200 Done"));
         });
     });
 
