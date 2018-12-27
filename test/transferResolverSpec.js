@@ -9,7 +9,7 @@ describe("TransferResolver", function() {
             dataSocket: true
         });
     });
-    
+
     it("handles resolve, then confirm", function(done) {
         let bothCalled = false;
         const task = {
@@ -18,7 +18,7 @@ describe("TransferResolver", function() {
                 assert.equal(result, "result");
                 done();
             }
-        }
+        };
         resolver.resolve(task, "result");
         bothCalled = true;
         resolver.confirm(task);
@@ -30,7 +30,7 @@ describe("TransferResolver", function() {
                 assert.equal(result, "result");
                 done();
             }
-        }
+        };
         resolver.confirm(task);
         resolver.resolve(task, "result");
     });
@@ -41,7 +41,7 @@ describe("TransferResolver", function() {
                 assert.equal(reason, "reason");
                 done();
             }
-        }
+        };
         resolver.confirm(task, "something");
         resolver.reject(task, "reason");
     });
@@ -49,7 +49,7 @@ describe("TransferResolver", function() {
     it("resolving destroys data socket", function() {
         const task = {
             resolve() {},
-        }
+        };
         assert.equal(resolver.ftp.dataSocket, true);
         resolver.resolve(task, "foo");
         assert.equal(resolver.ftp.dataSocket, true);
@@ -60,7 +60,7 @@ describe("TransferResolver", function() {
     it("rejecting destroys data socket", function() {
         const task = {
             reject() {},
-        }
+        };
         assert.equal(resolver.ftp.dataSocket, true);
         resolver.reject(task, "foo");
         assert.equal(resolver.ftp.dataSocket, undefined, "dataSocket not set to undefined");

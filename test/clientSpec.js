@@ -76,34 +76,34 @@ describe("Convenience API", function() {
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "200 Ok\r\n",
-            result: { code: 200, message: '200 Ok' }
+            result: { code: 200, message: "200 Ok" }
         },
         {
             name: "send command: can handle error",
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "500 Error\r\n",
-            result: new FTPError('500 Error', {code: 500})
+            result: new FTPError("500 Error", {code: 500})
         },
         {
             name: "send command: can optionally ignore error response (>=400)",
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: "400 Error\r\n",
-            result: {message: '400 Error', code: 400}
+            result: {message: "400 Error", code: 400}
         },
         {
             name: "send command: ignoring error responses still throws error for connection errors",
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: undefined,
-            result: FTPError.prependIdentifier(Error('SocketError'), 'control')
+            result: FTPError.prependIdentifier(Error("SocketError"), "control")
         },
         {
             name: "can get the working directory",
             func: c => c.pwd(),
             command: "PWD\r\n",
-            reply: `257 "/this/that" is current directory.\r\n`,
+            reply: "257 \"/this/that\" is current directory.\r\n",
             result: "/this/that"
         },
         {
@@ -130,15 +130,15 @@ describe("Convenience API", function() {
                     client.ftp.socket.emit("data", Buffer.from(test.reply));
                 }
                 else {
-                    client.ftp.socket.emit("error", new Error('SocketError'))
+                    client.ftp.socket.emit("error", new Error("SocketError"));
                 }
-             });
+            });
 
             return test.func(client)
                 .catch(err => {
                     if (!(test.result instanceof Error)) throw err;
                     assert.equal(err.constructor, test.result.constructor,
-                      `Unexpected error type = ${err.constructor.name} (${test.name})`)
+                        `Unexpected error type = ${err.constructor.name} (${test.name})`);
 
                     // Expected error, continue on (deepEqual() below checks message & code values)
                     return err;
@@ -160,14 +160,14 @@ describe("Convenience API", function() {
             assert.equal(options.host, "host");
             assert.equal(options.port, 22, "Socket port");
             setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 OK")));
-        }
+        };
         return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));
     });
 
     it("declines connect for code 120", function() {
         client.ftp.socket.connect = () => {
             setTimeout(() => client.ftp.socket.emit("data", Buffer.from("120 Ready in 5 hours")));
-        }
+        };
         return client.connect("host", 22).catch(result => assert.deepEqual(result, { code: 120, message: "120 Ready in 5 hours"}));
     });
 
@@ -188,7 +188,7 @@ describe("Convenience API", function() {
     });
 
     it("declines login on '332 Account needed'", function() {
-        client.ftp.socket.once("didSend", buf => {
+        client.ftp.socket.once("didSend", () => {
             client.ftp.socket.emit("data", Buffer.from("332 Account needed"));
         });
         return client.login("user", "pass").catch(result => assert.deepEqual(result, { code: 332, message: "332 Account needed" }));
