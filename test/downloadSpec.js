@@ -40,12 +40,24 @@ describe("Download directory listing", function() {
         });
     }
 
-    it("sends the right command", function(done) {
-        client.ftp.socket.once("didSend", command => {
-            assert.equal(command, "LIST -a\r\n");
-            done();
+    it("sends the right command", function() {
+        // Spoof a deferred response on the data socket so the list() command
+        // resolves
+        setTimeout(() => {
+            client.ftp.socket.emit("data", Buffer.from("125 Sending"));
+            client.ftp.dataSocket.end();
+            client.ftp.socket.emit("data", Buffer.from("250 Done"));
         });
-        client.list();
+
+        return Promise.all([
+            new Promise(resolve => {
+                client.ftp.socket.once("didSend", command => {
+                    assert.equal(command, "LIST -a\r\n");
+                    resolve();
+                });
+            }),
+            client.list()
+        ]);
     });
 
     it("handles data socket ending before control confirms", function(done) {
