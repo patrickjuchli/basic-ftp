@@ -133,7 +133,7 @@ describe("Convenience API", function() {
             client.ftp.socket.once("didSend", buf => {
                 assert.equal(buf.toString(), test.command);
                 if (test.reply) {
-                    client.ftp.socket.emit("data", Buffer.from(test.reply));
+                    client.ftp.socket.emit("data", test.reply);
                 }
                 else {
                     client.ftp.socket.emit("error", { info: "SocketError" });
@@ -159,14 +159,14 @@ describe("Convenience API", function() {
         client.ftp.socket.connect = (options) => {
             assert.equal(options.host, "host");
             assert.equal(options.port, 22, "Socket port");
-            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("200 OK")));
+            setTimeout(() => client.ftp.socket.emit("data", "200 OK"));
         };
         return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));
     });
 
     it("declines connect for code 120", function() {
         client.ftp.socket.connect = () => {
-            setTimeout(() => client.ftp.socket.emit("data", Buffer.from("120 Ready in 5 hours")));
+            setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
         };
         return client.connect("host", 22).catch(result => assert.deepEqual(result, { code: 120, message: "120 Ready in 5 hours"}));
     });
@@ -177,11 +177,11 @@ describe("Convenience API", function() {
             if (step === 1) {
                 step = 2;
                 assert.equal(buf.toString().trim(), "USER user");
-                client.ftp.socket.emit("data", Buffer.from("331 Go on"));
+                client.ftp.socket.emit("data", "331 Go on");
             }
             else if (step === 2) {
                 assert.equal(buf.toString().trim(), "PASS pass");
-                client.ftp.socket.emit("data", Buffer.from("200 OK"));
+                client.ftp.socket.emit("data", "200 OK");
             }
         });
         return client.login("user", "pass").then(result => assert.deepEqual(result, { code: 200, message: "200 OK" }));
@@ -189,7 +189,7 @@ describe("Convenience API", function() {
 
     it("declines login on '332 Account needed'", function() {
         client.ftp.socket.once("didSend", () => {
-            client.ftp.socket.emit("data", Buffer.from("332 Account needed"));
+            client.ftp.socket.emit("data", "332 Account needed");
         });
         return client.login("user", "pass").catch(result => assert.deepEqual(result, { code: 332, message: "332 Account needed" }));
     });

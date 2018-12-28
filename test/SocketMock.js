@@ -7,6 +7,8 @@ module.exports = class SocketMock extends EventEmitter {
         this.bytesWritten = 0;
         this.bytesRead = 0;
     }
+    setEncoding() {
+    }
     removeAllListeners() {
     }
     setKeepAlive() {

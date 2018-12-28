@@ -68,7 +68,7 @@ describe("FTPContext", function() {
             assert.deepEqual(res, { code: 200, message: "200 OK"});
             done();
         });
-        ftp.socket.emit("data", Buffer.from("200 OK"));
+        ftp.socket.emit("data", "200 OK");
     });
 
     it("Relays multiline control response", function(done) {
@@ -76,7 +76,7 @@ describe("FTPContext", function() {
             assert.deepEqual(res, { code: 200, message: "200-OK\nHello\n200 OK"});
             done();
         });
-        ftp.socket.emit("data", Buffer.from("200-OK\r\nHello\r\n200 OK"));
+        ftp.socket.emit("data", "200-OK\r\nHello\r\n200 OK");
     });
 
     it("Relays multiple multiline control responses in separate callbacks", function(done) {
@@ -88,7 +88,7 @@ describe("FTPContext", function() {
                 done();
             }
         });
-        ftp.socket.emit("data", Buffer.from("200-OK\r\n200 OK\r\n200-Again\r\n200 Again"));
+        ftp.socket.emit("data", "200-OK\r\n200 OK\r\n200-Again\r\n200 Again");
     });
 
     it("Relays chunked multiline response as a single response", function(done) {
@@ -96,8 +96,8 @@ describe("FTPContext", function() {
             assert.deepEqual(res, { code: 200, message: "200-OK\nHello\n200 OK"});
             done();
         });
-        ftp.socket.emit("data", Buffer.from("200-OK\r\n"));
-        ftp.socket.emit("data", Buffer.from("Hello\r\n200 OK"));
+        ftp.socket.emit("data", "200-OK\r\n");
+        ftp.socket.emit("data", "Hello\r\n200 OK");
     });
 
     it("Stops relaying if task is resolved", function(done) {
@@ -107,10 +107,10 @@ describe("FTPContext", function() {
             }
             task.resolve(true);
         }).then(() => {
-            ftp.socket.emit("data", Buffer.from("220 Done"));
+            ftp.socket.emit("data", "220 Done");
             done();
         });
-        ftp.socket.emit("data", Buffer.from("200 OK"));
+        ftp.socket.emit("data", "200 OK");
     });
 
     it("can send a command", function(done) {
