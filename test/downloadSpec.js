@@ -45,7 +45,7 @@ describe("Download directory listing", function() {
             assert.equal(command, "LIST -a\r\n");
             done();
         });
-        client.list();
+        client.list().catch(() => true /* Do nothing, we don't care about expections here */);
     });
 
     it("handles data socket ending before control confirms", function(done) {
