@@ -45,7 +45,10 @@ describe("Download directory listing", function() {
             assert.equal(command, "LIST -a\r\n");
             done();
         });
-        client.list().catch(() => true /* Do nothing, we don't care about exceptions here */);
+        // This will throw an unhandled exception because we close the client when
+        // the task is still running. Ignore the exception, this test is only about
+        // the command that client.list() sends.
+        client.list().catch(() => true /* Do nothing */);
     });
 
     it("handles data socket ending before control confirms", function(done) {
