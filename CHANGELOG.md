@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.17.1
+
+- Fixed: Multibyte UTF-8 arriving in multiple chunks (#38)
+- Fixed: Unit test throws unhandled exception (#44)
+- Fixed: Provide stack trace when closing due to multiple tasks running
+- Internal improvements to linting (@broofa)
+
 ## 2.17.0
 
 - Added: Get last modification time of a file. (#32, @AnsonYeung)
@@ -145,7 +152,7 @@
 ## 2.5.2
 
 - Don't report unexpected positive completion codes as errors.
-- Improve documentation. 
+- Improve documentation.
 
 ## 2.5.1
 
