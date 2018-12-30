@@ -98,7 +98,7 @@ describe("Convenience API", function() {
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: undefined,
-            result: new Error("some error")
+            result: new Error("some error (control)")
         },
         {
             name: "can get the working directory",

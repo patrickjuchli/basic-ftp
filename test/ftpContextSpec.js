@@ -41,7 +41,7 @@ describe("FTPContext", function() {
 
     it("Relays control socket error event", function(done) {
         ftp.handle(undefined, err => {
-            assert.deepEqual(err, new Error("hello"));
+            assert.deepEqual(err, new Error("hello (control)"));
             done();
         });
         ftp.socket.emit("error", new Error("hello"));
@@ -57,7 +57,7 @@ describe("FTPContext", function() {
 
     it("Relays data socket error event", function(done) {
         ftp.handle(undefined, err => {
-            assert.deepEqual(err, new Error("hello"));
+            assert.deepEqual(err, new Error("hello (data)"));
             done();
         });
         ftp.dataSocket.emit("error", new Error("hello"));
