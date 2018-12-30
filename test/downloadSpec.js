@@ -112,16 +112,15 @@ describe("Download directory listing", function() {
         });
     });
 
-    it("relays FTP error response even if data transmitted completely", function(done) {
-        client.list().catch(err => {
-            assert.deepEqual(err, new FTPError("500 Error"));
-            done();
-        });
+    it("relays FTP error response even if data transmitted completely", function() {
         setTimeout(() => {
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", "500 Error");
+        });
+        return client.list().catch(err => {
+            assert.deepEqual(err, new FTPError({code: 500, message: "500 Error"}));
         });
     });
 });

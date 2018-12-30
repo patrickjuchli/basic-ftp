@@ -84,7 +84,7 @@ describe("Convenience API", function() {
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "500 Error\r\n",
-            result: new FTPError("500 Error")
+            result: new FTPError({code: 500, message: "500 Error"})
         },
         {
             name: "send command: can optionally ignore error response (>=400)",

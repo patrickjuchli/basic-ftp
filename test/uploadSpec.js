@@ -106,7 +106,7 @@ describe("Upload", function() {
             client.ftp.socket.emit("data", "500 Error");
         });
         return client.upload(readable, "NAME.TXT").catch(err => {
-            assert.deepEqual(err, new FTPError("500 Error"));
+            assert.deepEqual(err, new FTPError({code: 500, message: "500 Error"}));
         });
     });
 });
