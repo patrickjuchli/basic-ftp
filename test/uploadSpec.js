@@ -1,7 +1,8 @@
 const assert = require("assert");
+const fs = require("fs");
 const Client = require("../lib/ftp").Client;
 const SocketMock = require("./SocketMock");
-const fs = require("fs");
+const { FTPError } = require("../lib/FtpContext");
 
 describe("Upload", function() {
     this.timeout(100);
@@ -99,15 +100,13 @@ describe("Upload", function() {
         return promise;
     });
 
-    it("handles errors", function(done) {
-        client.upload(readable, "NAME.TXT").catch(err => {
-            assert.equal(err.code, 500, "Error code");
-            assert.equal(err.message, "500 Error", "Error message");
-            done();
-        });
+    it("handles errors", function() {
         setTimeout(() => {
             client.ftp.socket.emit("data", "150 Ready");
             client.ftp.socket.emit("data", "500 Error");
+        });
+        return client.upload(readable, "NAME.TXT").catch(err => {
+            assert.deepEqual(err, new FTPError("500 Error"));
         });
     });
 });

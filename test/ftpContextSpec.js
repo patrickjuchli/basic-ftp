@@ -32,39 +32,39 @@ describe("FTPContext", function() {
     });
 
     it("Relays control socket timeout event", function(done) {
-        ftp.handle(undefined, res => {
-            assert.deepEqual(res, { error: { info: "socket timeout", ftpSocket: "control" }});
+        ftp.handle(undefined, err => {
+            assert.deepEqual(err, new Error("Socket timeout (control)"));
             done();
         });
         ftp.socket.emit("timeout");
     });
 
     it("Relays control socket error event", function(done) {
-        ftp.handle(undefined, res => {
-            assert.deepEqual(res, { error: { foo: "bar", ftpSocket: "control" } });
+        ftp.handle(undefined, err => {
+            assert.deepEqual(err, new Error("hello"));
             done();
         });
-        ftp.socket.emit("error", { foo: "bar" });
+        ftp.socket.emit("error", new Error("hello"));
     });
 
     it("Relays data socket timeout event", function(done) {
-        ftp.handle(undefined, res => {
-            assert.deepEqual(res, { error: { info: "socket timeout", ftpSocket: "data" }});
+        ftp.handle(undefined, err => {
+            assert.deepEqual(err, new Error("Socket timeout (data)"));
             done();
         });
         ftp.dataSocket.emit("timeout");
     });
 
     it("Relays data socket error event", function(done) {
-        ftp.handle(undefined, res => {
-            assert.deepEqual(res, { error: { foo: "bar", ftpSocket: "data" } });
+        ftp.handle(undefined, err => {
+            assert.deepEqual(err, new Error("hello"));
             done();
         });
-        ftp.dataSocket.emit("error", { foo: "bar" });
+        ftp.dataSocket.emit("error", new Error("hello"));
     });
 
     it("Relays single line control response", function(done) {
-        ftp.handle(undefined, res => {
+        ftp.handle(undefined, (err, res) => {
             assert.deepEqual(res, { code: 200, message: "200 OK"});
             done();
         });
@@ -72,7 +72,7 @@ describe("FTPContext", function() {
     });
 
     it("Relays multiline control response", function(done) {
-        ftp.handle(undefined, res => {
+        ftp.handle(undefined, (err, res) => {
             assert.deepEqual(res, { code: 200, message: "200-OK\nHello\n200 OK"});
             done();
         });
@@ -81,7 +81,7 @@ describe("FTPContext", function() {
 
     it("Relays multiple multiline control responses in separate callbacks", function(done) {
         const exp = new Set(["200-OK\n200 OK", "200-Again\n200 Again" ]);
-        ftp.handle(undefined, res => {
+        ftp.handle(undefined, (err, res) => {
             assert.equal(true, exp.has(res.message));
             exp.delete(res.message);
             if (exp.size === 0) {
@@ -92,7 +92,7 @@ describe("FTPContext", function() {
     });
 
     it("Relays chunked multiline response as a single response", function(done) {
-        ftp.handle(undefined, res => {
+        ftp.handle(undefined, (err, res) => {
             assert.deepEqual(res, { code: 200, message: "200-OK\nHello\n200 OK"});
             done();
         });
@@ -101,7 +101,7 @@ describe("FTPContext", function() {
     });
 
     it("Stops relaying if task is resolved", function(done) {
-        ftp.handle(undefined, (res, task) => {
+        ftp.handle(undefined, (err, res, task) => {
             if (res.code === 220) {
                 assert.fail("Relayed message when it shouldn't have.");
             }

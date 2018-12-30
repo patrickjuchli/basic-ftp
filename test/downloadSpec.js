@@ -2,6 +2,7 @@ const assert = require("assert");
 const Client = require("../lib/ftp").Client;
 const FileInfo = require("../lib/ftp").FileInfo;
 const SocketMock = require("./SocketMock");
+const { FTPError } = require("../lib/FtpContext");
 
 /**
  * Downloading a directory listing uses the same mechanism as downloading in general,
@@ -113,8 +114,7 @@ describe("Download directory listing", function() {
 
     it("relays FTP error response even if data transmitted completely", function(done) {
         client.list().catch(err => {
-            assert.equal(err.code, 500, "Error code");
-            assert.equal(err.message, "500 Error");
+            assert.deepEqual(err, new FTPError("500 Error"));
             done();
         });
         setTimeout(() => {

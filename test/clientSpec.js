@@ -1,6 +1,7 @@
 const assert = require("assert");
 const Client = require("../lib/ftp").Client;
 const SocketMock = require("./SocketMock");
+const { FTPError } = require("../lib/FtpContext");
 
 const featReply = `
 211-Extensions supported:
@@ -12,12 +13,6 @@ const featReply = `
 const featEmptyReply = `
 211 No features
 `;
-
-class MockError {
-    constructor(info) {
-        this.info = info;
-    }
-}
 
 describe("Convenience API", function() {
     this.timeout(100);
@@ -89,7 +84,7 @@ describe("Convenience API", function() {
             func: c => c.send("TEST"),
             command: "TEST\r\n",
             reply: "500 Error\r\n",
-            result: new MockError({ code: 500, message: "500 Error" })
+            result: new FTPError("500 Error")
         },
         {
             name: "send command: can optionally ignore error response (>=400)",
@@ -103,7 +98,7 @@ describe("Convenience API", function() {
             func: c => c.send("TEST", true),
             command: "TEST\r\n",
             reply: undefined,
-            result: new MockError({ error: { info: "SocketError", ftpSocket: "control" } })
+            result: new Error("some error")
         },
         {
             name: "can get the working directory",
@@ -136,12 +131,12 @@ describe("Convenience API", function() {
                     client.ftp.socket.emit("data", test.reply);
                 }
                 else {
-                    client.ftp.socket.emit("error", { info: "SocketError" });
+                    client.ftp.socket.emit("error", new Error("some error"));
                 }
             });
             const promise = test.func(client);
-            if (test.result instanceof MockError) {
-                return promise.catch(err => assert.deepEqual(err, test.result.info));
+            if (test.result instanceof Error) {
+                return promise.catch(err => assert.deepEqual(err, test.result));
             }
             else {
                 return promise.then(result => assert.deepEqual(result, test.result));
@@ -168,7 +163,7 @@ describe("Convenience API", function() {
         client.ftp.socket.connect = () => {
             setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
         };
-        return client.connect("host", 22).catch(result => assert.deepEqual(result, { code: 120, message: "120 Ready in 5 hours"}));
+        return client.connect("host", 22).catch(result => assert.deepEqual(result, new Error("Unexpected response from FTP server: 120 Ready in 5 hours")));
     });
 
     it("can login", function() {
@@ -191,6 +186,6 @@ describe("Convenience API", function() {
         client.ftp.socket.once("didSend", () => {
             client.ftp.socket.emit("data", "332 Account needed");
         });
-        return client.login("user", "pass").catch(result => assert.deepEqual(result, { code: 332, message: "332 Account needed" }));
+        return client.login("user", "pass").catch(result => assert.deepEqual(result, new Error("Unexpected response from FTP server: 332 Account needed")));
     });
 });
