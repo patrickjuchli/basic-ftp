@@ -163,7 +163,7 @@ describe("Convenience API", function() {
         client.ftp.socket.connect = () => {
             setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
         };
-        return client.connect("host", 22).catch(result => assert.deepEqual(result, new Error("Unexpected response from FTP server: 120 Ready in 5 hours")));
+        return client.connect("host", 22).catch(result => assert.deepEqual(result, new Error("Unexpected server response: 120 Ready in 5 hours")));
     });
 
     it("can login", function() {
