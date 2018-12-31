@@ -18,7 +18,6 @@ describe("Upload", function() {
     });
 
     afterEach(function() {
-        client.ftp._reset();
         client.close();
     });
 
@@ -27,7 +26,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "STOR NAME.TXT\r\n");
             done();
         });
-        client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT").catch(() => {});
     });
 
     it("starts uploading after receiving 'ready to upload'", function(done) {
@@ -37,7 +36,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "123", "Wrong data sent");
             done();
         });
-        client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT").catch(() => {});
         setTimeout(() => {
             didSendReady = true;
             client.ftp.socket.emit("data", "150 Ready");
@@ -53,7 +52,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "123", "Wrong data sent");
             done();
         });
-        client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT").catch(() => {});
         setTimeout(() => {
             client.ftp.socket.emit("data", "150 Ready");
             setTimeout(() => {
@@ -72,7 +71,7 @@ describe("Upload", function() {
                 done();
             });
         });
-        client.upload(readable, "NAME.TXT");
+        client.upload(readable, "NAME.TXT").catch(() => {});
         setTimeout(() => {
             client.ftp.socket.emit("data", "150 Ready");
             // Don't send completion message, we don't want the TransferResolver

@@ -5,7 +5,7 @@ const tls = require("tls");
 const net = require("net");
 
 describe("FTPContext", function() {
-
+    this.timeout(100);
     let ftp;
     beforeEach(function() {
         ftp = new FTPContext();
@@ -129,17 +129,18 @@ describe("FTPContext", function() {
         ftp.send("HELLO 直己");
     });
 
-    it("creates a new control socket when closing", function() {
-        const oldSocket = ftp.socket;
-        ftp.close();
-        assert.notEqual(ftp.socket, oldSocket, "Control socket");
-        assert.equal(ftp.dataSocket, undefined, "Data socket");
-    });
-
     it("reports whether socket has TLS", function() {
         ftp.socket = new net.Socket();
         assert(!ftp.hasTLS);
         ftp.socket = new tls.TLSSocket();
         assert(ftp.hasTLS);
+    });
+
+    it("queues an error if no task is active and assigns it to the next task", function() {
+        ftp.socket.emit("error", new Error("some error"));
+        return ftp.handle("TEST", (err, res, task) => {
+            assert.deepEqual(err, new Error("some error (control socket)"));
+            task.resolve();
+        });
     });
 });
