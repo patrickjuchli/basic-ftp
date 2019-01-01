@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0
+
+This release contains the following breaking changes:
+
+- Changed: `Client` is now single-use only. It can't be used anymore once it closes and a new client has to be instantiated.
+- Changed: All exceptions are now instances of `Error`, not custom error objects. Introduced `FTPError` for errors specific to FTP. (#37)
+
+Non-breaking changes:
+
+- Added: If there is a socket error outside of a task, the following task will receive it. (#43)
+- Changed: Improved feedback if a developer forgets to use `await` or `.then()` for tasks. (#36)
+
 ## 2.17.1
 
 - Fixed: Multibyte UTF-8 arriving in multiple chunks (#38)
