@@ -12,6 +12,8 @@ Non-breaking changes:
 - Added: If there is a socket error outside of a task, the following task will receive it. (#43)
 - Changed: Improved feedback if a developer forgets to use `await` or `.then()` for tasks. (#36)
 
+Special thanks to @broofa for feedback and reviews.
+
 ## 2.17.1
 
 - Fixed: Multibyte UTF-8 arriving in multiple chunks (#38)
