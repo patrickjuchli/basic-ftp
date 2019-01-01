@@ -6,7 +6,7 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, Passive M
 
 ## Advisory
 
-Prefer alternative transfer protocols like SFTP if you can. Use this library when you have no choice and need to use FTP. Try to use FTPS whenever possible, FTP alone does not encrypt your data.
+Prefer alternative transfer protocols like SFTP (SSH) if you can. Use this library when you have no choice and need to use FTP. Try to use FTPS whenever possible, FTP alone does not encrypt your data.
 
 ## Dependencies
 
@@ -64,7 +64,7 @@ Create a client instance using a timeout in milliseconds that will be used for c
 
 `close()`
 
-Close all socket connections.
+Close the client and all open socket connections. The client can’t be used anymore after calling this method, you have to instantiate a new one to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
 
 `access(options): Promise<Response>`
 
@@ -180,54 +180,11 @@ For each transfer, the callback function will receive the filename, transfer typ
 
 There is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
-## Errors and Timeouts
+## Error Handling
 
-Errors reported by the FTP server will throw an exception. The connection to the FTP server stays intact and you can continue to use it.
+Any error reported by the FTP server will be thrown as `FTPError`. The connection to the FTP server stays intact and you can continue to use your `Client` instance.
 
-This is different with a timeout or connection error: In addition to an exception being thrown, any connection to the FTP server will be closed. You'll have to reconnect to resume any operation.
-
-Here are examples for the different types of error messages you'll receive:
-
-### FTP error response
-
-FTP response messages that have been interpreted as errors will throw an exception that holds an object describing the response message and the FTP response code.
-
-```js
-{
-    code: 530, // FTP response code
-    message: '530 Login failed.' // Complete FTP response message including code
-}
-```
-
-### Timeouts
-
-The following format will be encountered for timeouts or closed connections due to transmission error.
-
-```js
-{
-    error: {
-        info: 'socket timeout', // Error type
-        ftpSocket: 'data' // Responsible socket, 'data' or 'control'.
-    }
-}
-```
-
-### General connection or other errors
-
-Error objects from Node.js also have an additional field `ftpSocket` that says which socket was responsible for the error. There are two identifiers: `control` for control connections and `data` for data connections. 
-
-```js
-{
-    error: {
-        errno: 'ENETUNREACH', // Typical Node.js error object…
-        code: 'ENETUNREACH',
-        syscall: 'connect',
-        address: '192.168.1.123',
-        port: 21
-        ftpSocket: 'control' // Responsible socket
-    }
-}
-```
+This is different with a timeout or connection error: In addition to an `Error` being thrown, any connection to the FTP server will be closed. You’ll have to instantiate a new `Client` and reconnect, if you want to continue any work.
 
 ## Extending the library
 
@@ -240,7 +197,6 @@ Provide a function that initializes a data connection. FTP uses a dedicated sock
 `get/set client.parseList`
 
 Provide a function to parse directory listing data. This library supports Unix and DOS formats. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`.
-
 
 ### FTPContext
 
@@ -285,15 +241,15 @@ The best source of examples is the implementation of the `Client` itself as it's
 ```js
 function mySimpleUpload(ftp, readableStream, remoteFilename) {
     const command = "STOR " + remoteFilename
-    return ftp.handle(command, (res, task) => {
-        if (res.code === 150) { // Ready to upload
+    return ftp.handle(command, (err, res, task) => {
+        if (err) {
+	          task.reject(err)
+        }
+        else if (res.code === 150) { // Ready to upload
             readableStream.pipe(ftp.dataSocket)
         }
         else if (res.code === 226) { // Transfer complete
             task.resolve(res)
-        }
-        else if (res.code >= 400 || res.error) {
-            task.reject(res)
         }
     })
 }
