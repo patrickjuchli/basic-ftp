@@ -1,6 +1,6 @@
 {
   "name": "basic-ftp",
-  "version": "2.17.1",
+  "version": "3.0.0",
   "description": "FTP client for Node.js with support for explicit FTPS over TLS.",
   "main": "./lib/ftp",
   "scripts": {
