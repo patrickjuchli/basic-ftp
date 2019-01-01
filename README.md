@@ -186,6 +186,14 @@ Any error reported by the FTP server will be thrown as `FTPError`. The connectio
 
 This is different with a timeout or connection error: In addition to an `Error` being thrown, any connection to the FTP server will be closed. You’ll have to instantiate a new `Client` and reconnect, if you want to continue any work.
 
+## Logging
+
+Using `client.ftp.verbose = true` will log debug-level information to the console. You can use your own logging library by overriding `client.ftp.log`. This method is called regardless of what `client.ftp.verbose` is set to. For example:
+
+```
+myClient.ftp.log = myLogger.debug
+```
+
 ## Extending the library
 
 ### Custom strategies
