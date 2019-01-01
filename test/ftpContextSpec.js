@@ -139,7 +139,7 @@ describe("FTPContext", function() {
     it("queues an error if no task is active and assigns it to the next task", function() {
         ftp.socket.emit("error", new Error("some error"));
         return ftp.handle("TEST", (err, res, task) => {
-            assert.deepEqual(err, new Error("some error (control socket)"));
+            assert.deepEqual(err, new Error("Client has been closed earlier, reason: some error (control socket)"));
             task.resolve();
         });
     });
