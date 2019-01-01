@@ -163,7 +163,7 @@ describe("Convenience API", function() {
         client.ftp.socket.connect = () => {
             setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
         };
-        return client.connect("host", 22).catch(result => assert.deepEqual(result, new Error("Unexpected server response: 120 Ready in 5 hours")));
+        return client.connect("host", 22).catch(result => assert.deepEqual(result, new FTPError({code: 120, message: "120 Ready in 5 hours"})));
     });
 
     it("can login", function() {
@@ -186,6 +186,6 @@ describe("Convenience API", function() {
         client.ftp.socket.once("didSend", () => {
             client.ftp.socket.emit("data", "332 Account needed");
         });
-        return client.login("user", "pass").catch(result => assert.deepEqual(result, new Error("Unexpected response from FTP server: 332 Account needed")));
+        return client.login("user", "pass").catch(result => assert.deepEqual(result, new FTPError({code: 332, message: "332 Account needed"})));
     });
 });
