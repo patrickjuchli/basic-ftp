@@ -66,6 +66,10 @@ Create a client instance using a timeout in milliseconds that will be used for c
 
 Close the client and all open socket connections. The client can’t be used anymore after calling this method, you have to instantiate a new one to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
 
+`closed`
+
+True if the client has been closed, either by the user or by an error.
+
 `access(options): Promise<Response>`
 
 Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. The available options are:
