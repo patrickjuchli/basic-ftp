@@ -24,9 +24,11 @@ describe("Download directory listing", function() {
     beforeEach(function() {
         client = new Client();
         client.prepareTransfer = client => {
+            //@ts-ignore that SocketMock can't be assigned to client.ftp
             client.ftp.dataSocket = new SocketMock();
-            return Promise.resolve();
+            return Promise.resolve({code: 200, message: "OK"});
         };
+        //@ts-ignore
         client.ftp.socket = new SocketMock();
     });
 

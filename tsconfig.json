@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "allowJs": true,
+        "checkJs": true,
+        "target": "es2018",
+        "strict": true,
+        "noImplicitAny": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "./lib/**/*"
+    ]
+}

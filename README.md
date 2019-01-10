@@ -198,6 +198,10 @@ Using `client.ftp.verbose = true` will log debug-level information to the consol
 myClient.ftp.log = myLogger.debug
 ```
 
+## Verification
+
+The source code is verified by unit tests, linting and type-checking. Type-checking is done by Typescript using type declarations written in JSDoc  with the [settings](tsconfig.json) `strict` and `noImplicitAny`. All checks are run by CI.
+
 ## Extending the library
 
 ### Custom strategies
