@@ -200,7 +200,7 @@ myClient.ftp.log = myLogger.debug
 
 ## Static Types
 
-In addition to unit tests and linting, the source code is fully [type-checked](tsconfig.json) using Typescript. Type declarations are written in JSDoc and are complete enough to satisfy the most rigorous compiler settings such as `strict` or `noImplicitAny`.
+In addition to unit tests and linting, the source code is fully [type-checked](tsconfig.json) using Typescript. Type declarations are written in JSDoc and are complete enough to satisfy the most rigorous [compiler settings](https://www.typescriptlang.org/docs/handbook/compiler-options.html) such as `strict` or `noImplicitAny`.
 
 ## Extending the library
 
