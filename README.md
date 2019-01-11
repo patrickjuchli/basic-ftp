@@ -257,9 +257,9 @@ The best source of examples is the implementation of the `Client` itself as it's
 ```js
 function mySimpleUpload(ftp, readableStream, remoteFilename) {
     const command = "STOR " + remoteFilename
-    return ftp.handle(command, (err, res, task) => {
-        if (err) {
-	          task.reject(err)
+    return ftp.handle(command, (res, task) => {
+        if (res instanceof Error) {
+	          task.reject(res)
         }
         else if (res.code === 150) { // Ready to upload
             readableStream.pipe(ftp.dataSocket)
