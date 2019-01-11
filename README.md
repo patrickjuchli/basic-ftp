@@ -259,7 +259,7 @@ function mySimpleUpload(ftp, readableStream, remoteFilename) {
     const command = "STOR " + remoteFilename
     return ftp.handle(command, (res, task) => {
         if (res instanceof Error) {
-	          task.reject(res)
+            task.reject(res)
         }
         else if (res.code === 150) { // Ready to upload
             readableStream.pipe(ftp.dataSocket)
