@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.0
+
+- Added: Full type-checking as part of CI with Typescript and JSDoc type declarations. Check is rigourous, settings include 'strict' or 'noImplicitAny'.
+- Changed: Improved handling of unexpected server requests during transfer.
+
 ## 3.0.0
 
 This release contains the following breaking changes:
