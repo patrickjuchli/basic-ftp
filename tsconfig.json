@@ -6,6 +6,8 @@
         "target": "es2018",
         "strict": true,
         "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noFallthroughCasesInSwitch": true,
         "skipLibCheck": true
     },
     "include": [
