@@ -22,7 +22,8 @@
     "async",
     "await",
     "tls",
-    "ipv6"
+    "ipv6",
+    "typescript"
   ],
   "engines": {
     "node": ">=8.0.0"
