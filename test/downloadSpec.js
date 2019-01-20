@@ -150,4 +150,14 @@ describe("Download directory listing", function() {
             done();
         });
     });
+
+    it("stops tracking timeout after failure", function(done) {
+        client.list().catch(() => {});
+        setTimeout(() => {
+            client.ftp.socket.emit("data", "125 Sending");
+            client.ftp.socket.emit("data", "500 Error");
+            assert.equal(client.ftp.socket.timeout, 0);
+            done();
+        });
+    });
 });
