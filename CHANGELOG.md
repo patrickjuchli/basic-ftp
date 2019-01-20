@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.1
+
+- Fixed: Switch seamlessly between control and data connection for tracking timeout.
+
 ## 3.1.0
 
 - Added: Full type-checking as part of CI with Typescript and JSDoc type declarations. Check is rigourous, settings include 'strict' or 'noImplicitAny'.
