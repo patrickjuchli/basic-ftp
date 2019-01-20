@@ -147,4 +147,22 @@ describe("FTPContext", function() {
             task.resolve();
         });
     });
+
+    it("timeout of control socket is initially 0", function() {
+        const c = new FTPContext(10000);
+        c.socket = new SocketMock();
+        assert.equal(c.socket.timeout, 0);
+    });
+
+    it("timeout of control socket is only tracked during a task", function() {
+        const c = new FTPContext(10000);
+        c.socket = new SocketMock();
+        assert.equal(c.socket.timeout, 0, "initial idle timeout");
+        const taskPromise = c.handle("TEST", (res, task) => task.resolve(res));
+        assert.equal(c.socket.timeout, 10000, "timeout after starting task");
+        c.socket.emit("data", "200 Bingo");
+        return taskPromise.then(() => {
+            assert.equal(c.socket.timeout, 0, "timeout after resolving task");
+        });
+    });
 });

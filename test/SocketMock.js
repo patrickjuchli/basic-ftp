@@ -6,6 +6,7 @@ module.exports = class SocketMock extends EventEmitter {
         this.destroyed = false;
         this.bytesWritten = 0;
         this.bytesRead = 0;
+        this.timeout = -1;
     }
     setEncoding() {
     }
@@ -13,7 +14,8 @@ module.exports = class SocketMock extends EventEmitter {
     }
     setKeepAlive() {
     }
-    setTimeout() {
+    setTimeout(millis) {
+        this.timeout = millis;
     }
     destroy() {
         this.destroyed = true;

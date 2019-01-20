@@ -22,7 +22,7 @@ describe("Download directory listing", function() {
 
     let client;
     beforeEach(function() {
-        client = new Client();
+        client = new Client(5000);
         client.prepareTransfer = client => {
             //@ts-ignore that SocketMock can't be assigned to client.ftp
             client.ftp.dataSocket = new SocketMock();
@@ -123,6 +123,31 @@ describe("Download directory listing", function() {
         });
         return client.list().catch(err => {
             assert.deepEqual(err, new FTPError({code: 500, message: "500 Error"}));
+        });
+    });
+
+    it("uses data connection exclusively for timeout tracking during transfer", function(done) {
+        client.list().catch(() => {});
+        // Before anything: No timeout tracking at all
+        assert.equal(client.ftp.socket.timeout, 0, "before task (control)");
+        assert.equal(client.ftp.dataSocket.timeout, 0, "before task (data)");
+        setTimeout(() => {
+            // Task started, control socket tracks timeout
+            assert.equal(client.ftp.socket.timeout, 5000, "task started (control)");
+            assert.equal(client.ftp.dataSocket.timeout, 0, "task started (data)");
+            // Data transfer will start, data socket tracks timeout
+            client.ftp.socket.emit("data", "125 Sending");
+            assert.equal(client.ftp.socket.timeout, 0, "transfer start (control)");
+            assert.equal(client.ftp.dataSocket.timeout, 5000, "transfer start (data)");
+            // Data transfer is done, control socket tracks timeout
+            client.ftp.dataSocket.end();
+            assert.equal(client.ftp.socket.timeout, 5000, "transfer end (control)");
+            assert.equal(client.ftp.dataSocket.timeout, 0, "transfer end (data)");
+            // Transfer confirmed via control socket, stop tracking timeout altogether
+            client.ftp.socket.emit("data", "250 Done");
+            assert.equal(client.ftp.socket.timeout, 0, "transfer end (control)");
+            assert.equal(client.ftp.dataSocket, undefined, "data connection");
+            done();
         });
     });
 });
