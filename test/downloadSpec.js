@@ -126,7 +126,7 @@ describe("Download directory listing", function() {
         });
     });
 
-    it("uses data connection exclusively for timeout tracking during transfer", function(done) {
+    it("uses data connection exclusively for timeout tracking during download", function(done) {
         client.list().catch(() => {});
         // Before anything: No timeout tracking at all
         assert.equal(client.ftp.socket.timeout, 0, "before task (control)");
