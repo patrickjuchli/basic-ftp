@@ -11,6 +11,7 @@
         "skipLibCheck": true
     },
     "include": [
-        "./lib/**/*"
+        "./lib/**/*",
+        "./test/types.ts"
     ]
 }
