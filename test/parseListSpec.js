@@ -1,6 +1,6 @@
 const assert = require("assert");
-const parseList = require("../lib/parseList");
-const FileInfo = require("../lib/FileInfo");
+const { parseList } = require("../dist/parseList");
+const { FileInfo, FileType } = require("../dist");
 
 /**
  * As the parsers themselves are based on the implementation of the Apache Net Commons FTP parser
@@ -46,7 +46,7 @@ describe("Directory listing", function() {
                 },
                 f.hardLinkCount = 1,
                 f.date = "Dec 11 14:35",
-                f.type = FileInfo.Type.File,
+                f.type = FileType.File,
                 f),
                 (f = new FileInfo("lib"),
                 f.group = "staff",
@@ -59,7 +59,7 @@ describe("Directory listing", function() {
                 },
                 f.hardLinkCount = 5,
                 f.date = "Dec 11 17:24",
-                f.type = FileInfo.Type.Directory,
+                f.type = FileType.Directory,
                 f),
             ]
         },
@@ -70,12 +70,12 @@ describe("Directory listing", function() {
                 (f = new FileInfo("myDir"),
                 f.size = 0,
                 f.date = "12-05-96 05:03PM",
-                f.type = FileInfo.Type.Directory,
+                f.type = FileType.Directory,
                 f),
                 (f = new FileInfo("MYFILE.INI"),
                 f.size = 953,
                 f.date = "11-14-97 04:21PM",
-                f.type = FileInfo.Type.File,
+                f.type = FileType.File,
                 f),
             ]
         },

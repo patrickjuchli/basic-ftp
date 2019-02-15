@@ -1,8 +1,6 @@
 const assert = require("assert");
-const Client = require("../lib/ftp").Client;
-const FileInfo = require("../lib/ftp").FileInfo;
 const SocketMock = require("./SocketMock");
-const { FTPError } = require("../lib/FtpContext");
+const { Client, FileInfo, FileType, FTPError } = require("../dist");
 
 /**
  * Downloading a directory listing uses the same mechanism as downloading in general,
@@ -16,7 +14,7 @@ describe("Download directory listing", function() {
         (f = new FileInfo("myDir"),
         f.size = 0,
         f.date = "12-05-96 05:03PM",
-        f.type = FileInfo.Type.Directory,
+        f.type = FileType.Directory,
         f)
     ];
 

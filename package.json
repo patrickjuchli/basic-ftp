@@ -1,13 +1,19 @@
 {
   "name": "basic-ftp",
-  "version": "3.1.1",
-  "description": "FTP client for Node.js with support for explicit FTPS over TLS.",
-  "main": "./lib/ftp",
+  "version": "3.2.0",
+  "description": "FTP client for Node.js, supports explicit FTPS over TLS, IPv6, Async/Await, and Typescript.",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
-    "test": "eslint . && tsc && mocha",
-    "tdd": "mocha --watch",
-    "lint": "eslint .",
-    "types": "tsc"
+    "build": "rimraf dist && tsc",
+    "prepare": "rimraf dist && npm run test",
+    "test": "npm run lint && tsc && mocha",
+    "lint": "tslint \"./src/**/*.ts\"",
+    "dev": "rimraf dist && tsc --watch",
+    "tdd": "mocha --watch"
   },
   "repository": {
     "type": "git",
@@ -29,9 +35,10 @@
     "node": ">=8.0.0"
   },
   "devDependencies": {
-    "@types/node": "10.12.18",
-    "typescript": "3.2.4",
-    "eslint": "5.12.1",
-    "mocha": "5.2.0"
+    "@types/node": "11.9.3",
+    "mocha": "5.2.0",
+    "rimraf": "2.6.3",
+    "tslint": "5.12.1",
+    "typescript": "3.3.3"
   }
 }

@@ -1,16 +1,21 @@
 {
     "compilerOptions": {
-        "noEmit": true,
-        "allowJs": true,
-        "checkJs": true,
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "declaration": true,
+        "outDir": "dist",
+        "baseUrl": ".",
         "target": "es2018",
+        "allowJs": false,
         "strict": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "noImplicitReturns": true,
         "skipLibCheck": true
     },
     "include": [
-        "./lib/**/*"
+        "./src/**/*"
     ]
 }

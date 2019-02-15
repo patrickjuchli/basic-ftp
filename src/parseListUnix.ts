@@ -1,6 +1,4 @@
-"use strict";
-
-const FileInfo = require("./FileInfo");
+import { FileInfo, FileType } from "./FileInfo"
 
 /**
  * This parser is based on the FTP client library source code in Apache Commons Net provided
@@ -74,21 +72,12 @@ const RE_LINE = new RegExp(
 
     + "(.*)"); // the rest (21)
 
-/** @type {("user" | "group" | "world")[]} */
-const accessGroups = ["user", "group", "world"];
-
-/**
- * @param {string} line
- */
-exports.testLine = function(line) {
+export function testLine(line: string): boolean {
     // Example: "-rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 test.txt"
     return line !== undefined && line.match(RE_LINE) !== null;
 };
 
-/**
- * @param {string} line
- */
-exports.parseLine = function(line) {
+export function parseLine(line: string): FileInfo | undefined {
     const groups = line.match(RE_LINE);
     if (groups) {
         // Ignore parent directory links
@@ -104,53 +93,41 @@ exports.parseLine = function(line) {
         file.group = groups[17];
         file.hardLinkCount = parseInt(groups[15], 10);
         file.date = groups[19] + " " + groups[20];
+        file.permissions = {
+            user: parseMode(groups[4], groups[5], groups[6]),
+            group: parseMode(groups[8], groups[9], groups[10]),
+            world: parseMode(groups[12], groups[13], groups[14]),
+        }
 
         // Set file type
         switch (groups[1].charAt(0)) {
             case "d":
-                file.type = FileInfo.Type.Directory;
+                file.type = FileType.Directory;
                 break;
             case "e": // NET-39 => z/OS external link
-                file.type = FileInfo.Type.SymbolicLink;
+                file.type = FileType.SymbolicLink;
                 break;
             case "l":
-                file.type = FileInfo.Type.SymbolicLink;
+                file.type = FileType.SymbolicLink;
                 break;
             case "b":
             case "c":
-                file.type = FileInfo.Type.File; // TODO change this if DEVICE_TYPE implemented
+                file.type = FileType.File; // TODO change this if DEVICE_TYPE implemented
                 break;
             case "f":
             case "-":
-                file.type = FileInfo.Type.File;
+                file.type = FileType.File;
                 break;
             default:
                 // A 'whiteout' file is an ARTIFICIAL entry in any of several types of
                 // 'translucent' filesystems, of which a 'union' filesystem is one.
-                file.type = FileInfo.Type.Unknown;
+                file.type = FileType.Unknown;
         }
-
-        // Set permissions
-        accessGroups.forEach((access, i) => {
-            const g = (i + 1) * 4;
-            let value = 0;
-            if (groups[g] !== "-") {
-                value += FileInfo.Permission.Read;
-            }
-            if (groups[g+1] !== "-") {
-                value += FileInfo.Permission.Write;
-            }
-            const execToken = groups[g+2].charAt(0);
-            if (execToken !== "-" && execToken.toUpperCase() !== execToken) {
-                value += FileInfo.Permission.Execute;
-            }
-            file.permissions[access] = value;
-        });
 
         // Separate out the link name for symbolic links
         if (file.isSymbolicLink) {
             const end = name.indexOf(" -> ");
-            if (end > -1) {
+            if (end !== -1) {
                 file.name = name.substring(0, end);
                 file.link = name.substring(end + 4);
             }
@@ -159,3 +136,18 @@ exports.parseLine = function(line) {
     }
     return undefined;
 };
+
+function parseMode(a: string, b: string, c: string): number {
+    let value = 0;
+    if (a !== "-") {
+        value += FileInfo.Permission.Read;
+    }
+    if (b !== "-") {
+        value += FileInfo.Permission.Write;
+    }
+    const execToken = c.charAt(0);
+    if (execToken !== "-" && execToken.toUpperCase() !== execToken) {
+        value += FileInfo.Permission.Execute;
+    }
+    return value
+}

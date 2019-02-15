@@ -11,6 +11,7 @@ module.exports = class SocketMock extends EventEmitter {
     setEncoding() {
     }
     removeAllListeners() {
+        return this
     }
     setKeepAlive() {
     }

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const parseControlResponse = require("../lib/parseControlResponse");
+const { parseControlResponse } = require("../dist/parseControlResponse");
 
 const CRLF = "\r\n";
 const LF = "\n";

@@ -1,7 +1,6 @@
 const assert = require("assert");
-const Client = require("../lib/ftp").Client;
+const { Client, FTPError } = require("../dist");
 const SocketMock = require("./SocketMock");
-const { FTPError } = require("../lib/FtpContext");
 
 const featReply = `
 211-Extensions supported:
@@ -20,7 +19,7 @@ describe("Convenience API", function() {
 
     beforeEach(function() {
         client = new Client();
-        client.prepareTransfer = () => Promise.resolve(); // Don't change
+        client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
     });
@@ -145,9 +144,9 @@ describe("Convenience API", function() {
     });
 
     it("resets overall bytes of progress tracker on trackProgress()", function() {
-        client._progressTracker.bytesOverall = 5;
+        client.progressTracker.bytesOverall = 5;
         client.trackProgress();
-        assert.equal(client._progressTracker.bytesOverall, 0, "bytesOverall after reset");
+        assert.equal(client.progressTracker.bytesOverall, 0, "bytesOverall after reset");
     });
 
     it("can connect", function() {

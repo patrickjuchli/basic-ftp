@@ -6,7 +6,7 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, Passive M
 
 ## Advisory
 
-Prefer alternative transfer protocols like HTTP or SFTP (SSH) if you can. Use this library when you have no choice and need to use FTP. Try to use FTPS whenever possible, FTP alone does not encrypt your data.
+Prefer alternative transfer protocols like HTTPS or SFTP (SSH). Use this library when you have no choice and need to use FTP. Try to use FTPS whenever possible, FTP alone does not provide any security.
 
 ## Dependencies
 
@@ -70,7 +70,7 @@ Close the client and all open socket connections. The client can’t be used any
 
 True if the client has been closed, either by the user or by an error.
 
-`access(options): Promise<Response>`
+`access(options): Promise<FTPResponse>`
 
 Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. The available options are:
 
@@ -87,11 +87,11 @@ Get access to an FTP server. This method will connect to a server, optionally se
 
 Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
 
-`send(command, ignoreErrorCodes = false): Promise<Response>`
+`send(command, ignoreErrorCodes = false): Promise<FTPResponse>`
 
 Send an FTP command. You can choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still reject the Promise returned.
 
-`cd(remotePath): Promise<Response>`
+`cd(remotePath): Promise<FTPResponse>`
 
 Change the working directory.
 
@@ -111,19 +111,19 @@ Get the last modification time of a file in the working directory. This command 
 
 Get the size of a file in the working directory.
 
-`rename(path, newPath): Promise<Response>`
+`rename(path, newPath): Promise<FTPResponse>`
 
 Rename a file. Depending on the server you may also use this to move a file to another directory by providing full paths.
 
-`remove(filename, ignoreErrorCodes = false): Promise<Response>`
+`remove(filename, ignoreErrorCodes = false): Promise<FTPResponse>`
 
 Remove a file from the working directory.
 
-`upload(readableStream, remoteFilename): Promise<Response>`
+`upload(readableStream, remoteFilename): Promise<FTPResponse>`
 
 Upload data from a readable stream and store it as a file with a given filename in the current working directory.
 
-`download(writableStream, remoteFilename, startAt = 0): Promise<Response>`
+`download(writableStream, remoteFilename, startAt = 0): Promise<FTPResponse>`
 
 Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
 
@@ -200,7 +200,7 @@ myClient.ftp.log = myLogger.debug
 
 ## Static Types
 
-In addition to unit tests and linting, the source code is fully [type-checked](tsconfig.json) using Typescript. Type declarations are written in JSDoc and are complete enough to satisfy the most rigorous [compiler settings](https://www.typescriptlang.org/docs/handbook/compiler-options.html) such as `strict` or `noImplicitAny`.
+In addition to unit tests and linting, the source code is written in Typescript using rigorous [compiler settings](tsconfig.json) like `strict` and `noImplicitAny`. When building the project, the source is transpiled to Javascript and type declaration files. This makes the library useable for both Javascript and Typescript projects.
 
 ## Extending the library
 
@@ -238,7 +238,7 @@ Set the socket for the control connection. When setting a new socket the current
 
 Set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
 
-`handle(command, handler): Promise<Response>`
+`handle(command, handler): Promise<FTPResponse>`
 
 Send an FTP command and register a handler function to handle all subsequent responses and socket events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. This is the central method of this library, see the example below for a more detailed explanation.
 

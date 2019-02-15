@@ -1,8 +1,7 @@
 const assert = require("assert");
 const fs = require("fs");
-const Client = require("../lib/ftp").Client;
+const { Client, FTPError } = require("../dist");
 const SocketMock = require("./SocketMock");
-const { FTPError } = require("../lib/FtpContext");
 
 describe("Upload", function() {
     this.timeout(100);
@@ -12,7 +11,7 @@ describe("Upload", function() {
     beforeEach(function() {
         readable = fs.createReadStream("test/resources/test.txt");
         client = new Client(5000);
-        client.prepareTransfer = () => {}; // Don't change
+        client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
     });

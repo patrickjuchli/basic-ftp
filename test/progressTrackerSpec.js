@@ -1,11 +1,11 @@
 const assert = require("assert");
-const ProgressTracker = require("../lib/ProgressTracker");
+const { ProgressTracker } = require("../dist/ProgressTracker");
 const SocketMock = require("./SocketMock");
 
 describe("ProgressTracker", function() {
     this.timeout(100);
-
-    let socket, tracker;
+    let tracker = new ProgressTracker()
+    let socket;
     beforeEach(function() {
         socket = new SocketMock();
         tracker = new ProgressTracker();
@@ -26,7 +26,7 @@ describe("ProgressTracker", function() {
     });
 
     it("can stop without update on more time", function() {
-        tracker.start(socket);
+        tracker.start(socket, "", "");
         tracker.reportTo(() => {
             assert.fail("This update should not be called.");
         });
@@ -64,10 +64,11 @@ describe("ProgressTracker", function() {
     });
 
     it("does progress reports at an interval", function(done) {
-        tracker.intervalMillis = 0;
+        tracker.intervalMs = 0;
         tracker.start(socket, "name", "type");
         let count = 0;
         tracker.reportTo(info => {
+
             assert.deepEqual(info, {
                 name: "name",
                 type: "type",
@@ -104,7 +105,7 @@ describe("ProgressTracker", function() {
             assert(firstTime, "Should not be called twice.");
             firstTime = false;
         });
-        tracker.start(socket);
+        tracker.start(socket, "", "");
         tracker.updateAndStop();
     });
 });

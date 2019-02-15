@@ -1,5 +1,5 @@
 const assert = require("assert");
-const FTPContext = require("../lib/ftp").FTPContext;
+const FTPContext = require("../dist").FTPContext;
 const SocketMock = require("./SocketMock");
 const tls = require("tls");
 const net = require("net");

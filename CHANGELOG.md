@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.0
+
+- Changed: Source is now written in Typescript, fixes #49.
+
 ## 3.1.1
 
 - Fixed: Switch seamlessly between control and data connection for tracking timeout.
