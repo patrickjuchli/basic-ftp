@@ -85,8 +85,6 @@ export function parseLine(line: string): FileInfo | undefined {
         if (name === "." || name === "..") {
             return undefined;
         }
-
-        // Map list entry to FileInfo instance
         const file = new FileInfo(name);
         file.size = parseInt(groups[18], 10);
         file.user = groups[16];
@@ -98,7 +96,6 @@ export function parseLine(line: string): FileInfo | undefined {
             group: parseMode(groups[8], groups[9], groups[10]),
             world: parseMode(groups[12], groups[13], groups[14]),
         }
-
         // Set file type
         switch (groups[1].charAt(0)) {
             case "d":
@@ -123,7 +120,6 @@ export function parseLine(line: string): FileInfo | undefined {
                 // 'translucent' filesystems, of which a 'union' filesystem is one.
                 file.type = FileType.Unknown;
         }
-
         // Separate out the link name for symbolic links
         if (file.isSymbolicLink) {
             const end = name.indexOf(" -> ");
@@ -137,15 +133,15 @@ export function parseLine(line: string): FileInfo | undefined {
     return undefined;
 };
 
-function parseMode(a: string, b: string, c: string): number {
+function parseMode(r: string, w: string, x: string): number {
     let value = 0;
-    if (a !== "-") {
+    if (r !== "-") {
         value += FileInfo.Permission.Read;
     }
-    if (b !== "-") {
+    if (w !== "-") {
         value += FileInfo.Permission.Write;
     }
-    const execToken = c.charAt(0);
+    const execToken = x.charAt(0);
     if (execToken !== "-" && execToken.toUpperCase() !== execToken) {
         value += FileInfo.Permission.Execute;
     }

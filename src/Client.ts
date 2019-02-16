@@ -17,29 +17,17 @@ const fsMkDir = promisify(mkdir)
 const fsStat = promisify(stat)
 
 export interface AccessOptions {
-    /**
-     * Host the client should connect to. Optional, default is "localhost".
-     */
+    /** Host the client should connect to. Optional, default is "localhost". */
     readonly host?: string
-    /**
-     * Port the client should connect to. Optional, default is 21.
-     */
+    /** Port the client should connect to. Optional, default is 21. */
     readonly port?: number
-    /**
-     * Username to use for login. Optional, default is "anonymous".
-     */
+    /** Username to use for login. Optional, default is "anonymous". */
     readonly user?: string
-    /**
-     * Password to use for login. Optional, default is "guest".
-     */
+    /** Password to use for login. Optional, default is "guest". */
     readonly password?: string
-    /**
-     * Use explicit FTPS over TLS. Optional, default is false.
-     */
+    /** Use explicit FTPS over TLS. Optional, default is false. */
     readonly secure?: boolean
-    /**
-     * TLS options as in `tls.connect(options)`, optional.
-     */
+    /** TLS options as in `tls.connect(options)`, optional. */
     readonly secureOptions?: ConnectionOptions
 }
 
