@@ -85,10 +85,6 @@ export class FTPContext {
      * The context can’t be used anymore after calling this method.
      */
     close() {
-        // If this context already has been closed, don't overwrite the reason.
-        if (this.closingError) {
-            return
-        }
         // Close with an error: If there is an active task it will receive it justifiably because the user
         // closed while a task was still running. If no task is running, no error will be thrown (see closeWithError)
         // but all newly submitted tasks after that will be rejected because "the client is closed". Plus, the user
@@ -103,6 +99,10 @@ export class FTPContext {
      * Send an error to the current handler and close all connections.
      */
     closeWithError(err: Error) {
+        // If this context already has been closed, don't overwrite the reason.
+        if (this.closingError) {
+            return
+        }
         this.closingError = err
         // Before giving the user's task a chance to react, make sure we won't be bothered with any inputs.
         this.closeSocket(this._socket)
