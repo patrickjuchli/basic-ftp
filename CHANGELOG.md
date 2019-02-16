@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.1
+
+- Republish to (maybe) fix NPM issue.
+
 ## 3.2.0
 
 - Changed: Source is now written in Typescript, fixes #49.
