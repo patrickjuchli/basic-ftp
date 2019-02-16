@@ -522,8 +522,8 @@ function upgradeSocket(socket: Socket, options: ConnectionOptions): Promise<TLSS
  * Try all available transfer strategies and pick the first one that works. Update `client` to
  * use the working strategy for all successive transfer requests.
  *
- * @param {((client: Client)=>Promise<FTPResponse>)[]} strategies
- * @returns {(client: Client)=>Promise<FTPResponse>} a function that will try the provided strategies.
+ * @param strategies
+ * @returns a function that will try the provided strategies.
  */
 function enterFirstCompatibleMode(...strategies: TransferStrategy[]): TransferStrategy {
     return async function autoDetect(client) {
