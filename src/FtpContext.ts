@@ -218,7 +218,7 @@ export class FTPContext {
             this.closeWithError(err)
         }
         return new Promise((resolvePromise, rejectPromise) => {
-            const stack = new Error().stack
+            const stack = new Error().stack || "Unknown call stack"
             const resolver: TaskResolver = {
                 resolve: (...args) => {
                     this.stopTrackingTask()
@@ -230,7 +230,7 @@ export class FTPContext {
                 }
             }
             this.task = {
-                stack: stack ? stack : "Unknown call stack",
+                stack,
                 resolver,
                 responseHandler
             }
