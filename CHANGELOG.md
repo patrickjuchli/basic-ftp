@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.0
+
+- Added: Support for leading whitespace in file and directory names.
+
 ## 3.2.2
 
 - Fixed: Make package scripts easier to understand.

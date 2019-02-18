@@ -188,7 +188,7 @@ describe("Convenience API", function() {
         return client.login("user", "pass").catch(result => assert.deepEqual(result, new FTPError({code: 332, message: "332 Account needed"})));
     });
 
-    it.only("handles leading whitespace in names", function() {
+    it("handles leading whitespace in names", function() {
         let step = 1;
         client.ftp.socket.on("didSend", buf => {
             if (step === 1) {
