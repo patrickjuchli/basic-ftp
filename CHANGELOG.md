@@ -1,8 +1,12 @@
 # Changelog
 
+## 3.2.2
+
+- Fixed: Make package scripts easier to understand.
+
 ## 3.2.1
 
-- Republish to (maybe) fix NPM issue.
+- Fixed: Republish to (maybe) fix NPM issue.
 
 ## 3.2.0
 
