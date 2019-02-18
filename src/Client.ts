@@ -264,15 +264,11 @@ export class Client {
     async size(filename: String): Promise<number> {
         const res = await this.send("SIZE " + filename)
         // The size is part of the response message, for example: "213 555555"
-        const parsed = res.message.match(/^\d\d\d (\d+)/)
-        if (parsed === null || parsed[1] === undefined) {
-            throw new Error(`Can't parse response to command 'SIZE ${filename}': ${res.message}`)
-        }
-        const result = parseInt(parsed[1], 10)
-        if (Number.isNaN(result)) {
+        const size = parseInt(res.message.slice(4), 10)
+        if (Number.isNaN(size)) {
             throw new Error(`Can't parse response to command 'SIZE ${filename}' as a numerical value: ${res.message}`)
         }
-        return result
+        return size
     }
 
     /**
