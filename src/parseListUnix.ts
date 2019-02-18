@@ -81,7 +81,7 @@ export function parseLine(line: string): FileInfo | undefined {
     const groups = line.match(RE_LINE)
     if (groups) {
         // Ignore parent directory links
-        const name = groups[21].trim()
+        const name = groups[21]
         if (name === "." || name === "..") {
             return undefined
         }
