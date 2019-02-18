@@ -201,13 +201,6 @@ export class Client {
     }
 
     /**
-     * Set the working directory.
-     */
-    cd(path: string): Promise<FTPResponse> {
-        return this.send("CWD " + path)
-    }
-
-    /**
      * Get the current working directory.
      */
     async pwd(): Promise<string> {
@@ -219,20 +212,6 @@ export class Client {
             throw new Error(`Can't parse response to command 'PWD': ${res.message}`)
         }
         return parsed[1]
-    }
-
-    /**
-     * Get the last modified time of a file. Not supported by every FTP server, method might throw exception.
-     */
-    async lastMod(filename: string): Promise<Date> {
-        const res = await this.send("MDTM " + filename)
-        // Message contains response code and modified time in the format: YYYYMMDDHHMMSS[.sss]
-        // For example `213 19991005213102` or `213 19980615100045.014`.
-        const msg = res.message
-        const date = new Date()
-        date.setUTCFullYear(+msg.slice(4, 8), +msg.slice(8, 10) - 1, +msg.slice(10, 12))
-        date.setUTCHours(+msg.slice(12, 14), +msg.slice(14, 16), +msg.slice(16, 18), +msg.slice(19, 22))
-        return date
     }
 
     /**
@@ -259,15 +238,48 @@ export class Client {
     }
 
     /**
+     * Set the working directory.
+     */
+    async cd(path: string): Promise<FTPResponse> {
+        const validPath = await this.protectWhitespace(path)
+        return this.send("CWD " + validPath)
+    }
+
+    /**
+     * Switch to the parent directory of the working directory.
+     */
+    async cdup(): Promise<FTPResponse> {
+        return this.send("CDUP")
+    }
+
+    /**
+     * Get the last modified time of a file. This is not supported by every FTP server, in which case
+     * calling this method will throw an exception.
+     */
+    async lastMod(path: string): Promise<Date> {
+        const validPath = await this.protectWhitespace(path)
+        const res = await this.send(`MDTM ${validPath}`)
+        // Message contains response code and modified time in the format: YYYYMMDDHHMMSS[.sss]
+        // For example `213 19991005213102` or `213 19980615100045.014`.
+        const msg = res.message
+        const date = new Date()
+        date.setUTCFullYear(+msg.slice(4, 8), +msg.slice(8, 10) - 1, +msg.slice(10, 12))
+        date.setUTCHours(+msg.slice(12, 14), +msg.slice(14, 16), +msg.slice(16, 18), +msg.slice(19, 22))
+        return date
+    }
+
+    /**
      * Get the size of a file.
      */
-    async size(filename: String): Promise<number> {
-        const res = await this.send("SIZE " + filename)
+    async size(path: string): Promise<number> {
+        const validPath = await this.protectWhitespace(path)
+        const command = `SIZE ${validPath}`
+        const res = await this.send(command)
         // The size is part of the response message, for example: "213 555555". It's
         // possible that there is a commmentary appended like "213 5555, some commentary".
         const size = parseInt(res.message.slice(4), 10)
         if (Number.isNaN(size)) {
-            throw new Error(`Can't parse response to command 'SIZE ${filename}' as a numerical value: ${res.message}`)
+            throw new Error(`Can't parse response to command '${command}' as a numerical value: ${res.message}`)
         }
         return size
     }
@@ -278,9 +290,11 @@ export class Client {
      * Depending on the FTP server this might also be used to move a file from one
      * directory to another by providing full paths.
      */
-    async rename(path: string, newPath: string): Promise<FTPResponse> {
-        await this.send("RNFR " + path)
-        return this.send("RNTO " + newPath)
+    async rename(srcPath: string, destPath: string): Promise<FTPResponse> {
+        const validSrc = await this.protectWhitespace(srcPath)
+        const validDest = await this.protectWhitespace(destPath)
+        await this.send("RNFR " + validSrc)
+        return this.send("RNTO " + validDest)
     }
 
     /**
@@ -289,8 +303,9 @@ export class Client {
      * You can ignore FTP error return codes which won't throw an exception if e.g.
      * the file doesn't exist.
      */
-    remove(filename: string, ignoreErrorCodes = false): Promise<FTPResponse> {
-        return this.send("DELE " + filename, ignoreErrorCodes)
+    async remove(path: string, ignoreErrorCodes = false): Promise<FTPResponse> {
+        const validPath = await this.protectWhitespace(path)
+        return this.send(`DELE ${validPath}`, ignoreErrorCodes)
     }
 
     /**
@@ -310,11 +325,12 @@ export class Client {
      * Upload data from a readable stream and store it as a file with a given filename in the current working directory.
      *
      * @param source  The stream to read from.
-     * @param remoteFilename  The filename of the remote file to write to.
+     * @param remotePath  The path of the remote file to write to.
      */
-    async upload(source: Readable, remoteFilename: string): Promise<FTPResponse> {
+    async upload(source: Readable, remotePath: string): Promise<FTPResponse> {
+        const validPath = await this.protectWhitespace(remotePath)
         await this.prepareTransfer(this)
-        return upload(this.ftp, this.progressTracker, source, remoteFilename)
+        return upload(this.ftp, this.progressTracker, source, validPath)
     }
 
     /**
@@ -323,13 +339,14 @@ export class Client {
      * offset, for example to resume a cancelled transfer.
      *
      * @param destination  The stream to write to.
-     * @param remoteFilename  The name of the remote file to read from.
+     * @param remotePath  The name of the remote file to read from.
      * @param startAt  The offset to start at.
      */
-    async download(destination: Writable, remoteFilename: string, startAt = 0): Promise<FTPResponse> {
+    async download(destination: Writable, remotePath: string, startAt = 0): Promise<FTPResponse> {
+        const validPath = await this.protectWhitespace(remotePath)
         await this.prepareTransfer(this)
-        const command = startAt > 0 ? `REST ${startAt}` : `RETR ${remoteFilename}`
-        return download(this.ftp, this.progressTracker, destination, command, remoteFilename)
+        const command = startAt > 0 ? `REST ${startAt}` : `RETR ${validPath}`
+        return download(this.ftp, this.progressTracker, destination, command, validPath)
     }
 
     /**
@@ -363,8 +380,8 @@ export class Client {
         // Remove the directory itself if we're not already on root.
         const workingDir = await this.pwd()
         if (workingDir !== "/") {
-            await this.send("CDUP")
-            await this.send("RMD " + remoteDirPath)
+            await this.cdup()
+            await this.removeEmptyDir(remoteDirPath)
         }
     }
 
@@ -377,11 +394,11 @@ export class Client {
             if (file.isDirectory) {
                 await this.cd(file.name)
                 await this.clearWorkingDir()
-                await this.send("CDUP")
-                await this.send("RMD " + file.name)
+                await this.cdup()
+                await this.removeEmptyDir(file.name)
             }
             else {
-                await this.send("DELE " + file.name)
+                await this.remove(file.name)
             }
         }
     }
@@ -407,7 +424,7 @@ export class Client {
         await uploadDirContents(this, localDirPath)
         // The working directory should stay the same after this operation.
         if (remoteDirName !== undefined) {
-            await this.send("CDUP")
+            await this.cdup()
         }
     }
 
@@ -423,7 +440,7 @@ export class Client {
             if (file.isDirectory) {
                 await this.cd(file.name)
                 await this.downloadDir(localPath)
-                await this.send("CDUP")
+                await this.cdup()
             }
             else {
                 const writable = createWriteStream(localPath)
@@ -445,6 +462,29 @@ export class Client {
         for (const name of names) {
             await openDir(this, name)
         }
+    }
+
+    /**
+     * Remove an empty directory, will fail if not empty.
+     */
+    protected async removeEmptyDir(path: string): Promise<FTPResponse> {
+        const validPath = await this.protectWhitespace(path)
+        return this.send(`RMD ${validPath}`)
+    }
+
+    /**
+     * FTP servers can't handle filenames that have leading whitespace. This method transforms
+     * a given path to fix that issue for most cases.
+     */
+    protected async protectWhitespace(path: string): Promise<string> {
+        if (!path.startsWith(" ")) {
+            return path
+        }
+        // Handle leading whitespace by prepending the absolute path:
+        // " test.txt" while being in the root directory becomes "/ test.txt".
+        const pwd = await this.pwd()
+        const absolutePathPrefix = pwd.endsWith("/") ? pwd : pwd + "/"
+        return absolutePathPrefix + path
     }
 }
 
@@ -873,7 +913,7 @@ async function uploadDirContents(client: Client, localDirPath: string): Promise<
         else if (stats.isDirectory()) {
             await openDir(client, file)
             await uploadDirContents(client, fullPath)
-            await client.send("CDUP")
+            await client.cdup()
         }
     }
 }
