@@ -8,12 +8,13 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "rimraf dist && tsc",
-    "prepare": "rimraf dist && npm run test",
-    "test": "npm run lint && tsc && mocha",
+    "prepublishOnly": "npm run clean && npm run lint && tsc && mocha",
+    "test": "npm run prepublishOnly",
+    "clean": "rimraf dist",
     "lint": "tslint \"./src/**/*.ts\"",
-    "dev": "rimraf dist && tsc --watch",
-    "tdd": "mocha --watch"
+    "dev": "npm run clean && tsc --watch",
+    "tdd": "mocha --watch",
+    "buildOnly": "tsc"
   },
   "repository": {
     "type": "git",
