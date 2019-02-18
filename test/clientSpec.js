@@ -187,4 +187,22 @@ describe("Convenience API", function() {
         });
         return client.login("user", "pass").catch(result => assert.deepEqual(result, new FTPError({code: 332, message: "332 Account needed"})));
     });
+
+    it.only("handles leading whitespace in names", function() {
+        let step = 1;
+        client.ftp.socket.on("didSend", buf => {
+            if (step === 1) {
+                step = 2
+                // There is leading whitespace in the requested filename so first the client
+                // should first ask for PWD to then create an absolute path.
+                assert.equal(buf.trim(), "PWD");
+                client.ftp.socket.emit("data", `257 "/test" is current directory.`);
+            }
+            else if (step === 2) {
+                assert.equal(buf.trim(), "SIZE /test/  test.json")
+                client.ftp.socket.emit("data", `257 1234567`);
+            }
+        });
+        return client.size("  test.json");
+    });
 });
