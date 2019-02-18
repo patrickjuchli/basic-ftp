@@ -26,7 +26,7 @@ import { FileInfo, FileType } from "./FileInfo"
  *    e   z/OS external link bit
  *    Final letter may be appended:
  *    +   file has extended security attributes (e.g. ACL)
- *    Note: local listings on MacOSX also use '@';
+ *    Note: local listings on MacOSX also use '@'
  *    this is not allowed for here as does not appear to be shown by FTP servers
  *    {@code @}   file has extended attributes
  */
@@ -70,27 +70,27 @@ const RE_LINE = new RegExp(
 
     + "\\s" // separator
 
-    + "(.*)"); // the rest (21)
+    + "(.*)") // the rest (21)
 
 export function testLine(line: string): boolean {
     // Example: "-rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 test.txt"
-    return line !== undefined && line.match(RE_LINE) !== null;
-};
+    return line !== undefined && line.match(RE_LINE) !== null
+}
 
 export function parseLine(line: string): FileInfo | undefined {
-    const groups = line.match(RE_LINE);
+    const groups = line.match(RE_LINE)
     if (groups) {
         // Ignore parent directory links
-        const name = groups[21].trim();
+        const name = groups[21].trim()
         if (name === "." || name === "..") {
-            return undefined;
+            return undefined
         }
-        const file = new FileInfo(name);
-        file.size = parseInt(groups[18], 10);
-        file.user = groups[16];
-        file.group = groups[17];
-        file.hardLinkCount = parseInt(groups[15], 10);
-        file.date = groups[19] + " " + groups[20];
+        const file = new FileInfo(name)
+        file.size = parseInt(groups[18], 10)
+        file.user = groups[16]
+        file.group = groups[17]
+        file.hardLinkCount = parseInt(groups[15], 10)
+        file.date = groups[19] + " " + groups[20]
         file.permissions = {
             user: parseMode(groups[4], groups[5], groups[6]),
             group: parseMode(groups[8], groups[9], groups[10]),
@@ -99,51 +99,51 @@ export function parseLine(line: string): FileInfo | undefined {
         // Set file type
         switch (groups[1].charAt(0)) {
             case "d":
-                file.type = FileType.Directory;
-                break;
+                file.type = FileType.Directory
+                break
             case "e": // NET-39 => z/OS external link
-                file.type = FileType.SymbolicLink;
-                break;
+                file.type = FileType.SymbolicLink
+                break
             case "l":
-                file.type = FileType.SymbolicLink;
-                break;
+                file.type = FileType.SymbolicLink
+                break
             case "b":
             case "c":
-                file.type = FileType.File; // TODO change this if DEVICE_TYPE implemented
-                break;
+                file.type = FileType.File // TODO change this if DEVICE_TYPE implemented
+                break
             case "f":
             case "-":
-                file.type = FileType.File;
-                break;
+                file.type = FileType.File
+                break
             default:
                 // A 'whiteout' file is an ARTIFICIAL entry in any of several types of
                 // 'translucent' filesystems, of which a 'union' filesystem is one.
-                file.type = FileType.Unknown;
+                file.type = FileType.Unknown
         }
         // Separate out the link name for symbolic links
         if (file.isSymbolicLink) {
-            const end = name.indexOf(" -> ");
+            const end = name.indexOf(" -> ")
             if (end !== -1) {
-                file.name = name.substring(0, end);
-                file.link = name.substring(end + 4);
+                file.name = name.substring(0, end)
+                file.link = name.substring(end + 4)
             }
         }
-        return file;
+        return file
     }
-    return undefined;
-};
+    return undefined
+}
 
 function parseMode(r: string, w: string, x: string): number {
-    let value = 0;
+    let value = 0
     if (r !== "-") {
-        value += FileInfo.Permission.Read;
+        value += FileInfo.Permission.Read
     }
     if (w !== "-") {
-        value += FileInfo.Permission.Write;
+        value += FileInfo.Permission.Write
     }
-    const execToken = x.charAt(0);
+    const execToken = x.charAt(0)
     if (execToken !== "-" && execToken.toUpperCase() !== execToken) {
-        value += FileInfo.Permission.Execute;
+        value += FileInfo.Permission.Execute
     }
     return value
 }

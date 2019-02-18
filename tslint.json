@@ -1,6 +1,6 @@
 {
     "rules": {
-        "semicolon": false,
+        "semicolon": [true, "never"],
         "interface-name": [true, "never-prefix"],
         "ban-ts-ignore": true,
         "new-parens": true,

@@ -1,4 +1,4 @@
-import { Writable } from "stream";
+import { Writable } from "stream"
 
 export class StringWriter extends Writable {
     protected buf = Buffer.alloc(0)

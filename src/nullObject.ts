@@ -4,8 +4,8 @@
  */
 export const createNullObject = () => new Proxy({}, {
     get() {
-        return noop;
+        return noop
     }
-});
+})
 
 function noop() { /*Do Nothing*/ }
