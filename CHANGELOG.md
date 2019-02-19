@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.1
+
+- Fixed: Republish to (maybe) fix NPM issue of wrong stats.
+
 ## 3.3.0
 
 - Added: Support for leading whitespace in file and directory names.
@@ -10,7 +14,7 @@
 
 ## 3.2.1
 
-- Fixed: Republish to (maybe) fix NPM issue.
+- Fixed: Republish to (maybe) fix NPM issue of wrong stats.
 
 ## 3.2.0
 
