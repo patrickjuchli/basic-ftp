@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.4.0
+
+- Changed: `access` and `connect` can reopen a closed `Client`.
+- Fixed: `access` can be called again after failed login. (#56)
+
 ## 3.3.1
 
 - Fixed: Republish to (maybe) fix NPM issue of wrong stats.
