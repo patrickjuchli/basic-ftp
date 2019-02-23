@@ -36,10 +36,10 @@
     "node": ">=8.0.0"
   },
   "devDependencies": {
-    "@types/node": "11.9.4",
-    "mocha": "5.2.0",
+    "@types/node": "11.9.5",
+    "mocha": "6.0.1",
     "rimraf": "2.6.3",
     "tslint": "5.12.1",
-    "typescript": "3.3.3"
+    "typescript": "3.3.3333"
   }
 }
