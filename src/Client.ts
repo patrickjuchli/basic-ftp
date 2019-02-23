@@ -91,6 +91,8 @@ export class Client {
      * @param port  Port the client should connect to. Optional, default is 21.
      */
     connect(host = "localhost", port = 21): Promise<FTPResponse> {
+        // Close the current control connection.
+        this.ftp.socket.destroy()
         // The FTPContext is reset by assigning a new socket for the control connection.
         this.ftp.socket = this.ftp._newSocket()
         this.ftp.socket.connect({
