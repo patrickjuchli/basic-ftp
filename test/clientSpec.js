@@ -150,19 +150,29 @@ describe("Convenience API", function() {
     });
 
     it("can connect", function() {
-        client.ftp.socket.connect = (options) => {
+        const s = new SocketMock()
+        s.connect = (options) => {
             assert.equal(options.host, "host");
             assert.equal(options.port, 22, "Socket port");
             setTimeout(() => client.ftp.socket.emit("data", "200 OK"));
         };
+        client.ftp._newSocket = () => s
         return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));
     });
 
+    it("connecting reopens a client", function() {
+        client.close()
+        client.connect().catch(() => {})
+        assert.equal(client.closed, false)
+    })
+
     it("declines connect for code 120", function() {
-        client.ftp.socket.connect = () => {
+        const s = new SocketMock()
+        s.connect = () => {
             setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
         };
-        return client.connect("host", 22).catch(result => assert.deepEqual(result, new FTPError({code: 120, message: "120 Ready in 5 hours"})));
+        client.ftp._newSocket = () => s
+        return client.connect().catch(result => assert.deepEqual(result, new FTPError({code: 120, message: "120 Ready in 5 hours"})));
     });
 
     it("can login", function() {

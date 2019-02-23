@@ -63,7 +63,9 @@ export class Client {
     /**
      * Close the client and all open socket connections.
      *
-     * The client can’t be used anymore after calling this method, you have to instantiate a new one to continue any work.
+     * Close the client and all open socket connections. The client can’t be used anymore after calling this method,
+     * you have to either reconnect with `access` or `connect` or instantiate a new instance to continue any work.
+     * A client is also closed automatically if any timeout or connection error occurs.
      */
     close() {
         this.ftp.close()
@@ -78,12 +80,19 @@ export class Client {
     }
 
     /**
-     * Connect to an FTP server.
+     * Connect (or reconnect) to an FTP server.
+     *
+     * This is an instance method and thus can be called multiple times during the lifecycle of a `Client`
+     * instance. Whenever you do, the client is reset with a new control connection. This also implies that
+     * you can reopen a `Client` instance that has been closed due to an error when reconnecting with this
+     * method. In fact, reconnecting is the only way to continue using a closed `Client`.
      *
      * @param host  Host the client should connect to. Optional, default is "localhost".
      * @param port  Port the client should connect to. Optional, default is 21.
      */
     connect(host = "localhost", port = 21): Promise<FTPResponse> {
+        // The FTPContext is reset by assigning a new socket for the control connection.
+        this.ftp.socket = this.ftp._newSocket()
         this.ftp.socket.connect({
             host,
             port,
@@ -91,13 +100,15 @@ export class Client {
         }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)}`))
         return this.ftp.handle(undefined, (res, task) => {
             if (res instanceof Error) {
+                // The connection has been destroyed by the FTPContext at this point.
                 task.reject(res)
             }
             else if (positiveCompletion(res.code)) {
                 task.resolve(res)
             }
+            // Reject all other codes, including 120 "Service ready in nnn minutes".
             else {
-                // Reject all other codes, including 120 "Service ready in nnn minutes".
+                this.ftp.socket.destroy() // Don't stay connected
                 task.reject(new FTPError(res))
             }
         })
@@ -189,6 +200,11 @@ export class Client {
 
     /**
      * Convenience method that calls `connect`, `useTLS`, `login` and `useDefaultSettings`.
+     *
+     * This is an instance method and thus can be called multiple times during the lifecycle of a `Client`
+     * instance. Whenever you do, the client is reset with a new control connection. This also implies that
+     * you can reopen a `Client` instance that has been closed due to an error when reconnecting with this
+     * method. In fact, reconnecting is the only way to continue using a closed `Client`.
      */
     async access(options: AccessOptions = {}): Promise<FTPResponse> {
         const welcome = await this.connect(options.host, options.port)
@@ -676,7 +692,7 @@ function connectForPassiveTransfer(host: string, port: number, ftp: FTPContext):
         const handleConnErr = function(err: Error) {
             reject("Can't open data connection in passive mode: " + err.message)
         }
-        let socket = new Socket()
+        let socket = ftp._newSocket()
         socket.on("error", handleConnErr)
         socket.connect({ port, host, family: ftp.ipFamily }, () => {
             if (ftp.socket instanceof TLSSocket) {

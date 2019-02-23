@@ -8,6 +8,8 @@ module.exports = class SocketMock extends EventEmitter {
         this.bytesRead = 0;
         this.timeout = -1;
     }
+    connect() {
+    }
     setEncoding() {
     }
     removeAllListeners() {

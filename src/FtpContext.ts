@@ -75,7 +75,7 @@ export class FTPContext {
     constructor(readonly timeout = 0, encoding = "utf8") {
         this._encoding = encoding
         // Help Typescript understand that we do indeed set _socket in the constructor but use the setter method to do so.
-        this._socket = this.socket = new Socket()
+        this._socket = this.socket = this._newSocket()
         this._dataSocket = undefined
     }
 
@@ -129,10 +129,17 @@ export class FTPContext {
     set socket(socket: Socket | TLSSocket) {
         // No data socket should be open in any case where the control socket is set or upgraded.
         this.dataSocket = undefined
+        // This being a soft reset, remove any remaining partial response.
+        this.partialResponse = ""
         if (this._socket) {
             this.removeSocketListeners(this._socket)
         }
         if (socket) {
+            // Setting a completely new control socket is in essence something like a reset. That's
+            // why we also close any open data connection above. We can go one step further and reset
+            // a possible closing error. That means that a closed FTPContext can be "reopened" by
+            // setting a new control socket.
+            this.closingError = undefined
             // Don't set a timeout yet. Timeout for control sockets is only active during a task, see handle() below.
             socket.setTimeout(0)
             socket.setEncoding(this._encoding)
@@ -334,5 +341,14 @@ export class FTPContext {
         socket.removeAllListeners("error")
         socket.removeAllListeners("close")
         socket.removeAllListeners("connect")
+    }
+
+    /**
+     * Provide a new socket instance.
+     *
+     * Internal use only, replaced for unit tests.
+     */
+    _newSocket(): Socket {
+        return new Socket()
     }
 }
