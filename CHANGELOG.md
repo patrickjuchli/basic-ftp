@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.1
+
+- Fixed: Close the control connection when `connect` creates a new one.
+
 ## 3.4.0
 
 - Changed: `access` and `connect` can reopen a closed `Client`.
