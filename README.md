@@ -232,7 +232,7 @@ Set the preferred version of the IP stack: `4` (IPv4), `6` (IPv6) or `undefined`
 
 `get/set socket`
 
-Set the socket for the control connection. When setting a new socket the current one will *not* be closed because you might be just upgrading the control socket. All listeners will be removed, though.
+Set the socket for the control connection. This will only close the current control socket if the new one is not a TLS upgrade to the current one.
 
 `get/set dataSocket`
 

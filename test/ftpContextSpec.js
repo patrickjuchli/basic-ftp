@@ -14,10 +14,18 @@ describe("FTPContext", function() {
         ftp.dataSocket = new SocketMock();
     });
 
-    it("Setting new control socket doesn't destroy current", function() {
+    it("Setting new control socket destroys current", function() {
         const old = ftp.socket;
         ftp.socket = new SocketMock();
-        assert.equal(old.destroyed, false, "Socket not destroyed.");
+        assert.equal(old.destroyed, true);
+    });
+
+    it("Upgrading control socket doesn't destroy it", function() {
+        const old = ftp.socket;
+        const upgrade = new SocketMock();
+        old.localPort = upgrade.localPort = 123
+        ftp.socket = upgrade
+        assert.equal(old.destroyed, false);
     });
 
     it("Setting new data socket destroys current", function() {

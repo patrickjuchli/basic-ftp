@@ -1,5 +1,7 @@
 const EventEmitter = require("events");
 
+let counter = 0;
+
 module.exports = class SocketMock extends EventEmitter {
     constructor() {
         super();
@@ -7,6 +9,8 @@ module.exports = class SocketMock extends EventEmitter {
         this.bytesWritten = 0;
         this.bytesRead = 0;
         this.timeout = -1;
+        this.remoteAddress = "somewhere"
+        this.localPort = ++counter
     }
     connect() {
     }
