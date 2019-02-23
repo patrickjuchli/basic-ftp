@@ -64,7 +64,7 @@ Create a client instance using a timeout in milliseconds that will be used for c
 
 `close()`
 
-Close the client and all open socket connections. The client can’t be used anymore after calling this method, you have to instantiate a new one to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
+Close the client and all open socket connections. The client can’t be used anymore after calling this method, you have to either reconnect with `access` or `connect` or instantiate a new instance to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
 
 `closed`
 
@@ -72,7 +72,7 @@ True if the client has been closed, either by the user or by an error.
 
 `access(options): Promise<FTPResponse>`
 
-Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. The available options are:
+Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. This is an instance method and thus can be called multiple times during the lifecycle of a `Client` instance. Whenever you do, the client is reset with a new control connection. This also implies that you can reopen a `Client` instance that has been closed due to an error when reconnecting with this method. The available options are:
 
 - `host (string)` Server host, default: localhost
 - `port (number)` Server port, default: 21
