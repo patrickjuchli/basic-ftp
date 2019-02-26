@@ -16,10 +16,9 @@ const availableParsers: Parser[] = [
  * Parse raw directory listing.
  */
 export function parseList(rawList: string): FileInfo[] {
-    const lines = rawList.split(/\r?\n/)
-        // Strip possible multiline prefix
-        .map(line => (/^(\d\d\d)-/.test(line)) ? line.substr(3) : line)
-        .filter(line => line.trim() !== "")
+    const lines = rawList.split(/\r?\n/) // Split by newline
+        .map(line => (/^(\d\d\d)-/.test(line)) ? line.substr(3) : line) // Strip possible multiline prefix
+        .filter(line => line.trim() !== "") // Remove blank lines
     if (lines.length === 0) {
         return []
     }
