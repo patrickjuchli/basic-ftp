@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.2
+
+- Fixed: Unix directory listing in some cases interpreted as DOS listing. (#61)
+
 ## 3.4.1
 
 - Fixed: Close the control connection when `connect` creates a new one.
