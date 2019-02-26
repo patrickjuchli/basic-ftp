@@ -23,8 +23,8 @@ export function parseList(rawList: string): FileInfo[] {
     if (lines.length === 0) {
         return []
     }
-    // Pick a line in the middle of the list as a test candidate to find a compatible parser.
-    const test = lines[Math.ceil((lines.length - 1) / 2)]
+    // Pick the last line of the list as a test candidate to find a compatible parser.
+    const test = lines[lines.length - 1]
     const parser = firstCompatibleParser(test, availableParsers)
     if (!parser) {
         throw new Error("This library only supports Unix- or DOS-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
