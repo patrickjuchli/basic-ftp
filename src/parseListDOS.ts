@@ -15,7 +15,7 @@ const RE_LINE = new RegExp(
 
 export function testLine(line: string): boolean {
     // Example: "12-05-96  05:03PM       <DIR>          myDir"
-    return line !== undefined && line.match(RE_LINE) !== null && line.charAt(2) === "-"
+    return line !== undefined && /^\d{2}/.test(line) && RE_LINE.test(line)
 }
 
 export function parseLine(line: string): FileInfo | undefined {

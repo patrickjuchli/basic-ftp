@@ -15,6 +15,12 @@ drwxr-xr-x+  38 patrick  staff   1292 Dec 11 14:31 ..
 drwxr-xr-x+   5 patrick  staff    170 Dec 11 17:24 lib
 `;
 
+const listUnixIssue61 = `
+drwxr-xr-x    2 1001     1001         4096 Feb 25 19:03 .
+dr-xr-xr-x    3 1001     1001         4096 Feb 25 18:55 ..
+-rw-------    1 1001     1001          487 Feb 25 19:03 package.json
+`
+
 const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
 11-14-97  04:21PM                  953 MYFILE.INI`;
@@ -61,6 +67,25 @@ describe("Directory listing", function() {
                 f.date = "Dec 11 17:24",
                 f.type = FileType.Directory,
                 f),
+            ]
+        },
+        {
+            title: "Unix list Issue 61",
+            list: listUnixIssue61,
+            exp: [
+                (f = new FileInfo("package.json"),
+                f.group = "1001",
+                f.size = 487,
+                f.user = "1001",
+                f.permissions = {
+                    user: FileInfo.Permission.Read + FileInfo.Permission.Write,
+                    group: 0,
+                    world: 0
+                },
+                f.hardLinkCount = 1,
+                f.date = "Feb 25 19:03",
+                f.type = FileType.File,
+                f)
             ]
         },
         {

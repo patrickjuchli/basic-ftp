@@ -74,7 +74,7 @@ const RE_LINE = new RegExp(
 
 export function testLine(line: string): boolean {
     // Example: "-rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 test.txt"
-    return line !== undefined && line.match(RE_LINE) !== null
+    return line !== undefined && RE_LINE.test(line)
 }
 
 export function parseLine(line: string): FileInfo | undefined {
