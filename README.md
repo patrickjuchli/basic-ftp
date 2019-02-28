@@ -64,7 +64,7 @@ Create a client instance using a timeout in milliseconds that will be used for c
 
 `close()`
 
-Close the client and all open socket connections. The client can’t be used anymore after calling this method, you have to either reconnect with `access` or `connect` or instantiate a new instance to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
+Close the client and all open socket connections. The client can’t be used anymore after calling this method, you'll have to reconnect with `access` to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
 
 `closed`
 
@@ -188,7 +188,7 @@ There is also a counter for all bytes transferred since the last time `trackProg
 
 Any error reported by the FTP server will be thrown as `FTPError`. The connection to the FTP server stays intact and you can continue to use your `Client` instance.
 
-This is different with a timeout or connection error: In addition to an `Error` being thrown, any connection to the FTP server will be closed. You’ll have to instantiate a new `Client` and reconnect, if you want to continue any work.
+This is different with a timeout or connection error: In addition to an `Error` being thrown, any connection to the FTP server will be closed. You’ll have to reconnect with `client.access()`, if you want to continue any work.
 
 ## Logging
 
