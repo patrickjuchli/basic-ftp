@@ -249,11 +249,12 @@ export class FTPContext {
                 err.stack += `\nClosing reason: ${this.closingError.stack}`
                 err.code = this.closingError.code !== undefined ? this.closingError.code : "0"
                 this.passToHandler(err)
+                return
             }
-            else if (command) {
-                // Only track control socket timeout during the lifecycle of a task. This avoids timeouts on idle sockets,
-                // the default socket behaviour which is not expected by most users.
-                this.socket.setTimeout(this.timeout)
+            // Only track control socket timeout during the lifecycle of a task. This avoids timeouts on idle sockets,
+            // the default socket behaviour which is not expected by most users.
+            this.socket.setTimeout(this.timeout)
+            if (command) {
                 this.send(command)
             }
         })
