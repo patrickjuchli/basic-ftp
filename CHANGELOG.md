@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.4.3
+
+- Fixed: Handle multline response message closing without message. (#63)
+- Fixed: Track timeout during connect. (#64)
+
 ## 3.4.2
 
 - Fixed: Unix directory listing in some cases interpreted as DOS listing. (#61)
