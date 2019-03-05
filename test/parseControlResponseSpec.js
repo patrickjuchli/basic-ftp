@@ -41,6 +41,16 @@ describe("Parse multiline response", function() {
             res: `150-A${CRLF}160-B${CRLF}150 C${CRLF}200-D`,
             exp: { messages: [`150-A${LF}160-B${LF}150 C`], rest: `200-D${LF}` }
         },
+        {
+            title: "Multiline: response group with no message on closing tag",
+            res: `200-A${CRLF}200-B${CRLF}200-C${CRLF}200`,
+            exp: { messages: [`200-A${LF}200-B${LF}200-C${LF}200`], rest: ""}
+        },
+        {
+            title: "Single line without message",
+            res: "200",
+            exp: { messages: ["200"], rest: "" }
+        }
     ];
     for (const test of tests) {
         it(test.title, function() {

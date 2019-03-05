@@ -16,14 +16,15 @@ export function parseControlResponse(text: string): ParsedResponse {
     const lines = text.split(/\r?\n/)
     const messages = []
     let startAt = 0
-    let token = ""
+    let tokenRegex: RegExp | undefined
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
         // No group has been opened.
-        if (token === "") {
+        if (!tokenRegex) {
             if (isMultiline(line)) {
                 // Open a group by setting an expected token.
-                token = line.substr(0, 3) + " "
+                const token = line.substr(0, 3)
+                tokenRegex = new RegExp(`^${token}(?:$| )`)
                 startAt = i
             }
             else if (isSingle(line)) {
@@ -32,18 +33,18 @@ export function parseControlResponse(text: string): ParsedResponse {
             }
         }
         // Group has been opened, expect closing token.
-        else if (line.startsWith(token)) {
-            token = ""
+        else if (tokenRegex.test(line)) {
+            tokenRegex = undefined
             messages.push(lines.slice(startAt, i + 1).join(LF))
         }
     }
     // The last group might not have been closed, report it as a rest.
-    const rest = token !== "" ? lines.slice(startAt).join(LF) + LF : ""
+    const rest = tokenRegex ? lines.slice(startAt).join(LF) + LF : ""
     return { messages, rest }
 }
 
 function isSingle(line: string) {
-    return /^\d\d\d /.test(line)
+    return /^\d\d\d(?:$| )/.test(line)
 }
 
 function isMultiline(line: string) {
