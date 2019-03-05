@@ -14,11 +14,11 @@ const featEmptyReply = `
 `;
 
 describe("Convenience API", function() {
-    this.timeout(100);
+    this.timeout(1000);
     let client;
 
     beforeEach(function() {
-        client = new Client();
+        client = new Client(2000);
         client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
@@ -173,6 +173,18 @@ describe("Convenience API", function() {
         };
         client.ftp._newSocket = () => s
         return client.connect().catch(result => assert.deepEqual(result, new FTPError({code: 120, message: "120 Ready in 5 hours"})));
+    });
+
+    it("tracks timeout during connect", function() {
+        const s = new SocketMock()
+        s.connect = () => {
+            setTimeout(() => {
+                assert.equal(s.timeout, 2000);
+                setTimeout(() => client.ftp.socket.emit("data", "200 Ok"));
+            });
+        };
+        client.ftp._newSocket = () => s
+        return client.connect().catch(() => {});
     });
 
     it("can login", function() {
