@@ -690,7 +690,8 @@ function ipIsPrivateV4Address(ip = ""): boolean {
 function connectForPassiveTransfer(host: string, port: number, ftp: FTPContext): Promise<void> {
     return new Promise((resolve, reject) => {
         const handleConnErr = function(err: Error) {
-            reject("Can't open data connection in passive mode: " + err.message)
+            err.message = "Can't open data connection in passive mode: " + err.message
+            reject(err)
         }
         let socket = ftp._newSocket()
         socket.on("error", handleConnErr)
