@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.4
+
+- Fixed: Reject failing connection for passive transfer with Error instance. (#65)
+
 ## 3.4.3
 
 - Fixed: Handle multline response message closing without message. (#63)
