@@ -367,15 +367,15 @@ export class Client {
 
     /**
      * List files and directories in the current working directory.
-     * 
-     * @param path The name of the remote file or directory. If undefined, will use current directory 
+     *
+     * @param path The name of the remote file or directory. If undefined, will use current directory
      */
     async list(path?: string): Promise<FileInfo[]> {
         await this.prepareTransfer(this)
         const writable = new StringWriter()
         const progressTracker = createNullObject() as ProgressTracker // Don't track progress of list transfers.
-        const command = path ? `LIST ${path}` : "LIST -a";
-        await download(this.ftp, progressTracker, writable, command);
+        const command = path ? `LIST ${path}` : "LIST -a"
+        await download(this.ftp, progressTracker, writable, command)
         const text = writable.getText(this.ftp.encoding)
         this.ftp.log(text)
         return this.parseList(text)
