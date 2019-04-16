@@ -99,9 +99,9 @@ Change the working directory.
 
 Get the path of the current working directory.
 
-`list(): Promise<FileInfo[]>`
+`list([path]): Promise<FileInfo[]>`
 
-List files and directories in the current working directory. Currently, this library only supports Unix- and DOS-style directory listings.
+List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports Unix- and DOS-style directory listings.
 
 `lastMod(filename): Promise<Date>`
 
