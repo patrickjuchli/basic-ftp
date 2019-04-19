@@ -52,6 +52,17 @@ describe("Download directory listing", function() {
         client.list().catch(() => true /* Do nothing */);
     });
 
+    it("sends the right command with optional path", function(done) {
+        client.ftp.socket.once("didSend", command => {
+            assert.equal(command, "LIST -a my/path\r\n");
+            done();
+        });
+        // This will throw an unhandled exception because we close the client when
+        // the task is still running. Ignore the exception, this test is only about
+        // the command that client.list() sends.
+        client.list("my/path").catch(() => true /* Do nothing */);
+    });
+
     it("handles data socket ending before control confirms", function(done) {
         requestListAndVerify(done);
         setTimeout(() => {
