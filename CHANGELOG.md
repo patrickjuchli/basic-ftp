@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.5.0
+
+- Added: Client `list` method supports optional path argument. (#69, @ThatOdieGuy)
+- Changed: Updated Typescript 3.4.4
+
 ## 3.4.4
 
 - Fixed: Reject failing connection for passive transfer with Error instance. (#65)
