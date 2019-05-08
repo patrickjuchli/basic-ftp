@@ -11,6 +11,10 @@ export interface FilePermissions {
     readonly world: number
 }
 
+/**
+ * Describes a file, directory or symbolic link. Note that FTP file listings are not standardized. It depends
+ * on the operating system of the FTP server how complete the information is.
+ */
 export class FileInfo {
 
     static Permission = {

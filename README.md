@@ -101,7 +101,7 @@ Get the path of the current working directory.
 
 `list([path]): Promise<FileInfo[]>`
 
-List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports Unix- and DOS-style directory listings.
+List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports Unix- and DOS-style directory listings. See [FileInfo](src/FileInfo.ts) for more details.
 
 `lastMod(filename): Promise<Date>`
 
