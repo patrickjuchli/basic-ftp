@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.6.0
+
+- Added: Make parseList public API. (#75, @xnerhu)
+- Changed: Update Typescript 3.5.1
+
 ## 3.5.0
 
 - Added: Client `list` method supports optional path argument. (#69, @ThatOdieGuy)
