@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.7.0
+
+- Added: Users can access internal transfer modes to force a specific one. (#77)
+- Fixed: Handle stream error events for upload and download.
+
 ## 3.6.0
 
 - Added: Make parseList public API. (#75, @xnerhu)
