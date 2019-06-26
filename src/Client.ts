@@ -629,7 +629,7 @@ function enterFirstCompatibleMode(...strategies: TransferStrategy[]): TransferSt
 /**
  * Prepare a data socket using passive mode over IPv6.
  */
-async function enterPassiveModeIPv6(client: Client): Promise<FTPResponse> {
+export async function enterPassiveModeIPv6(client: Client): Promise<FTPResponse> {
     const res = await client.send("EPSV")
     const port = parseIPv6PasvResponse(res.message)
     if (!port) {
@@ -662,7 +662,7 @@ function parseIPv6PasvResponse(message: string): number {
 /**
  * Prepare a data socket using passive mode over IPv4.
  */
-async function enterPassiveModeIPv4(client: Client): Promise<FTPResponse> {
+export async function enterPassiveModeIPv4(client: Client): Promise<FTPResponse> {
     const res = await client.send("PASV")
     const target = parseIPv4PasvResponse(res.message)
     if (!target) {
