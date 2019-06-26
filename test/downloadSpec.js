@@ -1,6 +1,7 @@
 const assert = require("assert");
 const SocketMock = require("./SocketMock");
 const { Client, FileInfo, FileType, FTPError } = require("../dist");
+const fs = require("fs")
 
 /**
  * Downloading a directory listing uses the same mechanism as downloading in general,
@@ -169,4 +170,10 @@ describe("Download directory listing", function() {
             done();
         });
     });
+
+    it("handles destination stream error", function() {
+        return client.download(fs.createWriteStream("../test"), "test.json").catch(err => {
+            assert.equal(err.toString(), "Error: EISDIR: illegal operation on a directory, open '../test'")
+        })
+    })
 });

@@ -368,10 +368,19 @@ export class Client {
      * @param startAt  The offset to start at.
      */
     async download(destination: Writable, remotePath: string, startAt = 0): Promise<FTPResponse> {
-        const validPath = await this.protectWhitespace(remotePath)
-        await this.prepareTransfer(this)
-        const command = startAt > 0 ? `REST ${startAt}` : `RETR ${validPath}`
-        return download(this.ftp, this.progressTracker, destination, command, validPath)
+        const onError = (err: Error) => this.ftp.closeWithError(err)
+        destination.once("error", onError)
+        try {
+            const validPath = await this.protectWhitespace(remotePath)
+            await this.prepareTransfer(this)
+            const command = startAt > 0 ? `REST ${startAt}` : `RETR ${validPath}`
+            // Keep the keyword `await` or the `finally` clause below runs too early
+            // and removes the event listener for the source stream too early.
+            return await download(this.ftp, this.progressTracker, destination, command, validPath)
+        }
+        finally {
+            destination.removeListener("error", onError)
+        }
     }
 
     /**
