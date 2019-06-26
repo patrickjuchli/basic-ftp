@@ -344,9 +344,18 @@ export class Client {
      * @param remotePath  The path of the remote file to write to.
      */
     async upload(source: Readable, remotePath: string): Promise<FTPResponse> {
-        const validPath = await this.protectWhitespace(remotePath)
-        await this.prepareTransfer(this)
-        return upload(this.ftp, this.progressTracker, source, validPath)
+        const onError = (err: Error) => this.ftp.closeWithError(err)
+        source.once("error", onError)
+        try {
+            const validPath = await this.protectWhitespace(remotePath)
+            await this.prepareTransfer(this)
+            // Keep the keyword `await` or the `finally` clause below runs too early
+            // and removes the event listener for the source stream too early.
+            return await upload(this.ftp, this.progressTracker, source, validPath)
+        }
+        finally {
+            source.removeListener("error", onError)
+        }
     }
 
     /**
