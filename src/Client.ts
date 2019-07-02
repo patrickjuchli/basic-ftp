@@ -603,7 +603,7 @@ function upgradeSocket(socket: Socket, options: ConnectionOptions): Promise<TLSS
  * @param strategies
  * @returns a function that will try the provided strategies.
  */
-function enterFirstCompatibleMode(...strategies: TransferStrategy[]): TransferStrategy {
+export function enterFirstCompatibleMode(...strategies: TransferStrategy[]): TransferStrategy {
     return async function autoDetect(client) {
         client.ftp.log("Trying to find optimal transfer strategy...")
         for (const strategy of strategies) {
