@@ -610,7 +610,7 @@ export function enterFirstCompatibleMode(...strategies: TransferStrategy[]): Tra
             try {
                 const res = await strategy(client)
                 client.ftp.log("Optimal transfer strategy found.")
-                client.prepareTransfer = strategy // First strategy that works will be used from now on.
+                client.prepareTransfer = strategy // eslint-disable-line require-atomic-updates
                 return res
             }
             catch(err) {
