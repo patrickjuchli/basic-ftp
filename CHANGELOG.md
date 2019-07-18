@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.7.1
+
+- Fixed: Use ESLint instead of TSLint.
+
 ## 3.7.0
 
 - Added: Users can access internal transfer modes to force a specific one. (#77)
