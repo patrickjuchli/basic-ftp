@@ -125,7 +125,7 @@ export class FTPContext {
      * Set the socket for the control connection. This will only close the current control socket
      * if the new one is not an upgrade to the current one.
      */
-    set socket(socket: Socket | TLSSocket) {
+    set socket(socket: Socket | TLSSocket) {
         // No data socket should be open in any case where the control socket is set or upgraded.
         this.dataSocket = undefined
         // This being a soft reset, remove any remaining partial response.

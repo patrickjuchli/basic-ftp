@@ -931,7 +931,7 @@ function download(ftp: FTPContext, progress: ProgressTracker, destination: Writa
  * @param eventName  The event to subscribe to if the condition is not met.
  * @param action  The function to call.
  */
-function onConditionOrEvent(condition: boolean, emitter: EventEmitter, eventName: string, action: () => any) {
+function onConditionOrEvent(condition: boolean, emitter: EventEmitter, eventName: string, action: () => void) {
     if (condition === true) {
         action()
     }
