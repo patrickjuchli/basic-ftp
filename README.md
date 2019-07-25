@@ -121,7 +121,11 @@ Remove a file from the working directory.
 
 `upload(readableStream, remoteFilename): Promise<FTPResponse>`
 
-Upload data from a readable stream and store it as a file with a given filename in the current working directory.
+Upload data from a readable stream and store it as a file with a given filename in the current working directory. If such a file already exists it will be overwritten.
+
+`append(readableStream, remoteFilename): Promise<FTPResponse>`
+
+Upload data from a readable stream and append it to an existing file with a given filename in the current working directory. If the file doesn't exist the FTP server should create it.
 
 `download(writableStream, remoteFilename, startAt = 0): Promise<FTPResponse>`
 

@@ -339,11 +339,27 @@ export class Client {
 
     /**
      * Upload data from a readable stream and store it as a file with a given filename in the current working directory.
+     * If such a file already exists it will be overwritten.
      *
      * @param source  The stream to read from.
      * @param remotePath  The path of the remote file to write to.
      */
     async upload(source: Readable, remotePath: string): Promise<FTPResponse> {
+        return this.uploadWithCommand(source, remotePath, "STOR")
+    }
+
+    /**
+     * Upload data from a readable stream and append it to an existing file with a given filename in the current working directory.
+     * If the file doesn't exist the FTP server should create it.
+     *
+     * @param source  The stream to read from.
+     * @param remotePath  The path of the existing remote file to append to.
+     */
+    async append(source: Readable, remotePath: string): Promise<FTPResponse> {
+        return this.uploadWithCommand(source, remotePath, "APPE")
+    }
+
+    protected async uploadWithCommand(source: Readable, remotePath: string, command: "STOR" | "APPE"): Promise<FTPResponse> {
         const onError = (err: Error) => this.ftp.closeWithError(err)
         source.once("error", onError)
         try {
@@ -351,7 +367,7 @@ export class Client {
             await this.prepareTransfer(this)
             // Keep the keyword `await` or the `finally` clause below runs too early
             // and removes the event listener for the source stream too early.
-            return await upload(this.ftp, this.progressTracker, source, validPath)
+            return await upload(this.ftp, this.progressTracker, source, command, validPath)
         }
         finally {
             source.removeListener("error", onError)
@@ -845,10 +861,10 @@ class TransferResolver {
  *
  * `upload(ftp, fs.createReadStream(localFilePath), remoteFilename)`
  */
-function upload(ftp: FTPContext, progress: ProgressTracker, source: Readable, remoteFilename: string): Promise<FTPResponse> {
+function upload(ftp: FTPContext, progress: ProgressTracker, source: Readable, command: "STOR" | "APPE", remoteFilename: string): Promise<FTPResponse> {
     const resolver = new TransferResolver(ftp, progress)
-    const command = "STOR " + remoteFilename
-    return ftp.handle(command, (res, task) => {
+    const fullCommand = `${command} ${remoteFilename}`
+    return ftp.handle(fullCommand, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
