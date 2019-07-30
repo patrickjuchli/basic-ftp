@@ -46,7 +46,7 @@ export class Client {
     /** Function that parses raw directoy listing data. */
     parseList: RawListParser
     /** Tracks progress of data transfers. */
-    protected progressTracker: ProgressTracker
+    protected _progressTracker: ProgressTracker
 
     /**
      * Instantiate an FTP client.
@@ -57,7 +57,7 @@ export class Client {
         this.ftp = new FTPContext(timeout)
         this.prepareTransfer = enterFirstCompatibleMode(enterPassiveModeIPv6, enterPassiveModeIPv4)
         this.parseList = parseListAutoDetect
-        this.progressTracker = new ProgressTracker()
+        this._progressTracker = new ProgressTracker()
     }
 
     /**
@@ -69,7 +69,7 @@ export class Client {
      */
     close() {
         this.ftp.close()
-        this.progressTracker.stop()
+        this._progressTracker.stop()
     }
 
     /**
@@ -333,8 +333,8 @@ export class Client {
      * @param handler  Handler function to call on transfer progress.
      */
     trackProgress(handler: ProgressHandler) {
-        this.progressTracker.bytesOverall = 0
-        this.progressTracker.reportTo(handler)
+        this._progressTracker.bytesOverall = 0
+        this._progressTracker.reportTo(handler)
     }
 
     /**
@@ -345,7 +345,7 @@ export class Client {
      * @param remotePath  The path of the remote file to write to.
      */
     async upload(source: Readable, remotePath: string): Promise<FTPResponse> {
-        return this.uploadWithCommand(source, remotePath, "STOR")
+        return this._uploadWithCommand(source, remotePath, "STOR")
     }
 
     /**
@@ -356,10 +356,13 @@ export class Client {
      * @param remotePath  The path of the existing remote file to append to.
      */
     async append(source: Readable, remotePath: string): Promise<FTPResponse> {
-        return this.uploadWithCommand(source, remotePath, "APPE")
+        return this._uploadWithCommand(source, remotePath, "APPE")
     }
 
-    protected async uploadWithCommand(source: Readable, remotePath: string, command: "STOR" | "APPE"): Promise<FTPResponse> {
+    /**
+     * @protected
+     */
+    protected async _uploadWithCommand(source: Readable, remotePath: string, command: "STOR" | "APPE"): Promise<FTPResponse> {
         const onError = (err: Error) => this.ftp.closeWithError(err)
         source.once("error", onError)
         try {
@@ -367,7 +370,7 @@ export class Client {
             await this.prepareTransfer(this)
             // Keep the keyword `await` or the `finally` clause below runs too early
             // and removes the event listener for the source stream too early.
-            return await upload(this.ftp, this.progressTracker, source, command, validPath)
+            return await upload(this.ftp, this._progressTracker, source, command, validPath)
         }
         finally {
             source.removeListener("error", onError)
@@ -392,7 +395,7 @@ export class Client {
             const command = startAt > 0 ? `REST ${startAt}` : `RETR ${validPath}`
             // Keep the keyword `await` or the `finally` clause below runs too early
             // and removes the event listener for the source stream too early.
-            return await download(this.ftp, this.progressTracker, destination, command, validPath)
+            return await download(this.ftp, this._progressTracker, destination, command, validPath)
         }
         finally {
             destination.removeListener("error", onError)
@@ -524,7 +527,7 @@ export class Client {
     /**
      * Remove an empty directory, will fail if not empty.
      */
-    protected async removeEmptyDir(path: string): Promise<FTPResponse> {
+    async removeEmptyDir(path: string): Promise<FTPResponse> {
         const validPath = await this.protectWhitespace(path)
         return this.send(`RMD ${validPath}`)
     }
@@ -533,7 +536,7 @@ export class Client {
      * FTP servers can't handle filenames that have leading whitespace. This method transforms
      * a given path to fix that issue for most cases.
      */
-    protected async protectWhitespace(path: string): Promise<string> {
+    async protectWhitespace(path: string): Promise<string> {
         if (!path.startsWith(" ")) {
             return path
         }

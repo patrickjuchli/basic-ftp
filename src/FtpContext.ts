@@ -54,11 +54,11 @@ export class FTPContext {
     /** Options for TLS connections. */
     tlsOptions: ConnectionOptions = {}
     /** Current task to be resolved or rejected. */
-    protected task: Task | undefined
+    protected _task: Task | undefined
     /** A multiline response might be received as multiple chunks. */
-    protected partialResponse = ""
+    protected _partialResponse = ""
     /** Closing the context is always described an error. */
-    protected closingError: NodeJS.ErrnoException | undefined
+    protected _closingError: NodeJS.ErrnoException | undefined
     /** Encoding applied to commands, responses and directory listing data. */
     protected _encoding: string
     /** Control connection */
@@ -90,7 +90,7 @@ export class FTPContext {
         // but all newly submitted tasks after that will be rejected because "the client is closed". Plus, the user
         // gets a stack trace in case it's not clear where exactly the client was closed. We use _closingError to
         // determine whether a context is closed. This also allows us to have a single code-path for closing a context.
-        const message = this.task ? "User closed client during task" : "User closed client"
+        const message = this._task ? "User closed client during task" : "User closed client"
         const err = new Error(message)
         this.closeWithError(err)
     }
@@ -100,21 +100,21 @@ export class FTPContext {
      */
     closeWithError(err: Error) {
         // If this context already has been closed, don't overwrite the reason.
-        if (this.closingError) {
+        if (this._closingError) {
             return
         }
-        this.closingError = err
+        this._closingError = err
         // Before giving the user's task a chance to react, make sure we won't be bothered with any inputs.
-        this.closeSocket(this._socket)
-        this.closeSocket(this._dataSocket)
+        this._closeSocket(this._socket)
+        this._closeSocket(this._dataSocket)
         // Give the user's task a chance to react, maybe cleanup resources.
-        this.passToHandler(err)
+        this._passToHandler(err)
         // The task might not have been rejected by the user after receiving the error.
-        this.stopTrackingTask()
+        this._stopTrackingTask()
     }
 
     get closed(): boolean {
-        return this.closingError !== undefined
+        return this._closingError !== undefined
     }
 
     get socket(): Socket | TLSSocket {
@@ -129,27 +129,27 @@ export class FTPContext {
         // No data socket should be open in any case where the control socket is set or upgraded.
         this.dataSocket = undefined
         // This being a soft reset, remove any remaining partial response.
-        this.partialResponse = ""
+        this._partialResponse = ""
         if (this._socket) {
             // Only close the current connection if the new is not an upgrade.
             const isUpgrade = socket.localPort === this._socket.localPort
             if (!isUpgrade) {
                 this._socket.destroy()
             }
-            this.removeSocketListeners(this._socket)
+            this._removeSocketListeners(this._socket)
         }
         if (socket) {
             // Setting a completely new control socket is in essence something like a reset. That's
             // why we also close any open data connection above. We can go one step further and reset
             // a possible closing error. That means that a closed FTPContext can be "reopened" by
             // setting a new control socket.
-            this.closingError = undefined
+            this._closingError = undefined
             // Don't set a timeout yet. Timeout for control sockets is only active during a task, see handle() below.
             socket.setTimeout(0)
             socket.setEncoding(this._encoding)
             socket.setKeepAlive(true)
-            socket.on("data", data => this.onControlSocketData(data))
-            this.setupErrorHandlers(socket, "control socket")
+            socket.on("data", data => this._onControlSocketData(data))
+            this._setupErrorHandlers(socket, "control socket")
         }
         this._socket = socket
     }
@@ -162,12 +162,12 @@ export class FTPContext {
      * Set the socket for the data connection. This will automatically close the former data socket.
      */
     set dataSocket(socket: Socket | TLSSocket | undefined) {
-        this.closeSocket(this._dataSocket)
+        this._closeSocket(this._dataSocket)
         if (socket) {
             // Don't set a timeout yet. Timeout data socket should be activated when data transmission starts
             // and timeout on control socket is deactivated.
             socket.setTimeout(0)
-            this.setupErrorHandlers(socket, "data socket")
+            this._setupErrorHandlers(socket, "data socket")
         }
         this._dataSocket = socket
     }
@@ -219,36 +219,36 @@ export class FTPContext {
      * will hold whatever the handler passed on when resolving/rejecting its task.
      */
     handle(command: string | undefined, responseHandler: ResponseHandler): Promise<any> {
-        if (this.task) {
+        if (this._task) {
             // The user or client instance called `handle()` while a task is still running.
             const err = new Error("User launched a task while another one is still running. Forgot to use 'await' or '.then()'?")
-            err.stack += `\nRunning task launched at: ${this.task.stack}`
+            err.stack += `\nRunning task launched at: ${this._task.stack}`
             this.closeWithError(err)
         }
         return new Promise((resolvePromise, rejectPromise) => {
             const stack = new Error().stack || "Unknown call stack"
             const resolver: TaskResolver = {
                 resolve: (...args) => {
-                    this.stopTrackingTask()
+                    this._stopTrackingTask()
                     resolvePromise(...args)
                 },
                 reject: err => {
-                    this.stopTrackingTask()
+                    this._stopTrackingTask()
                     rejectPromise(err)
                 }
             }
-            this.task = {
+            this._task = {
                 stack,
                 resolver,
                 responseHandler
             }
-            if (this.closingError) {
+            if (this._closingError) {
                 // This client has been closed. Provide an error that describes this one as being caused
                 // by `_closingError`, include stack traces for both.
                 const err = new Error("Client is closed") as NodeJS.ErrnoException // Type 'Error' is not correctly defined, doesn't have 'code'.
-                err.stack += `\nClosing reason: ${this.closingError.stack}`
-                err.code = this.closingError.code !== undefined ? this.closingError.code : "0"
-                this.passToHandler(err)
+                err.stack += `\nClosing reason: ${this._closingError.stack}`
+                err.code = this._closingError.code !== undefined ? this._closingError.code : "0"
+                this._passToHandler(err)
                 return
             }
             // Only track control socket timeout during the lifecycle of a task. This avoids timeouts on idle sockets,
@@ -260,43 +260,48 @@ export class FTPContext {
         })
     }
 
+    // TODO add underscores to all protected methods, they are visible anyway from JS...
+
     /**
      * Removes reference to current task and handler. This won't resolve or reject the task.
+     * @protected
      */
-    protected stopTrackingTask() {
+    protected _stopTrackingTask() {
         // Disable timeout on control socket if there is no task active.
         this.socket.setTimeout(0)
-        this.task = undefined
+        this._task = undefined
     }
 
     /**
      * Handle incoming data on the control socket. The chunk is going to be of type `string`
      * because we let `socket` handle encoding with `setEncoding`.
+     * @protected
      */
-    protected onControlSocketData(chunk: string) {
+    protected _onControlSocketData(chunk: string) {
         const trimmedChunk = chunk.trim()
         this.log(`< ${trimmedChunk}`)
         // This chunk might complete an earlier partial response.
-        const completeResponse = this.partialResponse + trimmedChunk
+        const completeResponse = this._partialResponse + trimmedChunk
         const parsed = parseControlResponse(completeResponse)
         // Remember any incomplete remainder.
-        this.partialResponse = parsed.rest
+        this._partialResponse = parsed.rest
         // Each response group is passed along individually.
         for (const message of parsed.messages) {
             const code = parseInt(message.substr(0, 3), 10)
             const response = { code, message }
             const err = code >= 400 ? new FTPError(response) : undefined
-            this.passToHandler(err ? err : response)
+            this._passToHandler(err ? err : response)
         }
     }
 
     /**
      * Send the current handler a response. This is usually a control socket response
      * or a socket event, like an error or timeout.
+     * @protected
      */
-    protected passToHandler(response: Error | FTPResponse) {
-        if (this.task) {
-            this.task.responseHandler(response, this.task.resolver)
+    protected _passToHandler(response: Error | FTPResponse) {
+        if (this._task) {
+            this._task.responseHandler(response, this._task.resolver)
         }
         // Errors other than FTPError always close the client. If there isn't an active task to handle the error,
         // the next one submitted will receive it using `_closingError`.
@@ -308,8 +313,9 @@ export class FTPContext {
 
     /**
      * Setup all error handlers for a socket.
+     * @protected
      */
-    protected setupErrorHandlers(socket: Socket, identifier: string) {
+    protected _setupErrorHandlers(socket: Socket, identifier: string) {
         socket.once("error", error => {
             error.message += ` (${identifier})`
             this.closeWithError(error)
@@ -324,18 +330,20 @@ export class FTPContext {
 
     /**
      * Close a socket.
+     * @protected
      */
-    protected closeSocket(socket: Socket | undefined) {
+    protected _closeSocket(socket: Socket | undefined) {
         if (socket) {
             socket.destroy()
-            this.removeSocketListeners(socket)
+            this._removeSocketListeners(socket)
         }
     }
 
     /**
      * Remove all default listeners for socket.
+     * @protected
      */
-    protected removeSocketListeners(socket: Socket) {
+    protected _removeSocketListeners(socket: Socket) {
         socket.removeAllListeners()
         // Before Node.js 10.3.0, using `socket.removeAllListeners()` without any name did not work: https://github.com/nodejs/node/issues/20923.
         socket.removeAllListeners("timeout")

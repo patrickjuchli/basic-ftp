@@ -144,9 +144,9 @@ describe("Convenience API", function() {
     });
 
     it("resets overall bytes of progress tracker on trackProgress()", function() {
-        client.progressTracker.bytesOverall = 5;
+        client._progressTracker.bytesOverall = 5;
         client.trackProgress();
-        assert.equal(client.progressTracker.bytesOverall, 0, "bytesOverall after reset");
+        assert.equal(client._progressTracker.bytesOverall, 0, "bytesOverall after reset");
     });
 
     it("can connect", function() {
