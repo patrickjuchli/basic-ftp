@@ -60,11 +60,11 @@ client.ftp.verbose = true
 
 `new Client(timeout = 30000)`
 
-Create a client instance using a timeout in milliseconds that will be used for control and data connections. Use 0 to disable timeouts, default is 30 seconds.
+Create a client instance using a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds.
 
 `close()`
 
-Close the client and all open socket connections. The client can’t be used anymore after calling this method, you'll have to reconnect with `access` to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
+Close the client and any open connection. The client can’t be used anymore after calling this method, you'll have to reconnect with `access` to continue any work. A client is also closed automatically if any timeout or connection error occurs. See the section on [Error Handling](#error-handling) below.
 
 `closed`
 
@@ -72,7 +72,7 @@ True if the client has been closed, either by the user or by an error.
 
 `access(options): Promise<FTPResponse>`
 
-Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. This is an instance method and thus can be called multiple times during the lifecycle of a `Client` instance. Whenever you do, the client is reset with a new control connection. This also implies that you can reopen a `Client` instance that has been closed due to an error when reconnecting with this method. The available options are:
+Get access to an FTP server. This method will connect to a server, optionally secure the connection with TLS, login a user and apply some default settings (TYPE I, STRU F, PBSZ 0, PROT P). It returns the response of the initial connect command. This is an instance method and thus can be called multiple times during the lifecycle of a `Client` instance. Whenever you do, the client is reset with a new connection. This also implies that you can reopen a `Client` instance that has been closed due to an error when reconnecting with this method. The available options are:
 
 - `host (string)` Server host, default: localhost
 - `port (number)` Server port, default: 21
@@ -89,7 +89,7 @@ Get a description of supported features. This will return a Map where keys corre
 
 `send(command, ignoreErrorCodes = false): Promise<FTPResponse>`
 
-Send an FTP command. You can choose to ignore error return codes. Other errors originating from the socket connections including timeouts will still reject the Promise returned.
+Send an FTP command. You can choose to ignore error return codes. Other errors originating from the connections including timeouts will still reject the Promise returned.
 
 `cd(remotePath): Promise<FTPResponse>`
 
