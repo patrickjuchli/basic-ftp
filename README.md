@@ -60,7 +60,7 @@ client.ftp.verbose = true
 
 `new Client(timeout = 30000)`
 
-Create a client instance using a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds.
+Create a client instance. Configure it with a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds.
 
 `close()`
 
@@ -89,7 +89,7 @@ Get a description of supported features. This will return a Map where keys corre
 
 `send(command, ignoreErrorCodes = false): Promise<FTPResponse>`
 
-Send an FTP command. You can choose to ignore error return codes. Other errors originating from the connections including timeouts will still reject the Promise returned.
+Send an FTP command. You can choose to ignore error return codes. Other errors originating from a connection including timeouts will still reject the Promise returned.
 
 `cd(remotePath): Promise<FTPResponse>`
 
