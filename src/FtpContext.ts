@@ -260,8 +260,6 @@ export class FTPContext {
         })
     }
 
-    // TODO add underscores to all protected methods, they are visible anyway from JS...
-
     /**
      * Removes reference to current task and handler. This won't resolve or reject the task.
      * @protected
