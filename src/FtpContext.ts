@@ -57,13 +57,13 @@ export class FTPContext {
     protected _task: Task | undefined
     /** A multiline response might be received as multiple chunks. */
     protected _partialResponse = ""
-    /** Closing the context is always described an error. */
+    /** The reason why a context has been closed. */
     protected _closingError: NodeJS.ErrnoException | undefined
-    /** Encoding applied to commands, responses and directory listing data. */
+    /** Encoding supported by Node applied to commands, responses and directory listing data. */
     protected _encoding: string
-    /** Control connection */
+    /** FTP control connection */
     protected _socket: Socket | TLSSocket
-    /** Data connection */
+    /** FTP data connection */
     protected _dataSocket: Socket | TLSSocket | undefined
 
     /**
@@ -81,22 +81,21 @@ export class FTPContext {
 
     /**
      * Close the context.
-     *
-     * The context can’t be used anymore after calling this method.
      */
     close() {
-        // Close with an error: If there is an active task it will receive it justifiably because the user
-        // closed while a task was still running. If no task is running, no error will be thrown (see closeWithError)
-        // but all newly submitted tasks after that will be rejected because "the client is closed". Plus, the user
-        // gets a stack trace in case it's not clear where exactly the client was closed. We use _closingError to
-        // determine whether a context is closed. This also allows us to have a single code-path for closing a context.
+        // Internally, closing a context is always described with an error. If there is still a task running, it will
+        // abort with an exception that the user closed the client during a task. If no task is running, no exception is
+        // thrown but all newly submitted tasks after that will abort the exception that the client has been closed.
+        // In addition the user will get a stack trace pointing to where exactly the client has been closed. So in any
+        // case use _closingError to determine whether a context is closed. This also allows us to have a single code-path
+        // for closing a context making the implementation easier.
         const message = this._task ? "User closed client during task" : "User closed client"
         const err = new Error(message)
         this.closeWithError(err)
     }
 
     /**
-     * Send an error to the current handler and close all connections.
+     * Close the context with an error.
      */
     closeWithError(err: Error) {
         // If this context already has been closed, don't overwrite the reason.
@@ -113,10 +112,16 @@ export class FTPContext {
         this._stopTrackingTask()
     }
 
+    /**
+     * Returns true if this context has been closed. You can reopen it with `access`.
+     */
     get closed(): boolean {
         return this._closingError !== undefined
     }
 
+    /**
+     * Get the FTP control socket.
+     */
     get socket(): Socket | TLSSocket {
         return this._socket
     }
@@ -154,6 +159,9 @@ export class FTPContext {
         this._socket = socket
     }
 
+    /**
+     * Get the current FTP data connection if present.
+     */
     get dataSocket(): Socket | TLSSocket | undefined {
         return this._dataSocket
     }
@@ -172,12 +180,18 @@ export class FTPContext {
         this._dataSocket = socket
     }
 
+    /**
+     * Get the currently used encoding.
+     */
     get encoding(): string {
         return this._encoding
     }
 
     /**
      * Set the encoding used for the control socket.
+     *
+     * See https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings for what encodings
+     * are supported by Node.
      */
     set encoding(encoding: string) {
         this._encoding = encoding
@@ -224,6 +238,9 @@ export class FTPContext {
             const err = new Error("User launched a task while another one is still running. Forgot to use 'await' or '.then()'?")
             err.stack += `\nRunning task launched at: ${this._task.stack}`
             this.closeWithError(err)
+            // Don't return here, continue with returning the Promise that will then be rejected
+            // because the context closed already. That way, users will receive an exception where
+            // they called this method by mistake.
         }
         return new Promise((resolvePromise, rejectPromise) => {
             const stack = new Error().stack || "Unknown call stack"
