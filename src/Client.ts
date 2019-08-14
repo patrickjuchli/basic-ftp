@@ -650,7 +650,7 @@ export function enterFirstCompatibleMode(...strategies: TransferStrategy[]): Tra
  */
 export async function enterPassiveModeIPv6(client: Client): Promise<FTPResponse> {
     const res = await client.send("EPSV")
-    const port = parseIPv6EpsvResponse(res.message)
+    const port = parseEpsvResponse(res.message)
     if (!port) {
         throw new Error("Can't parse EPSV response: " + res.message)
     }
@@ -665,7 +665,7 @@ export async function enterPassiveModeIPv6(client: Client): Promise<FTPResponse>
 /**
  * Parse an EPSV response. Returns only the port as in EPSV the host of the control connection is used.
  */
-export function parseIPv6EpsvResponse(message: string): number {
+export function parseEpsvResponse(message: string): number {
     // Get port from EPSV response, e.g. "229 Entering Extended Passive Mode (|||6446|)"
     // Some FTP Servers such as the one on IBM i (OS/400) use ! instead of | in their EPSV response.
     const groups = message.match(/[|!]{3}(.+)[|!]/)
@@ -684,7 +684,7 @@ export function parseIPv6EpsvResponse(message: string): number {
  */
 export async function enterPassiveModeIPv4(client: Client): Promise<FTPResponse> {
     const res = await client.send("PASV")
-    const target = parseIPv4PasvResponse(res.message)
+    const target = parsePasvResponse(res.message)
     if (!target) {
         throw new Error("Can't parse PASV response: " + res.message)
     }
@@ -703,7 +703,7 @@ export async function enterPassiveModeIPv4(client: Client): Promise<FTPResponse>
 /**
  * Parse a PASV response.
  */
-export function parseIPv4PasvResponse(message: string): { host: string, port: number } {
+export function parsePasvResponse(message: string): { host: string, port: number } {
     // Get host and port from PASV response, e.g. "227 Entering Passive Mode (192,168,1,100,10,229)"
     const groups = message.match(/([-\d]+,[-\d]+,[-\d]+,[-\d]+),([-\d]+),([-\d]+)/)
     if (groups === null || groups.length !== 4) {
