@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.8.1
+
+- Fixed: Support non-standard response to EPSV by IBM i or z/OS servers. (#87)
+- Fixed: Make unit tests for failing streams less dependent on platform. (#86)
+- Fixed: Improve marking protected methods for JS compilation output.
+
 ## 3.8.0
 
 - Added: Use `client.append()` to append to an existing file on the FTP server. (#83)
