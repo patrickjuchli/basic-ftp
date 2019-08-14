@@ -405,7 +405,7 @@ export class Client {
     /**
      * List files and directories in the current working directory, or from `path` if specified.
      *
-     * @param path  Path to remote file or directory.
+     * @param [path]  Path to remote file or directory.
      */
     async list(path?: string): Promise<FileInfo[]> {
         await this.prepareTransfer(this)
