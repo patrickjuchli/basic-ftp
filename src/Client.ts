@@ -667,7 +667,12 @@ export async function enterPassiveModeIPv6(client: Client): Promise<FTPResponse>
  */
 function parseIPv6PasvResponse(message: string): number {
     // Get port from EPSV response, e.g. "229 Entering Extended Passive Mode (|||6446|)"
-    const groups = message.match(/\|{3}(.+)\|/)
+    let groups = message.match(/\|{3}(.+)\|/)
+
+    if (groups === null || groups[1] === undefined) {
+        // Some FTP Servers such as the one on IBM i (OS/400) use ! instead of | in their EPSV response.
+        groups = message.match(/!{3}(.+)!/)
+    }
     if (groups === null || groups[1] === undefined) {
         throw new Error(`Can't parse response to 'EPSV': ${message}`)
     }
