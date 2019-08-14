@@ -173,7 +173,7 @@ describe("Download directory listing", function() {
 
     it("handles destination stream error", function() {
         return client.download(fs.createWriteStream("test"), "test.json").catch(err => {
-            assert.equal(err.toString(), "Error: EISDIR: illegal operation on a directory, open 'test'")
+            assert.equal(err.code, "EISDIR")
         })
     })
 });

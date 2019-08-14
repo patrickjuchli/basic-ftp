@@ -111,7 +111,7 @@ describe("Upload", function() {
     it("handles error events from the source stream", function() {
         const nonExistingFile = fs.createReadStream("nothing.txt");
         return client.upload(nonExistingFile, "NAME.TXT").catch(err => {
-            assert.equal(err.toString(), "Error: ENOENT: no such file or directory, open 'nothing.txt'")
+            assert.equal(err.code, "ENOENT")
         })
     })
 
