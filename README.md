@@ -281,4 +281,4 @@ This function represents an asynchronously executed task. It uses a method offer
 
 ## Acknowledgment
 
-This library uses parts of the [directory listing parsers](https://github.com/apache/commons-net/tree/master/src/main/java/org/apache/commons/net/ftp/parser) written by The Apache Software Foundation. The code has been made available under the Apache 2.0 license, see the [included notice](NOTICE.txt) and headers in the respective files containing the original copyright texts and a description of changes.
+This library uses parts of the [directory listing parsers](https://github.com/apache/commons-net/tree/master/src/main/java/org/apache/commons/net/ftp/parser) written by The Apache Software Foundation. The code has been made available under the Apache 2.0 license. See the [included notice](NOTICE.txt) and headers in the respective files containing the original copyright texts and a description of changes.
