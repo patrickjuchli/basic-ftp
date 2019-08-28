@@ -414,12 +414,11 @@ export class Client {
      *
      * @param [path]  Path to remote file or directory.
      */
-    async list(path?: string): Promise<FileInfo[]> {
-        const validPath = path ? await this.protectWhitespace(path) : ""
+    async list(path: string = ""): Promise<FileInfo[]> {
+        const validPath = await this.protectWhitespace(path)
         for (const candidate of this._availableListCommands) {
             const command = `${candidate} ${validPath}`.trim()
-            // Don't track progress of list transfers.
-            const noTracker = createNullObject() as ProgressTracker
+            const noTracker = createNullObject() as ProgressTracker // Don't track progress of list transfers.
             const writable = new StringWriter()
             await this.prepareTransfer(this)
             try {
