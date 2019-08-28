@@ -140,7 +140,9 @@ describe("Download directory listing", function() {
         client.list().catch(() => {});
         // Before anything: No timeout tracking at all
         assert.equal(client.ftp.socket.timeout, 0, "before task (control)");
-        assert.equal(client.ftp.dataSocket.timeout, 0, "before task (data)");
+        if (client.ftp.dataSocket) { // Data socket might not even be set yet
+            assert.equal(client.ftp.dataSocket.timeout, 0, "before task (data)");
+        }
         setTimeout(() => {
             // Task started, control socket tracks timeout
             assert.equal(client.ftp.socket.timeout, 5000, "task started (control)");
