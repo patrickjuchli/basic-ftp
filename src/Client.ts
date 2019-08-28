@@ -418,25 +418,35 @@ export class Client {
         const validPath = await this.protectWhitespace(path)
         for (const candidate of this._availableListCommands) {
             const command = `${candidate} ${validPath}`.trim()
-            const noTracker = createNullObject() as ProgressTracker // Don't track progress of list transfers.
-            const writable = new StringWriter()
             await this.prepareTransfer(this)
             try {
-                await download(this.ftp, noTracker, writable, command)
-                const text = writable.getText(this.ftp.encoding)
-                this.ftp.log(text)
-                // Use this first list command that worked for all future requests.
+                const parsedList = await this._requestListWithCommand(command)
+                // The successful candidate will from now on be the only command
+                // used in all subsequent list requests.
                 this._availableListCommands = [ candidate ]
-                return this.parseList(text)
+                return parsedList
             }
             catch (err) {
-                const shouldTryNext = err instanceof FTPError && err.code >= 500
-                if (!shouldTryNext) {
+                const hasOnlyOneCandidate = this._availableListCommands.length === 1
+                const shouldTryAnotherCandidate = err instanceof FTPError && err.code >= 500
+                if (hasOnlyOneCandidate || !shouldTryAnotherCandidate) {
                     throw err
                 }
             }
         }
-        throw new Error(`Can't get directory listing, tried: ${this._availableListCommands.join(", ")}.`)
+        throw new Error(`Can't get directory listing, tried: ${this._availableListCommands.join(", ")}`)
+    }
+
+    /**
+     * @protected
+     */
+    protected async _requestListWithCommand(command: string): Promise<FileInfo[]> {
+        const writable = new StringWriter()
+        const noTracker = createNullObject() as ProgressTracker // Don't track progress of list transfers.
+        await download(this.ftp, noTracker, writable, command)
+        const text = writable.getText(this.ftp.encoding)
+        this.ftp.log(text)
+        return this.parseList(text)
     }
 
     /**
