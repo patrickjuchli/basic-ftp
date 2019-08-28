@@ -416,25 +416,28 @@ export class Client {
      */
     async list(path = ""): Promise<FileInfo[]> {
         const validPath = await this.protectWhitespace(path)
+        let lastError: any
         for (const candidate of this._availableListCommands) {
             const command = `${candidate} ${validPath}`.trim()
             await this.prepareTransfer(this)
             try {
                 const parsedList = await this._requestListWithCommand(command)
-                // The successful candidate will from now on be the only command
-                // used in all subsequent list requests.
+                // Use successful candidate for all subsequent requests.
                 this._availableListCommands = [ candidate ]
                 return parsedList
             }
             catch (err) {
-                const hasOnlyOneCandidate = this._availableListCommands.length === 1
-                const shouldTryAnotherCandidate = err instanceof FTPError && err.code >= 500
-                if (hasOnlyOneCandidate || !shouldTryAnotherCandidate) {
+                const maybeSyntaxError = err instanceof FTPError && err.code >= 500
+                if (!maybeSyntaxError) {
                     throw err
                 }
+                lastError = err
             }
         }
-        throw new Error(`Can't get directory listing, tried: ${this._availableListCommands.join(", ")}`)
+        // Always rethrow an exception of the last candidate. That way this method
+        // behaves the same regardless whether it just evaluated several list commands
+        // or just used the single one selected as compatible in an earlier request.
+        throw lastError
     }
 
     /**

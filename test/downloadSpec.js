@@ -201,12 +201,14 @@ describe("Download directory listing", function() {
         return client.list();
     })
 
-    it("throws error when all available list commands fail", function() {
+    it("throws error of last candidate when all available list commands fail", function() {
+        let counter = 1
         client.ftp.socket.on("didSend", () => {
-            client.ftp.socket.emit("data", "501 Syntax error")
+            client.ftp.socket.emit("data", "501 Syntax error " + counter)
+            counter++
         });
         return client.list().catch(err => {
-            assert.equal(err.message, "Can't get directory listing, tried: LIST -a, LIST")
+            assert.equal(err.message, "501 Syntax error 2")
         });
     })
 
