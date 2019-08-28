@@ -417,7 +417,7 @@ export class Client {
     async list(path?: string): Promise<FileInfo[]> {
         const validPath = path ? await this.protectWhitespace(path) : ""
         for (const candidate of this._availableListCommands) {
-            const command = `${candidate} ${validPath}`
+            const command = `${candidate} ${validPath}`.trim()
             // Don't track progress of list transfers.
             const noTracker = createNullObject() as ProgressTracker
             const writable = new StringWriter()
