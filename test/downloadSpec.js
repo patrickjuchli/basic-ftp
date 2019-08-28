@@ -35,34 +35,19 @@ describe("Download directory listing", function() {
         client.close();
     });
 
+    function sendCompleteList() {
+        client.ftp.socket.emit("data", "125 Sending");
+        client.ftp.dataSocket.emit("data", bufList);
+        client.ftp.dataSocket.end();
+        client.ftp.socket.emit("data", "250 Done");
+    }
+
     function requestListAndVerify(done) {
         client.list().then(result => {
             assert.deepEqual(result, expList);
             done();
         });
     }
-
-    it("sends the right command", function(done) {
-        client.ftp.socket.once("didSend", command => {
-            assert.equal(command, "LIST -a\r\n");
-            done();
-        });
-        // This will throw an unhandled exception because we close the client when
-        // the task is still running. Ignore the exception, this test is only about
-        // the command that client.list() sends.
-        client.list().catch(() => true /* Do nothing */);
-    });
-
-    it("sends the right command with optional path", function(done) {
-        client.ftp.socket.once("didSend", command => {
-            assert.equal(command, "LIST -a my/path\r\n");
-            done();
-        });
-        // This will throw an unhandled exception because we close the client when
-        // the task is still running. Ignore the exception, this test is only about
-        // the command that client.list() sends.
-        client.list("my/path").catch(() => true /* Do nothing */);
-    });
 
     it("handles data socket ending before control confirms", function(done) {
         requestListAndVerify(done);
@@ -177,5 +162,72 @@ describe("Download directory listing", function() {
         return client.download(fs.createWriteStream("test"), "test.json").catch(err => {
             assert.equal(err.code, "EISDIR")
         })
+    })
+
+    it("sends the right default command", function() {
+        client.ftp.socket.once("didSend", command => {
+            assert.equal(command, "LIST -a\r\n");
+            sendCompleteList()
+        });
+        // This will throw an unhandled exception because we close the client when
+        // the task is still running. Ignore the exception, this test is only about
+        // the command that client.list() sends.
+        return client.list()
+    });
+
+    it("sends the right default command with optional path", function() {
+        client.ftp.socket.once("didSend", command => {
+            assert.equal(command, "LIST -a my/path\r\n", "Unexpected list command");
+            sendCompleteList()
+        });
+        // This will throw an unhandled exception because we close the client when
+        // the task is still running. Ignore the exception, this test is only about
+        // the command that client.list() sends.
+        return client.list("my/path")//.catch(() => true /* Do nothing */);
+    });
+
+    it("tries all other list commands if default one fails", function() {
+        const expectedCandidates = ["LIST -a", "LIST"]
+        client.ftp.socket.on("didSend", command => {
+            const expected = expectedCandidates.shift()
+            assert.equal(command, expected + "\r\n", "Unexpected list command candidate");
+            if (expectedCandidates.length === 0) {
+                sendCompleteList()
+            }
+            else {
+                client.ftp.socket.emit("data", "501 Syntax error")
+            }
+        });
+        return client.list();
+    })
+
+    it("throws error when all available list commands fail", function() {
+        client.ftp.socket.on("didSend", () => {
+            client.ftp.socket.emit("data", "501 Syntax error")
+        });
+        return client.list().catch(err => {
+            assert.equal(err.message, "Can't get directory listing, tried: LIST -a, LIST")
+        });
+    })
+
+    it("uses first successful list command for all subsequent requests", function() {
+        const promise = client.list().then(result => {
+            assert.deepEqual(result, expList);
+            assert.deepEqual(["LIST -a"], client._availableListCommands)
+        });
+        setTimeout(() => sendCompleteList());
+        return promise
+    })
+
+    it("transparently rethrows list error if only one candidate available", function() {
+        // Typically, only one candidate is available after a successful auto-detection
+        // of a compatible one. If there's an error we want to know about it directly.
+        client._availableListCommands = ["LIST"]
+        client.ftp.socket.on("didSend", () => {
+            client.ftp.socket.emit("data", "501 Syntax error")
+        });
+        return client.list().catch(err => {
+            assert.equal(err.message, "501 Syntax error")
+        });
     })
 });
