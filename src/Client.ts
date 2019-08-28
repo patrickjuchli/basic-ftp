@@ -47,6 +47,13 @@ export class Client {
     parseList: RawListParser
     /** Tracks progress of data transfers. */
     protected _progressTracker: ProgressTracker
+    /**
+     * Multiple commands to retrieve a directory listing are possible. This instance
+     * will try all of them in the order presented the first time a directory listing
+     * is requested. After that, `_availableListCommands` will hold only the first
+     * entry that worked. (Prepend MLSD here when supported in a future version.)
+     **/
+    protected _availableListCommands = ["LIST -a"]
 
     /**
      * Instantiate an FTP client.
@@ -408,18 +415,28 @@ export class Client {
      * @param [path]  Path to remote file or directory.
      */
     async list(path?: string): Promise<FileInfo[]> {
-        await this.prepareTransfer(this)
-        let command = "LIST -a"
-        if (path) {
-            const validPath = await this.protectWhitespace(path)
-            command = `${command} ${validPath}`
+        const validPath = path ? await this.protectWhitespace(path) : ""
+        for (const candidate of this._availableListCommands) {
+            const command = `${candidate} ${validPath}`
+            // Don't track progress of list transfers.
+            const noTracker = createNullObject() as ProgressTracker
+            const writable = new StringWriter()
+            await this.prepareTransfer(this)
+            try {
+                await download(this.ftp, noTracker, writable, command)
+                const text = writable.getText(this.ftp.encoding)
+                this.ftp.log(text)
+                // Use this first list command that worked for all future requests.
+                this._availableListCommands = [ candidate ]
+                return this.parseList(text)
+            }
+            catch (err) {
+                if (!(err instanceof FTPError && err.code >= 500)) {
+                    throw err
+                }
+            }
         }
-        const writable = new StringWriter()
-        const progressTracker = createNullObject() as ProgressTracker // Don't track progress of list transfers.
-        await download(this.ftp, progressTracker, writable, command)
-        const text = writable.getText(this.ftp.encoding)
-        this.ftp.log(text)
-        return this.parseList(text)
+        throw new Error(`Can't get directory listing, tried: ${this._availableListCommands.join(", ")}.`)
     }
 
     /**
