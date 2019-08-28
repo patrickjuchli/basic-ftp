@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.2
+
+- Fixed: Fall back to `LIST` command if `LIST -a` is not supported. (#91)
+
 ## 3.8.1
 
 - Fixed: Support non-standard response to EPSV by IBM i or z/OS servers. (#87)
