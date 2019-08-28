@@ -431,7 +431,8 @@ export class Client {
                 return this.parseList(text)
             }
             catch (err) {
-                if (!(err instanceof FTPError && err.code >= 500)) {
+                const shouldTryNext = err instanceof FTPError && err.code >= 500
+                if (!shouldTryNext) {
                     throw err
                 }
             }
