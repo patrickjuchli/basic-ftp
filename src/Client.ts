@@ -414,7 +414,7 @@ export class Client {
      *
      * @param [path]  Path to remote file or directory.
      */
-    async list(path: string = ""): Promise<FileInfo[]> {
+    async list(path = ""): Promise<FileInfo[]> {
         const validPath = await this.protectWhitespace(path)
         for (const candidate of this._availableListCommands) {
             const command = `${candidate} ${validPath}`.trim()
