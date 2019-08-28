@@ -53,7 +53,7 @@ export class Client {
      * is requested. After that, `_availableListCommands` will hold only the first
      * entry that worked. (Prepend MLSD here when supported in a future version.)
      **/
-    protected _availableListCommands = ["LIST -a"]
+    protected _availableListCommands = ["LIST -a", "LIST"]
 
     /**
      * Instantiate an FTP client.
