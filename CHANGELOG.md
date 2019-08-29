@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.3
+
+No changes, republishing because of bug on npmjs.com.
+
 ## 3.8.2
 
 - Fixed: Fall back to `LIST` command if `LIST -a` is not supported. (#91)
