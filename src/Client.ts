@@ -50,7 +50,7 @@ export class Client {
     /**
      * Multiple commands to retrieve a directory listing are possible. This instance
      * will try all of them in the order presented the first time a directory listing
-     * is requested. After that, `_availableListCommands` will hold only the first
+     * is requested. After that, `_availableListCommands` will  hold only the first
      * entry that worked. (Prepend MLSD here when supported in a future version.)
      */
     protected _availableListCommands = ["LIST -a", "LIST"]
