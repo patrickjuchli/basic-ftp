@@ -120,6 +120,13 @@ export class FTPContext {
     }
 
     /**
+     * Reset this contex and all of its state.
+     */
+    reset() {
+        this.socket = this._newSocket()
+    }
+
+    /**
      * Get the FTP control socket.
      */
     get socket(): Socket | TLSSocket {
