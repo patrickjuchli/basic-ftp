@@ -433,9 +433,6 @@ export class Client {
                 lastError = err
             }
         }
-        // Always rethrow an exception of the last candidate. That way this method
-        // behaves the same regardless whether it just evaluated several list commands
-        // or just used the single one selected as compatible in an earlier request.
         throw lastError
     }
 
