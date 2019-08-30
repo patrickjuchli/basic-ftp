@@ -27,7 +27,7 @@ export interface AccessOptions {
     readonly password?: string
     /** Use explicit FTPS over TLS. Optional, default is false. */
     readonly secure?: boolean
-    /** TLS options as in `tls.connect(options)`, optional. */
+    /** TLS options as in [tls.connect(options)](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback), optional. */
     readonly secureOptions?: ConnectionOptions
 }
 
@@ -114,7 +114,9 @@ export class Client {
             }
             // Reject all other codes, including 120 "Service ready in nnn minutes".
             else {
-                this.ftp.socket.destroy() // Don't stay connected
+                // Don't stay connected but don't replace the socket yet by using reset()
+                // so the user can inspect properties of this instance.
+                this.ftp.socket.destroy()
                 task.reject(new FTPError(res))
             }
         })
@@ -622,16 +624,15 @@ function describeAddress(socket: Socket): string {
 function upgradeSocket(socket: Socket, options: ConnectionOptions): Promise<TLSSocket> {
     return new Promise((resolve, reject) => {
         const tlsOptions = Object.assign({}, options, {
-            socket // Establish the secure connection using an existing socket connection.
+            socket
         })
         const tlsSocket = connectTLS(tlsOptions, () => {
-            // Make sure the certificate is valid if an unauthorized one should be rejected.
             const expectCertificate = tlsOptions.rejectUnauthorized !== false
             if (expectCertificate && !tlsSocket.authorized) {
                 reject(tlsSocket.authorizationError)
             }
             else {
-                // Remove error listener below.
+                // Remove error listener added below.
                 tlsSocket.removeAllListeners("error")
                 resolve(tlsSocket)
             }
@@ -769,11 +770,10 @@ function connectForPassiveTransfer(host: string, port: number, ftp: FTPContext):
         socket.connect({ port, host, family: ftp.ipFamily }, () => {
             if (ftp.socket instanceof TLSSocket) {
                 socket = connectTLS(Object.assign({}, ftp.tlsOptions, {
-                    // Upgrade the existing socket connection.
                     socket,
                     // Reuse the TLS session negotiated earlier when the control connection
                     // was upgraded. Servers expect this because it provides additional
-                    // security. If a completely new session would be negotiated, a hacker
+                    // security: If a completely new session would be negotiated, a hacker
                     // could guess the port and connect to the new data connection before we do
                     // by just starting his/her own TLS session.
                     session: ftp.socket.getSession()
