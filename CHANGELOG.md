@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.8.3 - 3.8.6
+## 3.8.3 - 3.8.7
 
 No changes, republishing because of bug on npmjs.com.
 
