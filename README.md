@@ -87,9 +87,13 @@ Get access to an FTP server. This method will connect to a server, optionally se
 
 Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
 
-`send(command, ignoreErrorCodes = false): Promise<FTPResponse>`
+`send(command): Promise<FTPResponse>`
 
-Send an FTP command. You can choose to ignore error return codes. Other errors originating from a connection including timeouts will still reject the Promise returned.
+Send an FTP command.
+
+`sendIgnoringError(command): Promise<FTPResponse>`
+
+Send an FTP command and ignore an FTP error response. Any other error or timeout will still reject the Promise.
 
 `cd(remotePath): Promise<FTPResponse>`
 
@@ -115,7 +119,7 @@ Get the size of a file in the working directory.
 
 Rename a file. Depending on the server you may also use this to move a file to another directory by providing full paths.
 
-`remove(filename, ignoreErrorCodes = false): Promise<FTPResponse>`
+`remove(filename): Promise<FTPResponse>`
 
 Remove a file from the working directory.
 

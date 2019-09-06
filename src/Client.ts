@@ -126,21 +126,35 @@ export class Client {
      * Send an FTP command.
      *
      * If successful it will return a response object that contains the return code as well
-     * as the whole message. Ignore FTP error codes if you don't want an exception to be thrown
-     * if an FTP command didn't succeed.
+     * as the whole message.
      *
      * @param command  FTP command to send.
-     * @param ignoreErrorCodes  Whether to ignore FTP error codes in result. Optional, default is false.
+     * @param ignoreErrorCodesDEPRECATED  Deprecated in 3.9.0, use `sendIgnoringError` to ignore FTP error responses.
      */
-    send(command: string, ignoreErrorCodes = false): Promise<FTPResponse> {
+    send(command: string, ignoreErrorCodesDEPRECATED = false): Promise<FTPResponse> {
+        if (ignoreErrorCodesDEPRECATED) { // Deprecated starting from 3.9.0
+            this.ftp.log("Deprecated call using send(command, flag) with boolean flag to ignore errors. Use sendIgnoringError(command).")
+            return this.sendIgnoringError(command)
+        }
+        return this.ftp.handle(command, (res, task) => {
+            if (res instanceof Error) {
+                task.reject(res)
+            }
+            else {
+                task.resolve(res)
+            }
+        })
+    }
+
+    /**
+     * Send an FTP command and ignore an FTP error response. Any other kind of error or timeout will still reject the Promise.
+     *
+     * @param command
+     */
+    sendIgnoringError(command: string): Promise<FTPResponse> {
         return this.ftp.handle(command, (res, task) => {
             if (res instanceof FTPError) {
-                if (ignoreErrorCodes) {
-                    task.resolve({code: res.code, message: res.message})
-                }
-                else {
-                    task.reject(res)
-                }
+                task.resolve({code: res.code, message: res.message})
             }
             else if (res instanceof Error) {
                 task.reject(res)
@@ -199,10 +213,10 @@ export class Client {
      */
     async useDefaultSettings(): Promise<void> {
         await this.send("TYPE I") // Binary mode
-        await this.send("STRU F") // Use file structure
+        await this.sendIgnoringError("STRU F") // Use file structure
         if (this.ftp.hasTLS) {
-            await this.send("PBSZ 0") // Set to 0 for TLS
-            await this.send("PROT P") // Protect channel (also for data connections)
+            await this.sendIgnoringError("PBSZ 0") // Set to 0 for TLS
+            await this.sendIgnoringError("PROT P") // Protect channel (also for data connections)
         }
     }
 
@@ -246,7 +260,7 @@ export class Client {
      * command in which case this method will not throw an exception but just return an empty Map.
      */
     async features(): Promise<Map<string, string>> {
-        const res = await this.send("FEAT", true)
+        const res = await this.sendIgnoringError("FEAT")
         const features = new Map()
         // Not supporting any special features will be reported with a single line.
         if (res.code < 400 && isMultiline(res.message)) {
