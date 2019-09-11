@@ -13,30 +13,61 @@ drwxr-xr-x+  11 patrick  staff    374 Dec 11 21:24 .
 drwxr-xr-x+  38 patrick  staff   1292 Dec 11 14:31 ..
 -rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 LICENSE.txt
 drwxr-xr-x+   5 patrick  staff    170 Dec 11 17:24 lib
-`;
+
+
+` // keep the empty lines
 
 const listUnixIssue61 = `
 drwxr-xr-x    2 1001     1001         4096 Feb 25 19:03 .
 dr-xr-xr-x    3 1001     1001         4096 Feb 25 18:55 ..
--rw-------    1 1001     1001          487 Feb 25 19:03 package.json
-`
+-rw-------    1 1001     1001          487 Feb 25 19:03 package.json`
 
 const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
-11-14-97  04:21PM                  953 MYFILE.INI`;
+11-14-97  04:21PM                  953 MYFILE.INI`
+
+const listMLSD = `
+size=23;type=dir;perm=el;modify=20190218120006; folder1
+size=23;type=cdir;perm=el;modify=20190218120006; current folder
+size=23;type=pdir;perm=el;modify=20190218120006; parent folder
+Size=138;Type=file;Perm=el;Modify=20181025120459;UNIX.mode=0755;UNIX.owner=1001;UNIX.group=2002;UNIX.ownername=test; file one`
 
 const listUnknown = `
 a
-b
-`;
+b`;
+
 const listUnknownMVS = `
 SAVE00 3390   2004/06/23  1    1  FB     128  6144  PS    INCOMING.RPTBM023.D061704
-SAVE01 3390   2004/06/23  1    1  FB     128  6144  PO    INCOMING.RPTBM024.D061704
-`;
+SAVE01 3390   2004/06/23  1    1  FB     128  6144  PO    INCOMING.RPTBM024.D061704`;
 
 describe("Directory listing", function() {
     let f;
     const tests = [
+        {
+            title: "MLSD",
+            list: listMLSD,
+            exp: [
+                (f = new FileInfo("folder1"),
+                f.size = 23,
+                f.date = "2019-02-18T12:00:06.000Z",
+                f.modifiedAt = new Date("2019-02-18T12:00:06.000Z"),
+                f.type = FileType.Directory,
+                f),
+                (f = new FileInfo("file one"),
+                f.size = 138,
+                f.date = "2018-10-25T12:04:59.000Z",
+                f.modifiedAt = new Date("2018-10-25T12:04:59.000Z"),
+                f.user = "test",
+                f.group = "2002",
+                f.permissions = {
+                    user: 7,
+                    group: 5,
+                    world: 5
+                },
+                f.type = FileType.File,
+                f),
+            ]
+        },
         {
             title: "Regular Unix list",
             list: listUnix,
