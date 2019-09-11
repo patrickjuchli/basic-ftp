@@ -41,8 +41,8 @@ export function parseLine(line: string): FileInfo | undefined {
             info.size = parseInt(factValue, 10)
         }
         else if (factName === "modify") {
-            info.dateParsed = parseMLSxDate(factValue)
-            info.date = info.dateParsed.toISOString()
+            info.modifiedAt = parseMLSxDate(factValue)
+            info.date = info.modifiedAt.toISOString()
         }
         else if (factName === "type") {
             if (factValue === "file") {

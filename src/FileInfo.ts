@@ -31,7 +31,7 @@ export class FileInfo {
     group = ""
     user = ""
     date = ""
-    dateParsed: Date | undefined
+    modifiedAt: Date | undefined
 
     constructor(public name: string) {
         this.name = name
