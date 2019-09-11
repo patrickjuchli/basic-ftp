@@ -136,14 +136,14 @@ export function parseLine(line: string): FileInfo | undefined {
 function parseMode(r: string, w: string, x: string): number {
     let value = 0
     if (r !== "-") {
-        value += FileInfo.Permission.Read
+        value += FileInfo.UnixPermission.Read
     }
     if (w !== "-") {
-        value += FileInfo.Permission.Write
+        value += FileInfo.UnixPermission.Write
     }
     const execToken = x.charAt(0)
     if (execToken !== "-" && execToken.toUpperCase() !== execToken) {
-        value += FileInfo.Permission.Execute
+        value += FileInfo.UnixPermission.Execute
     }
     return value
 }

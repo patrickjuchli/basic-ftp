@@ -5,7 +5,7 @@ export enum FileType {
     SymbolicLink
 }
 
-export interface FilePermissions {
+export interface UnixPermissions {
     readonly user: number
     readonly group: number
     readonly world: number
@@ -17,7 +17,7 @@ export interface FilePermissions {
  */
 export class FileInfo {
 
-    static Permission = {
+    static UnixPermission = {
         Read: 4,
         Write: 2,
         Execute: 1
@@ -26,7 +26,7 @@ export class FileInfo {
     name = ""
     type = FileType.Unknown
     size = 0
-    permissions: FilePermissions = { user: 0, group: 0, world: 0 }
+    permissions: UnixPermissions | undefined
     hardLinkCount = 0
     link = ""
     group = ""
