@@ -23,7 +23,6 @@ export class FileInfo {
         Execute: 1
     }
 
-    name = ""
     type = FileType.Unknown
     size = 0
     permissions: UnixPermissions | undefined
@@ -34,7 +33,7 @@ export class FileInfo {
     date = ""
     dateParsed: Date | undefined
 
-    constructor(name: string) {
+    constructor(public name: string) {
         this.name = name
     }
 
