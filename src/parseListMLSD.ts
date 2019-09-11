@@ -59,11 +59,17 @@ export function parseLine(line: string): FileInfo | undefined {
                 info.type = FileType.Unknown
             }
         }
-        else if (factName === "unix.group") {
+        else if (factName === "unix.ownername") {
+            info.user = factValue
+        }
+        else if (info.user === "" && factName === "unix.owner") { // Give precedence to user name over user id
+            info.user = factValue
+        }
+        else if (factName === "unix.groupname") {
             info.group = factValue
         }
-        else if (factName === "unix.owner") {
-            info.user = factValue
+        else if (info.group === "" && factName === "unix.group") { // Give precedence to group name over group id
+            info.group = factValue
         }
         else if (factName === "unix.mode") { // e.g. 0[1]755
             const digits = factValue.substr(-3)
