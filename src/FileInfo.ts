@@ -32,6 +32,7 @@ export class FileInfo {
     group = ""
     user = ""
     date = ""
+    dateParsed: Date | undefined
 
     constructor(name: string) {
         this.name = name

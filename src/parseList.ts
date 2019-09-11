@@ -1,6 +1,7 @@
 import { FileInfo } from "./FileInfo"
 import * as dosParser from "./parseListDOS"
 import * as unixParser from "./parseListUnix"
+import * as mlsdParser from "./parseListMLSD"
 
 interface Parser {
     testLine(line: string): boolean
@@ -8,6 +9,7 @@ interface Parser {
 }
 
 const availableParsers: Parser[] = [
+    mlsdParser,
     dosParser,
     unixParser
 ]

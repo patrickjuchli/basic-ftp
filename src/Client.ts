@@ -11,6 +11,7 @@ import { createNullObject } from "./nullObject"
 import { parseList as parseListAutoDetect } from "./parseList"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
+import { parseMLSxDate } from "./parseListMLSD"
 
 const fsReadDir = promisify(readdir)
 const fsMkDir = promisify(mkdir)
@@ -51,9 +52,9 @@ export class Client {
      * Multiple commands to retrieve a directory listing are possible. This instance
      * will try all of them in the order presented the first time a directory listing
      * is requested. After that, `_availableListCommands` will  hold only the first
-     * entry that worked. (Prepend MLSD here when supported in a future version.)
+     * entry that worked.
      */
-    protected _availableListCommands = ["LIST -a", "LIST"]
+    protected _availableListCommands = ["MLSD", "LIST -a", "LIST"]
 
     /**
      * Instantiate an FTP client.
@@ -214,6 +215,8 @@ export class Client {
     async useDefaultSettings(): Promise<void> {
         await this.send("TYPE I") // Binary mode
         await this.sendIgnoringError("STRU F") // Use file structure
+        await this.sendIgnoringError("OPTS UTF8 ON") // Some servers expect UTF-8 to be enabled explicitly
+        await this.sendIgnoringError("OPTS MLST type;size;perm;modify;unix.mode;unix.owner;unix.group;") // Make sure MLSD listings include all we can parse
         if (this.ftp.hasTLS) {
             await this.sendIgnoringError("PBSZ 0") // Set to 0 for TLS
             await this.sendIgnoringError("PROT P") // Protect channel (also for data connections)
@@ -299,11 +302,8 @@ export class Client {
         const res = await this.send(`MDTM ${validPath}`)
         // Message contains response code and modified time in the format: YYYYMMDDHHMMSS[.sss]
         // For example `213 19991005213102` or `213 19980615100045.014`.
-        const msg = res.message
-        const date = new Date()
-        date.setUTCFullYear(+msg.slice(4, 8), +msg.slice(8, 10) - 1, +msg.slice(10, 12))
-        date.setUTCHours(+msg.slice(12, 14), +msg.slice(14, 16), +msg.slice(16, 18), +msg.slice(19, 22))
-        return date
+        const date = res.message.slice(4)
+        return parseMLSxDate(date)
     }
 
     /**
