@@ -46,9 +46,9 @@ describe("Directory listing", function() {
                 f.size = 1057,
                 f.user = "patrick",
                 f.permissions = {
-                    user: FileInfo.Permission.Read + FileInfo.Permission.Write,
-                    group: FileInfo.Permission.Read,
-                    world: FileInfo.Permission.Read
+                    user: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Write,
+                    group: FileInfo.UnixPermission.Read,
+                    world: FileInfo.UnixPermission.Read
                 },
                 f.hardLinkCount = 1,
                 f.date = "Dec 11 14:35",
@@ -59,9 +59,9 @@ describe("Directory listing", function() {
                 f.size = 170,
                 f.user = "patrick",
                 f.permissions = {
-                    user: FileInfo.Permission.Read + FileInfo.Permission.Write + FileInfo.Permission.Execute,
-                    group: FileInfo.Permission.Read + FileInfo.Permission.Execute,
-                    world: FileInfo.Permission.Read + FileInfo.Permission.Execute
+                    user: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Write + FileInfo.UnixPermission.Execute,
+                    group: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Execute,
+                    world: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Execute
                 },
                 f.hardLinkCount = 5,
                 f.date = "Dec 11 17:24",
@@ -78,7 +78,7 @@ describe("Directory listing", function() {
                 f.size = 487,
                 f.user = "1001",
                 f.permissions = {
-                    user: FileInfo.Permission.Read + FileInfo.Permission.Write,
+                    user: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Write,
                     group: 0,
                     world: 0
                 },
