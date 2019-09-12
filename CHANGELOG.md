@@ -4,14 +4,14 @@
 
 This release contains the following **breaking changes**:
 
-- Changed: The `permissions` property of `FileInfo` is undefined if no Unix permissions are present. This is the case if for example the FTP server does not actually run on Unix. Before, permissions would have been set to 000.
+- Changed: The `permissions` property of `FileInfo` is now undefined if no Unix permissions are present. This is the case if for example the FTP server does not actually run on Unix. Before, permissions would have been set to 000.
 - Changed: MLSD is now the default directory listing command. If the connected server doesn't support it, this library will continue using the LIST command. This might have an impact on reported permissions for a file. It is possible that a server running on Unix would have reported permissions with LIST but doesn't with MLSD.
 
 Non-breaking changes:
 
 - Added: Support for MLSD directory listing.
-- Added: The property `modifiedAt` of FileInfo may hold a reliably parsed date if the FTP server supports the MLSD command.
-- Added: New API `sendIgnoringError` to send an FTP command and ignoring a resultnig FTP error.
+- Added: The property `modifiedAt` of FileInfo may hold a parsed date if the FTP server supports the MLSD command. Note that the property `date` is not parsed but only a human-readable string coming directly from the original listing response.
+- Added: New API `sendIgnoringError` to send an FTP command and ignoring a resulting FTP error. Using the boolean flag as the second argument of `send` has been deprecated.
 
 ## 3.8.3 - 3.8.7
 
