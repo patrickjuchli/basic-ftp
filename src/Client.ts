@@ -46,15 +46,15 @@ export class Client {
     prepareTransfer: TransferStrategy
     /** Function that parses raw directoy listing data. */
     parseList: RawListParser
-    /** Tracks progress of data transfers. */
-    protected _progressTracker: ProgressTracker
     /**
      * Multiple commands to retrieve a directory listing are possible. This instance
      * will try all of them in the order presented the first time a directory listing
-     * is requested. After that, `_availableListCommands` will  hold only the first
+     * is requested. After that, `availableListCommands` will  hold only the first
      * entry that worked.
      */
-    protected _availableListCommands = ["MLSD", "LIST -a", "LIST"]
+    availableListCommands = ["MLSD", "LIST -a", "LIST"]
+    /** Tracks progress of data transfers. */
+    protected _progressTracker: ProgressTracker
 
     /**
      * Instantiate an FTP client.
@@ -432,13 +432,13 @@ export class Client {
     async list(path = ""): Promise<FileInfo[]> {
         const validPath = await this.protectWhitespace(path)
         let lastError: any
-        for (const candidate of this._availableListCommands) {
+        for (const candidate of this.availableListCommands) {
             const command = `${candidate} ${validPath}`.trim()
             await this.prepareTransfer(this)
             try {
                 const parsedList = await this._requestListWithCommand(command)
                 // Use successful candidate for all subsequent requests.
-                this._availableListCommands = [ candidate ]
+                this.availableListCommands = [ candidate ]
                 return parsedList
             }
             catch (err) {

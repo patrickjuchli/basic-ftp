@@ -215,7 +215,7 @@ describe("Download directory listing", function() {
     it("uses first successful list command for all subsequent requests", function() {
         const promise = client.list().then(result => {
             assert.deepEqual(result, expList);
-            assert.deepEqual(["MLSD"], client._availableListCommands)
+            assert.deepEqual(["MLSD"], client.availableListCommands)
         });
         setTimeout(() => sendCompleteList());
         return promise
@@ -224,7 +224,7 @@ describe("Download directory listing", function() {
     it("transparently rethrows list error if only one candidate available", function() {
         // Typically, only one candidate is available after a successful auto-detection
         // of a compatible one. If there's an error we want to know about it directly.
-        client._availableListCommands = ["LIST"]
+        client.availableListCommands = ["LIST"]
         client.ftp.socket.on("didSend", () => {
             client.ftp.socket.emit("data", "501 Syntax error")
         });
