@@ -25,6 +25,10 @@ export class FileInfo {
 
     type = FileType.Unknown
     size = 0
+    /**
+     * Unix permissions if present. If the underlying FTP server is not running on Unix or doesn't report
+     * permissions this will be undefined. If set, you might be able to edit permissions with the FTP command `SITE CHMOD`.
+     */
     permissions: UnixPermissions | undefined
     hardLinkCount = 0
     link = ""
