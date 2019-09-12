@@ -6,6 +6,77 @@ export function testLine(line: string): boolean {
 }
 
 /**
+ * Handles a MLSD fact by parsing it and updating `info` in-place. A handler
+ * may return `false` if the whole MLSD entry should be disregarded.
+ */
+type FactHandler = (value: string, info: FileInfo) => boolean | void
+
+function parseSize(value: string, info: FileInfo) {
+    info.size = parseInt(value, 10)
+}
+
+/**
+ * MLSD facts with their parsers.
+ */
+const FactHandlers: {[key: string]: FactHandler} = {
+    // File size
+    "size": parseSize,
+    // Directory size
+    "sized": parseSize,
+    // Modification date
+    "modify": (value, info) => {
+        info.modifiedAt = parseMLSxDate(value)
+        info.date = info.modifiedAt.toISOString()
+    },
+    // File type
+    "type": (value, info) => {
+        if (value === "file") {
+            info.type = FileType.File
+        }
+        else if (value === "dir") {
+            info.type = FileType.Directory
+        }
+        // Don't include the directory that is being listed (cdir) nor any parent directory (pdir).
+        else if (value === "cdir" || value === "pdir") {
+            return false
+        }
+        else {
+            info.type = FileType.Unknown
+        }
+        return true
+    },
+    "unix.mode": (value, info) => {
+        const digits = value.substr(-3)
+        info.permissions = {
+            user: parseInt(digits[0], 10),
+            group: parseInt(digits[1], 10),
+            world: parseInt(digits[2], 10)
+        }
+    },
+    "unix.owner": (value, info) => {
+        if (info.user === "") info.user = value
+    },
+    "unix.ownername": (value, info) => {
+        info.user = value
+    },
+    "unix.group": (value, info) => {
+        if (info.group === "") info.group = value
+    },
+    "unix.groupname": (value, info) => {
+        info.group = value
+    }
+    // Regarding the fact "perm":
+    // We don't handle permission information stored in "perm" because its information is conceptually
+    // very far away from what users of FTP clients usually associate with "permissions". Those that have
+    // some expectations (and probably want to edit them with a SITE command) often unknowingly expect
+    // the Unix permission system. The information passed by "perm" describes what FTP commands can be
+    // executed with a file/directory. But even this can be either incomplete or just meant as a "guide"
+    // as the spec mentions. From https://tools.ietf.org/html/rfc3659#section-7.5.5: "The permissions are
+    // described here as they apply to FTP commands. They may not map easily into particular permissions
+    // available on the server's operating system."
+}
+
+/**
  * Parse MLSD as specified by https://tools.ietf.org/html/rfc3659#section-7.
  *
  * Based on the parser at https://github.com/apache/commons-net/blob/master/src/main/java/org/apache/commons/net/ftp/parser/MLSxEntryParser.java
@@ -31,63 +102,16 @@ export function parseLine(line: string): FileInfo | undefined {
     }
     const info = new FileInfo(name)
     for (const fact of facts) {
-        let [factName, factValue] = fact.split("=", 2)
+        const [factName, factValue] = fact.split("=", 2)
         if (!factValue) {
             continue
         }
-        factName = factName.toLowerCase()
-        factValue = factValue.toLowerCase()
-        if (factName === "size" || factName === "sized") {
-            info.size = parseInt(factValue, 10)
-        }
-        else if (factName === "modify") {
-            info.modifiedAt = parseMLSxDate(factValue)
-            info.date = info.modifiedAt.toISOString()
-        }
-        else if (factName === "type") {
-            if (factValue === "file") {
-                info.type = FileType.File
-            }
-            else if (factValue === "dir") {
-                info.type = FileType.Directory
-            }
-            else if (factValue === "cdir" || factValue === "pdir") {
-                // Don't include the directory that is being listed (cdir) nor any parent directory (pdir).
+        const handler = FactHandlers[factName.toLowerCase()]
+        if (handler) {
+            if (handler(factValue.toLowerCase(), info) === false) {
                 return undefined
             }
-            else {
-                info.type = FileType.Unknown
-            }
         }
-        else if (factName === "unix.ownername") {
-            info.user = factValue
-        }
-        else if (info.user === "" && factName === "unix.owner") { // Give precedence to user name over user id
-            info.user = factValue
-        }
-        else if (factName === "unix.groupname") {
-            info.group = factValue
-        }
-        else if (info.group === "" && factName === "unix.group") { // Give precedence to group name over group id
-            info.group = factValue
-        }
-        else if (factName === "unix.mode") { // e.g. 0[1]755
-            const digits = factValue.substr(-3)
-            info.permissions = {
-                user: parseInt(digits[0], 10),
-                group: parseInt(digits[1], 10),
-                world: parseInt(digits[2], 10)
-            }
-        }
-        // Regarding the fact "perm":
-        // We don't handle permission information stored in "perm" because its information is conceptually
-        // very far away from what users of FTP clients usually associate with "permissions". Those that have
-        // some expectations (and probably want to edit them with a SITE command) often unknowingly expect
-        // the Unix permission system. The information passed by "perm" describes what FTP commands can be
-        // executed with a file/directory. But even this can be either incomplete or just meant as a "guide"
-        // as the spec mentions. From https://tools.ietf.org/html/rfc3659#section-7.5.5: "The permissions are
-        // described here as they apply to FTP commands. They may not map easily into particular permissions
-        // available on the server's operating system."
     }
     return info
 }
