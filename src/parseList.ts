@@ -28,7 +28,7 @@ export function parseList(rawList: string): FileInfo[] {
     const test = lines[lines.length - 1]
     const parser = firstCompatibleParser(test, availableParsers)
     if (!parser) {
-        throw new Error("This library only supports Unix- or DOS-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
+        throw new Error("This library only supports MLSD, Unix- or DOS-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
     }
     return lines.map(parser.parseLine)
         .filter((info): info is FileInfo => info !== undefined)

@@ -105,7 +105,7 @@ Get the path of the current working directory.
 
 `list([path]): Promise<FileInfo[]>`
 
-List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports Unix- and DOS-style directory listings. See [FileInfo](src/FileInfo.ts) for more details.
+List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports MLSD, Unix- and DOS-style directory listings. See [FileInfo](src/FileInfo.ts) for more details.
 
 `lastMod(filename): Promise<Date>`
 
@@ -220,7 +220,7 @@ Provide a function that initializes a data connection. FTP uses a dedicated sock
 
 `get/set client.parseList`
 
-Provide a function to parse directory listing data. This library supports Unix and DOS formats. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`.
+Provide a function to parse directory listing data. This library supports MLSD, Unix and DOS formats. Parsing these list responses is one of the more challenging parts of FTP because there is no standard that all servers adhere to. The signature of the function is `(rawList: string) => FileInfo[]`.
 
 ### FTPContext
 
