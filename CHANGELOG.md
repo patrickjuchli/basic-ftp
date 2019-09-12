@@ -9,7 +9,7 @@ This release contains the following **breaking changes**:
 
 Non-breaking changes:
 
-- Added: Support for MLSD directory listing.
+- Added: Support for MLSD directory listing. This is the only standard machine-readable directory listing format that provides modification dates that can be reliably parsed.
 - Added: The property `modifiedAt` of FileInfo may hold a parsed date if the FTP server supports the MLSD command. Note that the property `date` is not parsed but only a human-readable string coming directly from the original listing response.
 - Added: New API `sendIgnoringError` to send an FTP command and ignoring a resulting FTP error. Using the boolean flag as the second argument of `send` has been deprecated.
 
