@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.0.0
+
+This release contains the following **breaking changes**:
+
+- Changed: The `permissions` property of `FileInfo` is undefined if no Unix permissions are present. This is the case if for example the FTP server does not actually run on Unix. Before, permissions would have been set to 000.
+- Changed: MLSD is now the default directory listing command. If the connected server doesn't support it, this library will continue using the LIST command. This might have an impact on reported permissions for a file. It is possible that a server running on Unix would have reported permissions with LIST but doesn't with MLSD.
+
+Non-breaking changes:
+
+- Added: Support for MLSD directory listing.
+- Added: The property `modifiedAt` of FileInfo may hold a reliably parsed date if the FTP server supports the MLSD command.
+- Added: New API `sendIgnoringError` to send an FTP command and ignoring a resultnig FTP error.
+
 ## 3.8.3 - 3.8.7
 
 No changes, republishing because of bug on npmjs.com.
