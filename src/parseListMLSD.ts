@@ -23,7 +23,7 @@ const factHandlersByName: {[key: string]: FactHandler} = {
     "sized": parseSize, // Directory size
     "modify": (value, info) => { // Modification date
         info.modifiedAt = parseMLSxDate(value)
-        info.date = info.modifiedAt.toISOString() // TODO sure about this? make this more backwards compatible
+        info.date = info.modifiedAt.toISOString()
     },
     "type": (value, info) => { // File type
         switch(value) {

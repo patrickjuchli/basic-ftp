@@ -6,6 +6,7 @@ This release contains the following **breaking changes**:
 
 - Changed: The `permissions` property of `FileInfo` is now undefined if no Unix permissions are present. This is the case if for example the FTP server does not actually run on Unix. Before, permissions would have been set to 000.
 - Changed: MLSD is now the default directory listing command. If the connected server doesn't support it, this library will continue using the LIST command. This might have an impact on reported permissions for a file. It is possible that a server running on Unix would have reported permissions with LIST but doesn't with MLSD.
+- Changed: If you parsed `date` of `FileInfo` yourself, you might have to consider the ISO format now with MLSD listings, e.g. `2018-10-25T12:04:59.000Z`. Better yet, use the parsed date directly using `modifiedAt` and only parse yourself if it is undefined. Be aware though that parsing dates of a non-MLDS listing is likely to be unreliable.
 
 Non-breaking changes:
 
