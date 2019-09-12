@@ -18,7 +18,7 @@ function parseSize(value: string, info: FileInfo) {
 /**
  * MLSD facts with their parsers.
  */
-const FactHandlers: {[key: string]: FactHandler} = {
+const factHandlersByName: {[key: string]: FactHandler} = {
     // File size
     "size": parseSize,
     // Directory size
@@ -85,6 +85,7 @@ const FactHandlers: {[key: string]: FactHandler} = {
  * @param line
  */
 export function parseLine(line: string): FileInfo | undefined {
+    // Handle special case where only a filename is provided
     const hasNoFacts = line.startsWith(" ")
     if (hasNoFacts) {
         const name = line.substr(1)
@@ -106,7 +107,7 @@ export function parseLine(line: string): FileInfo | undefined {
         if (!factValue) {
             continue
         }
-        const handler = FactHandlers[factName.toLowerCase()]
+        const handler = factHandlersByName[factName.toLowerCase()]
         if (handler) {
             if (handler(factValue.toLowerCase(), info) === false) {
                 return undefined
