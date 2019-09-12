@@ -30,7 +30,15 @@ export class FileInfo {
     link = ""
     group = ""
     user = ""
+    /**
+     * Unparsed date as a string. Be careful when trying to parse this by yourself. There is no
+     * standard format on which FTP servers agree when using the LIST command. Date information is meant
+     * to be human-readable but not necessarily easy to parse. See `modifiedAt` for a parsed date.
+     */
     date = ""
+    /**
+     * Parsed modification date is available (and reliable) if the MLSD command is supported by the FTP server.
+     */
     modifiedAt: Date | undefined
 
     constructor(public name: string) {
