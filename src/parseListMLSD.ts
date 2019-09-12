@@ -1,5 +1,8 @@
 import { FileInfo, FileType } from "./FileInfo"
 
+/**
+ * Returns true if a given line might be part of an MLSD listing.
+ */
 export function testLine(line: string): boolean {
     // Example: "size=23;type=dir;perm=el;modify=20190218120006; filename"
     return line !== undefined && line.toLowerCase().indexOf("size=") !== -1
@@ -15,37 +18,30 @@ function parseSize(value: string, info: FileInfo) {
     info.size = parseInt(value, 10)
 }
 
-/**
- * MLSD facts with their parsers.
- */
 const factHandlersByName: {[key: string]: FactHandler} = {
-    // File size
-    "size": parseSize,
-    // Directory size
-    "sized": parseSize,
-    // Modification date
-    "modify": (value, info) => {
+    "size": parseSize, // File size
+    "sized": parseSize, // Directory size
+    "modify": (value, info) => { // Modification date
         info.modifiedAt = parseMLSxDate(value)
-        info.date = info.modifiedAt.toISOString()
+        info.date = info.modifiedAt.toISOString() // TODO sure about this? make this more backwards compatible
     },
-    // File type
-    "type": (value, info) => {
-        if (value === "file") {
-            info.type = FileType.File
-        }
-        else if (value === "dir") {
-            info.type = FileType.Directory
-        }
-        // Don't include the directory that is being listed (cdir) nor any parent directory (pdir).
-        else if (value === "cdir" || value === "pdir") {
-            return false
-        }
-        else {
-            info.type = FileType.Unknown
+    "type": (value, info) => { // File type
+        switch(value) {
+            case "file":
+                info.type = FileType.File
+                break
+            case "dir":
+                info.type = FileType.Directory
+                break
+            case "cdir": // Current directory being listed
+            case "pdir": // Parent directory
+                return false // Don't include these entries in the listing
+            default:
+                info.type = FileType.Unknown
         }
         return true
     },
-    "unix.mode": (value, info) => {
+    "unix.mode": (value, info) => { // Unix permissions, e.g. 0[1]755
         const digits = value.substr(-3)
         info.permissions = {
             user: parseInt(digits[0], 10),
@@ -53,27 +49,28 @@ const factHandlersByName: {[key: string]: FactHandler} = {
             world: parseInt(digits[2], 10)
         }
     },
-    "unix.owner": (value, info) => {
+    "unix.owner": (value, info) => { // Owner by ID
         if (info.user === "") info.user = value
     },
-    "unix.ownername": (value, info) => {
+    "unix.ownername": (value, info) => { // Owner by name
         info.user = value
     },
-    "unix.group": (value, info) => {
+    "unix.group": (value, info) => { // Group by ID
         if (info.group === "") info.group = value
     },
-    "unix.groupname": (value, info) => {
+    "unix.groupname": (value, info) => { // Group by name
         info.group = value
     }
     // Regarding the fact "perm":
     // We don't handle permission information stored in "perm" because its information is conceptually
-    // very far away from what users of FTP clients usually associate with "permissions". Those that have
+    // different from what users of FTP clients usually associate with "permissions". Those that have
     // some expectations (and probably want to edit them with a SITE command) often unknowingly expect
     // the Unix permission system. The information passed by "perm" describes what FTP commands can be
     // executed with a file/directory. But even this can be either incomplete or just meant as a "guide"
     // as the spec mentions. From https://tools.ietf.org/html/rfc3659#section-7.5.5: "The permissions are
     // described here as they apply to FTP commands. They may not map easily into particular permissions
-    // available on the server's operating system."
+    // available on the server's operating system." The parser by Apache Commons tries to translate these
+    // to Unix permissions – this is misleading users and might not even be correct.
 }
 
 /**
