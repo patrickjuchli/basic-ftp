@@ -78,29 +78,19 @@ const factHandlersByName: {[key: string]: FactHandler} = {
 /**
  * Parse MLSD as specified by https://tools.ietf.org/html/rfc3659#section-7.
  *
- * Based on the parser at https://github.com/apache/commons-net/blob/master/src/main/java/org/apache/commons/net/ftp/parser/MLSxEntryParser.java
- * provided under the Apache 2.0 licence. There are many conceptual changes here, impractical to list all of them.
- *
  * @param line
  */
 export function parseLine(line: string): FileInfo | undefined {
-    // Handle special case where only a filename is provided
-    const hasNoFacts = line.startsWith(" ")
-    if (hasNoFacts) {
-        const name = line.substr(1)
-        return name !== "" ? new FileInfo(name) : undefined
-    }
     // Example of a line: "size=15227;type=dir;perm=el;modify=20190419065730; test one"
-    const factsAndName = line.split("; ", 2)
-    if (factsAndName.length !== 2) {
-        return undefined
-    }
-    const facts = factsAndName[0].split(";")
-    const name = factsAndName[1]
+    // Can also be just: " file name"
+    const firstSpacePos = line.indexOf(" ")
+    const packedFacts = line.substr(0, firstSpacePos)
+    const name = line.substr(firstSpacePos + 1)
     if (name === "") {
         return undefined
     }
     const info = new FileInfo(name)
+    const facts = packedFacts.split(";")
     for (const fact of facts) {
         const [ factName, factValue ] = fact.split("=", 2)
         if (!factValue) {
