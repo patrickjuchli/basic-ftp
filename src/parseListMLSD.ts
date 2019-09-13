@@ -10,7 +10,7 @@ export function testLine(line: string): boolean {
 
 /**
  * Handles a MLSD fact by parsing it and updating `info` in-place. A handler
- * may return `false` if the whole MLSD entry should be disregarded.
+ * may return `true` if the whole MLSD entry should be disregarded.
  */
 type FactHandler = (value: string, info: FileInfo) => boolean | void
 
@@ -35,11 +35,11 @@ const factHandlersByName: {[key: string]: FactHandler} = {
                 break
             case "cdir": // Current directory being listed
             case "pdir": // Parent directory
-                return false // Don't include these entries in the listing
+                return true // Don't include these entries in the listing
             default:
                 info.type = FileType.Unknown
         }
-        return true
+        return false
     },
     "unix.mode": (value, info) => { // Unix permissions, e.g. 0[1]755
         const digits = value.substr(-3)
@@ -100,15 +100,17 @@ export function parseLine(line: string): FileInfo | undefined {
     }
     const info = new FileInfo(name)
     for (const fact of facts) {
-        const [factName, factValue] = fact.split("=", 2)
+        const [ factName, factValue ] = fact.split("=", 2)
         if (!factValue) {
             continue
         }
-        const handler = factHandlersByName[factName.toLowerCase()]
-        if (handler) {
-            if (handler(factValue.toLowerCase(), info) === false) {
-                return undefined
-            }
+        const factHandler = factHandlersByName[factName.toLowerCase()]
+        if (!factHandler) {
+            continue
+        }
+        const shouldIgnoreEntry = factHandler(factValue.toLowerCase(), info)
+        if (shouldIgnoreEntry === true) {
+            return undefined
         }
     }
     return info
