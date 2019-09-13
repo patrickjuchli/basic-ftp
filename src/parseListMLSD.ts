@@ -4,8 +4,10 @@ import { FileInfo, FileType } from "./FileInfo"
  * Returns true if a given line might be part of an MLSD listing.
  */
 export function testLine(line: string): boolean {
-    // Example: "size=23;type=dir;perm=el;modify=20190218120006; filename"
-    return line !== undefined && line.toLowerCase().indexOf("size=") !== -1
+    // Examples:
+    // - "size=23;type=dir;perm=el;modify=20190218120006; filename"
+    // - " filename only"
+    return line.toLowerCase().indexOf("size=") !== -1 || line.startsWith(" ")
 }
 
 /**

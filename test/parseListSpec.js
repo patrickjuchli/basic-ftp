@@ -30,7 +30,8 @@ const listMLSD = `
 size=23;type=dir;perm=el;modify=20190218120006; folder1
 size=23;type=cdir;perm=el;modify=20190218120006; current folder
 size=23;type=pdir;perm=el;modify=20190218120006; parent folder
-Size=138;Type=file;Perm=el;Modify=20181025120459;UNIX.mode=0755;UNIX.owner=1001;UNIX.group=2002;UNIX.ownername=test; file one`
+Size=138;Type=file;Perm=el;Modify=20181025120459;UNIX.mode=0755;UNIX.owner=1001;UNIX.group=2002;UNIX.ownername=test; file one
+ filename only`
 
 const listUnknown = `
 a
@@ -65,6 +66,8 @@ describe("Directory listing", function() {
                     world: 5
                 },
                 f.type = FileType.File,
+                f),
+                (f = new FileInfo("filename only"),
                 f),
             ]
         },

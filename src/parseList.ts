@@ -8,10 +8,14 @@ interface Parser {
     parseLine(line: string): FileInfo | undefined
 }
 
+/**
+ * Available directory listing parsers. These are candidates that will be tested
+ * in the order presented. The first candidate will be used to parse the whole list.
+ */
 const availableParsers: Parser[] = [
-    mlsdParser,
     dosParser,
-    unixParser
+    unixParser,
+    mlsdParser // Keep MLSD last, may accept filename only
 ]
 
 /**
