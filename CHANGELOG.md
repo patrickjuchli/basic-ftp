@@ -4,13 +4,13 @@
 
 This release contains the following **breaking changes**:
 
-- Changed: The `permissions` property of `FileInfo` is now undefined if no Unix permissions are present. This is the case if for example the FTP server does not actually run on Unix. Before, permissions would have been set to 000.
-- Changed: MLSD is now the default directory listing command. If the connected server doesn't support it, this library will continue using the LIST command. This might have an impact on reported permissions for a file. It is possible that a server running on Unix would have reported permissions with LIST but doesn't with MLSD.
-- Changed: If you parsed `date` of `FileInfo` yourself, you might have to consider the ISO format now with MLSD listings, e.g. `2018-10-25T12:04:59.000Z`. Better yet, use the parsed date directly using `modifiedAt` and only parse yourself if it is undefined. Be aware though that parsing dates is likely unreliable.
+- Changed: The `permissions` property of `FileInfo` is now undefined if no Unix permissions are present. This is the case if for example the FTP server does not actually run on Unix. Before, permissions would have been set to 000. If permissions are present there is a good chance that a command like `SITE CHMOD` will work for the current server.
+- Changed: MLSD is now the default directory listing command. If the connected server doesn't support it, the library will continue using the LIST command. This might have an impact on reported permissions for a file. It is possible although rare that a server running on Unix would have reported permissions with LIST but doesn't do so with MLSD.
+- Changed: If you've been parsing `date` of `FileInfo`, you might have to consider a new ISO format coming with MLSD listings, e.g. `2018-10-25T12:04:59.000Z`. Better yet, use the parsed date directly with `modifiedAt` and only use `date` if it is undefined. Be aware that parsing dates reported by the LIST command is likely unreliable.
 
 Non-breaking changes:
 
-- Added: Support for MLSD directory listing. This is the only standard machine-readable directory listing format that provides modification dates that can be reliably parsed.
+- Added: Support for MLSD directory listing. This is a machine-readable directory listing format that provides modification dates that can be reliably parsed. Listings by the older command LIST have not been designed to be machine-readable and are notoriously hard to parse.
 - Added: The property `modifiedAt` of FileInfo may hold a parsed date if the FTP server supports the MLSD command. Note that the property `date` is not parsed but only a human-readable string coming directly from the original listing response.
 - Added: New API `sendIgnoringError` to send an FTP command and ignoring a resulting FTP error. Using the boolean flag as the second argument of `send` has been deprecated.
 - Added: Sending `OPTS UTF8 ON` when accessing a server.
