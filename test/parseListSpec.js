@@ -9,10 +9,10 @@ const { FileInfo, FileType } = require("../dist");
 
 const listUnix = `
 total 112
-drwxr-xr-x+  11 patrick  staff    374 Dec 11 21:24 .
-drwxr-xr-x+  38 patrick  staff   1292 Dec 11 14:31 ..
--rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 LICENSE.txt
-drwxr-xr-x+   5 patrick  staff    170 Dec 11 17:24 lib
+ drwxr-xr-x+  11 patrick  staff    374 Dec 11 21:24 .
+ drwxr-xr-x+  38 patrick  staff   1292 Dec 11 14:31 ..
+    -rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 LICENSE.txt
+ drwxr-xr-x+   5 patrick  staff    170 Dec 11 17:24 lib
 
 
 ` // keep the empty lines
