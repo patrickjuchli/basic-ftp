@@ -68,7 +68,7 @@ Close the client and any open connection. The client can’t be used anymore aft
 
 `closed`
 
-True if the client has been closed, either by the user or by an error.
+True if the client is not connected to a server. You can reconnect with `access`.
 
 `access(options): Promise<FTPResponse>`
 

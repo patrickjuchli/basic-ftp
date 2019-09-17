@@ -9,10 +9,11 @@ module.exports = class SocketMock extends EventEmitter {
         this.bytesWritten = 0;
         this.bytesRead = 0;
         this.timeout = -1;
-        this.remoteAddress = "somewhere"
+        this.remoteAddress = undefined
         this.localPort = ++counter
     }
     connect() {
+        this.remoteAddress = "somewhere"
     }
     setEncoding() {
     }

@@ -19,6 +19,7 @@ describe("Convenience API", function() {
 
     beforeEach(function() {
         client = new Client(2000);
+        client.ftp._newSocket = () => new SocketMock();
         client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
@@ -164,6 +165,15 @@ describe("Convenience API", function() {
         client.close()
         client.connect().catch(() => {})
         assert.equal(client.closed, false)
+    })
+
+    it("closing client reports client as closed", function() {
+        client.close()
+        assert.equal(client.closed, true)
+    })
+
+    it("client is described as closed when not connected yet", function() {
+        assert.equal(client.closed, true)
     })
 
     it("declines connect for code 120", function() {
