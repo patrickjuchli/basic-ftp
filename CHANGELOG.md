@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1
+
+- Fixed: Describe client as closed before first connection (#94)
+
 ## 4.0.0
 
 This release contains the following **breaking changes**:
