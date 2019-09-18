@@ -18,6 +18,7 @@ describe("FTPContext", function() {
         const old = ftp.socket;
         ftp.socket = new SocketMock();
         assert.equal(old.destroyed, true);
+        assert.equal(ftp.closed, true)
     });
 
     it("Upgrading control socket doesn't destroy it", function() {

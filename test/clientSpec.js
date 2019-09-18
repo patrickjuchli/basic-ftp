@@ -173,7 +173,8 @@ describe("Convenience API", function() {
     })
 
     it("client is described as closed when not connected yet", function() {
-        assert.equal(client.closed, true)
+        const realClient = new Client()
+        assert.equal(realClient.closed, true)
     })
 
     it("declines connect for code 120", function() {
