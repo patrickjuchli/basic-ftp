@@ -52,23 +52,23 @@ const factHandlersByName: {[key: string]: FactHandler} = {
             world: parseInt(digits[2], 10)
         }
     },
+    "unix.ownername": (value, info) => { // Owner by name (preferred)
+        info.user = value
+    },
     "unix.owner": (value, info) => { // Owner by ID
         if (info.user === "") info.user = value
     },
     "unix.uid": (value, info) => { // Owner by ID
         if (info.user === "") info.user = value
     },
-    "unix.ownername": (value, info) => { // Owner by name (preferred)
-        info.user = value
+    "unix.groupname": (value, info) => { // Group by name (preferred)
+        info.group = value
     },
     "unix.group": (value, info) => { // Group by ID
         if (info.group === "") info.group = value
     },
     "unix.gid": (value, info) => { // Group by ID
         if (info.group === "") info.group = value
-    },
-    "unix.groupname": (value, info) => { // Group by name (preferred)
-        info.group = value
     }
     // Regarding the fact "perm":
     // We don't handle permission information stored in "perm" because its information is conceptually
