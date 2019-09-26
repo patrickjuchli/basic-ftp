@@ -55,10 +55,16 @@ const factHandlersByName: {[key: string]: FactHandler} = {
     "unix.owner": (value, info) => { // Owner by ID
         if (info.user === "") info.user = value
     },
+    "unix.uid": (value, info) => { // Owner by ID
+        if (info.user === "") info.user = value
+    },
     "unix.ownername": (value, info) => { // Owner by name (preferred)
         info.user = value
     },
     "unix.group": (value, info) => { // Group by ID
+        if (info.group === "") info.group = value
+    },
+    "unix.gid": (value, info) => { // Group by ID
         if (info.group === "") info.group = value
     },
     "unix.groupname": (value, info) => { // Group by name (preferred)
