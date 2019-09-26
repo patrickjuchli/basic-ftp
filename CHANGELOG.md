@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.2
+
+- Fixed: Make MLSD listing detection more general. (#95)
+- Fixed: Handle MLSD facts 'sizd', 'UNIX.gid' and 'UNIX.uid'. (#95)
+
 ## 4.0.1
 
 - Fixed: Describe client as closed before first connection (#94)
