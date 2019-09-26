@@ -72,6 +72,43 @@ describe("Directory listing", function() {
             ]
         },
         {
+            title: "MLSD list detetion",
+            list: `anything=something; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f),
+            ]
+        },
+        {
+            title: "MLSD handle fact 'sizd' (Issue 95)",
+            list: `sizd=4096; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.size = 4096,
+                f),
+            ]
+        },
+        {
+            title: "MLSD handle fact 'UNIX.uid' and 'UNIX.gid' (Issue 95)",
+            list: `UNIX.uid=11;UNIX.gid=22; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.user = "11",
+                f.group = "22",
+                f),
+            ]
+        },
+        {
+            title: "MLSD Unix fact ownername overrides owner",
+            list: `UNIX.ownername=myself;UNIX.groupname=mygroup;UNIX.owner=11;UNIX.group=22; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.user = "myself",
+                f.group = "mygroup",
+                f),
+            ]
+        },
+        {
             title: "Regular Unix list",
             list: listUnix,
             exp: [
