@@ -58,8 +58,8 @@ const factHandlersByName: {[key: string]: FactHandler} = {
     "unix.owner": (value, info) => { // Owner by ID
         if (info.user === "") info.user = value
     },
-    "unix.uid": (value, info) => { // Owner by ID
-        if (info.user === "") info.user = value
+    get "unix.uid"() {
+        return this["unix.owner"]
     },
     "unix.groupname": (value, info) => { // Group by name (preferred)
         info.group = value
@@ -67,8 +67,8 @@ const factHandlersByName: {[key: string]: FactHandler} = {
     "unix.group": (value, info) => { // Group by ID
         if (info.group === "") info.group = value
     },
-    "unix.gid": (value, info) => { // Group by ID
-        if (info.group === "") info.group = value
+    get "unix.gid"() {
+        return this["unix.group"]
     }
     // Regarding the fact "perm":
     // We don't handle permission information stored in "perm" because its information is conceptually
