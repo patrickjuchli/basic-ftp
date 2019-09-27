@@ -7,7 +7,7 @@ export function testLine(line: string): boolean {
     // Examples:
     // - "size=23;type=dir;perm=el;modify=20190218120006; filename"
     // - " filename only"
-    return /\S+=\S+;/.test(line) || line.startsWith(" ")
+    return /^\S+=\S+;/.test(line) || line.startsWith(" ")
 }
 
 /**
