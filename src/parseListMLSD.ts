@@ -11,7 +11,7 @@ export function testLine(line: string): boolean {
 }
 
 /**
- * Handles a MLSD fact by parsing it and updating `info` in-place. A handler
+ * Handles an MLSD fact by parsing it and updating `info` in-place. A handler
  * may return `true` if the whole MLSD entry should be disregarded.
  */
 type FactHandler = (value: string, info: FileInfo) => boolean | void
