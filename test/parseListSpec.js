@@ -26,61 +26,76 @@ const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
 11-14-97  04:21PM                  953 MYFILE.INI`
 
-const listMLSD = `
-size=23;type=dir;perm=el;modify=20190218120006; folder1
-size=23;type=cdir;perm=el;modify=20190218120006; current folder
-size=23;type=pdir;perm=el;modify=20190218120006; parent folder
-Size=138;Type=file;Perm=el;Modify=20181025120459;UNIX.mode=0755;UNIX.owner=1001;UNIX.group=2002;UNIX.ownername=test; file one
- filename only`
-
-const listUnknown = `
-a
-b`;
-
-const listUnknownMVS = `
-SAVE00 3390   2004/06/23  1    1  FB     128  6144  PS    INCOMING.RPTBM023.D061704
-SAVE01 3390   2004/06/23  1    1  FB     128  6144  PO    INCOMING.RPTBM024.D061704`;
-
 describe("Directory listing", function() {
     let f;
     const tests = [
         {
-            title: "MLSD",
-            list: listMLSD,
+            title: "MLSD detect list type",
+            list: `anything=something; filename`,
             exp: [
-                (f = new FileInfo("folder1"),
-                f.size = 23,
+                new FileInfo("filename")
+            ]
+        },
+        {
+            title: "MLSD detect list type (filename only)",
+            list: ` filename`,
+            exp: [
+                new FileInfo("filename")
+            ]
+        },
+        {
+            title: "MLSD folder",
+            list: `sized=11;type=dir;modify=20190218120006; folder`,
+            exp: [
+                (f = new FileInfo("folder"),
+                f.size = 11,
                 f.date = "2019-02-18T12:00:06.000Z",
                 f.modifiedAt = new Date("2019-02-18T12:00:06.000Z"),
                 f.type = FileType.Directory,
-                f),
+                f)
+            ]
+        },
+        {
+            title: "MLSD ignore current folder",
+            list: `type=cdir; .`,
+            exp: []
+        },
+        {
+            title: "MLSD ignore parent folder",
+            list: `type=pdir; ..`,
+            exp: []
+        },
+        {
+            title: "MLSD file",
+            list: `size=11;type=file;modify=20181025120459; file one`,
+            exp: [
                 (f = new FileInfo("file one"),
-                f.size = 138,
+                f.size = 11,
+                f.type = FileType.File,
                 f.date = "2018-10-25T12:04:59.000Z",
                 f.modifiedAt = new Date("2018-10-25T12:04:59.000Z"),
-                f.user = "test",
-                f.group = "2002",
+                f)
+            ]
+        },
+        {
+            title: "MLSD ignore case of fact types",
+            list: `SiZe=11;tYpe=file;MoDIfy=20181025120459;uNIx.MOde=0755; file one`,
+            exp: [
+                (f = new FileInfo("file one"),
+                f.size = 11,
+                f.type = FileType.File,
+                f.date = "2018-10-25T12:04:59.000Z",
+                f.modifiedAt = new Date("2018-10-25T12:04:59.000Z"),
                 f.permissions = {
                     user: 7,
                     group: 5,
                     world: 5
                 },
-                f.type = FileType.File,
-                f),
-                (f = new FileInfo("filename only"),
-                f),
+                f)
             ]
         },
         {
-            title: "MLSD list detetion",
-            list: `anything=something; filename`,
-            exp: [
-                (f = new FileInfo("filename"),
-                f),
-            ]
-        },
-        {
-            title: "MLSD handle fact 'sizd' (Issue 95)",
+            title: "MLSD handle 'sizd' (Issue 95)",
             list: `sizd=4096; filename`,
             exp: [
                 (f = new FileInfo("filename"),
@@ -89,7 +104,30 @@ describe("Directory listing", function() {
             ]
         },
         {
-            title: "MLSD handle fact 'UNIX.uid' and 'UNIX.gid' (Issue 95)",
+            title: "MLSD handle fact 'UNIX.mode'",
+            list: `UNIX.mode=0755; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.permissions = {
+                    user: 7,
+                    group: 5,
+                    world: 5
+                },
+                f),
+            ]
+        },
+        {
+            title: "MLSD handle fact 'UNIX.owner', 'UNIX.group'",
+            list: `UNIX.owner=11;UNIX.group=22; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.user = "11",
+                f.group = "22",
+                f),
+            ]
+        },
+        {
+            title: "MLSD handle fact 'UNIX.uid', 'UNIX.gid'",
             list: `UNIX.uid=11;UNIX.gid=22; filename`,
             exp: [
                 (f = new FileInfo("filename"),
@@ -99,7 +137,7 @@ describe("Directory listing", function() {
             ]
         },
         {
-            title: "MLSD Unix fact ownername overrides owner",
+            title: "MLSD handle fact 'UNIX.ownername', 'UNIX.groupname'",
             list: `UNIX.ownername=myself;UNIX.groupname=mygroup;UNIX.owner=11;UNIX.group=22; filename`,
             exp: [
                 (f = new FileInfo("filename"),
@@ -177,12 +215,12 @@ describe("Directory listing", function() {
         },
         {
             title: "Unknown format",
-            list: listUnknown,
+            list: "aaa",
             exp: undefined
         },
         {
             title: "Unknown format (MVS)",
-            list: listUnknownMVS,
+            list: "SAVE01 3390   2004/06/23  1    1  FB     128  6144  PO    INCOMING.RPTBM024.D061704",
             exp: undefined
         },
         {

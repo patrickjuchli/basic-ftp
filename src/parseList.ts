@@ -18,29 +18,32 @@ const availableParsers: Parser[] = [
     mlsdParser // Keep MLSD last, may accept filename only
 ]
 
+function firstCompatibleParser(line: string, parsers: Parser[]) {
+    return parsers.find(parser => parser.testLine(line) === true)
+}
+
+function stringIsNotBlank(str: string) {
+    return str.trim() !== ""
+}
+
+const REGEX_NEWLINE = /\r?\n/
+
 /**
  * Parse raw directory listing.
  */
 export function parseList(rawList: string): FileInfo[] {
-    const lines = rawList.split(/\r?\n/) // Split by newline
-        .map(line => (/^(\d\d\d)-/.test(line)) ? line.substr(3) : line) // Strip possible multiline prefix
-        .filter(line => line.trim() !== "") // Remove blank lines
+    const lines = rawList
+        .split(REGEX_NEWLINE)
+        .filter(stringIsNotBlank)
     if (lines.length === 0) {
         return []
     }
-    // Pick the last line of the list as a test candidate to find a compatible parser.
-    const test = lines[lines.length - 1]
-    const parser = firstCompatibleParser(test, availableParsers)
+    const testLine = lines[lines.length - 1]
+    const parser = firstCompatibleParser(testLine, availableParsers)
     if (!parser) {
         throw new Error("This library only supports MLSD, Unix- or DOS-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
     }
-    return lines.map(parser.parseLine)
+    return lines
+        .map(parser.parseLine)
         .filter((info): info is FileInfo => info !== undefined)
-}
-
-/**
- * Returns the first parser that doesn't return undefined for the given line.
- */
-function firstCompatibleParser(line: string, parsers: Parser[]) {
-    return parsers.find(parser => parser.testLine(line) === true)
 }
