@@ -25,7 +25,7 @@ export class FileInfo {
     type = FileType.Unknown
     size = 0
     /**
-     * Unparsed modification date as a string.
+     * Unparsed, raw modification date as a string.
      *
      * If `modifiedAt` is undefined, the FTP server you're connected to doesn't support the more modern
      * MLSD command for machine-readable directory listings. The older command LIST is then used returning
@@ -36,12 +36,12 @@ export class FileInfo {
      * unreliable. This library decides to offer parsed dates only when they're absolutely reliable and safe to
      * use e.g. for comparisons.
      */
-    date = ""
+    rawModifiedAt = ""
     /**
      * Parsed modification date.
      *
      * Available if the FTP server supports the MLSD command. Only MLSD guarantees dates than can be reliably
-     * parsed with the correct timezone and a resolution down to seconds. See `date` property for the unparsed
+     * parsed with the correct timezone and a resolution down to seconds. See `rawModifiedAt` property for the unparsed
      * date that is always available.
      */
     modifiedAt?: Date = undefined
@@ -81,5 +81,17 @@ export class FileInfo {
 
     get isFile(): boolean {
         return this.type === FileType.File
+    }
+
+    /**
+     * Deprecated, legacy API. Use `rawModifiedAt` instead.
+     * @deprecated
+     */
+    get date(): string {
+        return this.rawModifiedAt
+    }
+
+    set date(rawModifiedAt: string) {
+        this.rawModifiedAt = rawModifiedAt
     }
 }

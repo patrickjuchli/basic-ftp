@@ -49,7 +49,7 @@ describe("Directory listing", function() {
             exp: [
                 (f = new FileInfo("folder"),
                 f.size = 11,
-                f.date = "2019-02-18T12:00:06.000Z",
+                f.rawModifiedAt = "2019-02-18T12:00:06.000Z",
                 f.modifiedAt = new Date("2019-02-18T12:00:06.000Z"),
                 f.type = FileType.Directory,
                 f)
@@ -72,7 +72,7 @@ describe("Directory listing", function() {
                 (f = new FileInfo("file one"),
                 f.size = 11,
                 f.type = FileType.File,
-                f.date = "2018-10-25T12:04:59.000Z",
+                f.rawModifiedAt = "2018-10-25T12:04:59.000Z",
                 f.modifiedAt = new Date("2018-10-25T12:04:59.000Z"),
                 f)
             ]
@@ -84,7 +84,7 @@ describe("Directory listing", function() {
                 (f = new FileInfo("file one"),
                 f.size = 11,
                 f.type = FileType.File,
-                f.date = "2018-10-25T12:04:59.000Z",
+                f.rawModifiedAt = "2018-10-25T12:04:59.000Z",
                 f.modifiedAt = new Date("2018-10-25T12:04:59.000Z"),
                 f.permissions = {
                     user: 7,
@@ -160,7 +160,7 @@ describe("Directory listing", function() {
                     world: FileInfo.UnixPermission.Read
                 },
                 f.hardLinkCount = 1,
-                f.date = "Dec 11 14:35",
+                f.rawModifiedAt = "Dec 11 14:35",
                 f.type = FileType.File,
                 f),
                 (f = new FileInfo("lib"),
@@ -173,7 +173,7 @@ describe("Directory listing", function() {
                     world: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Execute
                 },
                 f.hardLinkCount = 5,
-                f.date = "Dec 11 17:24",
+                f.rawModifiedAt = "Dec 11 17:24",
                 f.type = FileType.Directory,
                 f),
             ]
@@ -192,7 +192,7 @@ describe("Directory listing", function() {
                     world: 0
                 },
                 f.hardLinkCount = 1,
-                f.date = "Feb 25 19:03",
+                f.rawModifiedAt = "Feb 25 19:03",
                 f.type = FileType.File,
                 f)
             ]
@@ -203,12 +203,12 @@ describe("Directory listing", function() {
             exp: [
                 (f = new FileInfo("myDir"),
                 f.size = 0,
-                f.date = "12-05-96 05:03PM",
+                f.rawModifiedAt = "12-05-96 05:03PM",
                 f.type = FileType.Directory,
                 f),
                 (f = new FileInfo("MYFILE.INI"),
                 f.size = 953,
-                f.date = "11-14-97 04:21PM",
+                f.rawModifiedAt = "11-14-97 04:21PM",
                 f.type = FileType.File,
                 f),
             ]

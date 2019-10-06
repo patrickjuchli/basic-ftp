@@ -26,7 +26,7 @@ const factHandlersByName: {[key: string]: FactHandler} = {
     "sizd": parseSize, // Directory size
     "modify": (value, info) => { // Modification date
         info.modifiedAt = parseMLSxDate(value)
-        info.date = info.modifiedAt.toISOString()
+        info.rawModifiedAt = info.modifiedAt.toISOString()
     },
     "type": (value, info) => { // File type
         switch(value) {

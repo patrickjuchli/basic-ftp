@@ -35,7 +35,7 @@ export function parseLine(line: string): FileInfo | undefined {
             file.type = FileType.File
             file.size = parseInt(groups[4], 10)
         }
-        file.date = groups[1] + " " + groups[2]
+        file.rawModifiedAt = groups[1] + " " + groups[2]
         return file
     }
     return undefined

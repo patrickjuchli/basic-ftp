@@ -98,7 +98,7 @@ export function parseLine(line: string): FileInfo | undefined {
         file.user = groups[16]
         file.group = groups[17]
         file.hardLinkCount = parseInt(groups[15], 10)
-        file.date = groups[19] + " " + groups[20]
+        file.rawModifiedAt = groups[19] + " " + groups[20]
         file.permissions = {
             user: parseMode(groups[4], groups[5], groups[6]),
             group: parseMode(groups[8], groups[9], groups[10]),
