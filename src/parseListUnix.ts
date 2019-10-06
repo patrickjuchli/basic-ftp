@@ -1,10 +1,14 @@
 import { FileInfo, FileType } from "./FileInfo"
 
+const JA_MONTH = "\u6708"
+const JA_DAY   = "\u65e5"
+const JA_YEAR  = "\u5e74"
+
 /**
  * This parser is based on the FTP client library source code in Apache Commons Net provided
  * under the Apache 2.0 license. It has been simplified and rewritten to better fit the Javascript language.
  *
- * http://svn.apache.org/viewvc/commons/proper/net/tags/NET_3_6/src/main/java/org/apache/commons/net/ftp/parser/
+ * https://github.com/apache/commons-net/blob/master/src/main/java/org/apache/commons/net/ftp/parser/UnixFTPEntryParser.java
  *
  * Below is the regular expression used by this parser.
  *
@@ -38,35 +42,39 @@ const RE_LINE = new RegExp(
 
     + "(\\d+)"                                      // link count
 
-    + "\\s+" // separator
+    + "\\s+"                                        // separator
 
     + "(?:(\\S+(?:\\s\\S+)*?)\\s+)?"                // owner name (optional spaces)
     + "(?:(\\S+(?:\\s\\S+)*)\\s+)?"                 // group name (optional spaces)
     + "(\\d+(?:,\\s*\\d+)?)"                        // size or n,m
 
-    + "\\s+" // separator
+    + "\\s+"                                        // separator
 
-    /*
-        * numeric or standard format date:
-        *   yyyy-mm-dd (expecting hh:mm to follow)
-        *   MMM [d]d
-        *   [d]d MMM
-        *   N.B. use non-space for MMM to allow for languages such as German which use
-        *   diacritics (e.g. umlaut) in some abbreviations.
-    */
+    /**
+     * numeric or standard format date:
+     *   yyyy-mm-dd (expecting hh:mm to follow)
+     *   MMM [d]d
+     *   [d]d MMM
+     *   N.B. use non-space for MMM to allow for languages such as German which use
+     *   diacritics (e.g. umlaut) in some abbreviations.
+     *   Japanese uses numeric day and month with suffixes to distinguish them
+     *   [d]dXX [d]dZZ
+     */
     + "("+
         "(?:\\d+[-/]\\d+[-/]\\d+)" + // yyyy-mm-dd
         "|(?:\\S{3}\\s+\\d{1,2})" +  // MMM [d]d
         "|(?:\\d{1,2}\\s+\\S{3})" + // [d]d MMM
+        "|(?:\\d{1,2}" + JA_MONTH + "\\s+\\d{1,2}" + JA_DAY + ")"+
         ")"
 
     + "\\s+" // separator
 
-    /*
-        year (for non-recent standard format) - yyyy
-        or time (for numeric or recent standard format) [h]h:mm
-    */
-    + "((?:\\d+(?::\\d+)?))" // (20)
+    /**
+     * year (for non-recent standard format) - yyyy
+     * or time (for numeric or recent standard format) [h]h:mm
+     * or Japanese year - yyyyXX
+     */
+    + "((?:\\d+(?::\\d+)?)|(?:\\d{4}" + JA_YEAR + "))" // (20)
 
     + "\\s" // separator
 

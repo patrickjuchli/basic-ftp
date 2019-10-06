@@ -4,7 +4,7 @@ import { FileInfo, FileType } from "./FileInfo"
  * This parser is based on the FTP client library source code in Apache Commons Net provided
  * under the Apache 2.0 license. It has been simplified and rewritten to better fit the Javascript language.
  *
- * http://svn.apache.org/viewvc/commons/proper/net/tags/NET_3_6/src/main/java/org/apache/commons/net/ftp/parser/NTFTPEntryParser.java?revision=1783048&view=markup
+ * https://github.com/apache/commons-net/blob/master/src/main/java/org/apache/commons/net/ftp/parser/NTFTPEntryParser.java
  */
 
 const RE_LINE = new RegExp(
