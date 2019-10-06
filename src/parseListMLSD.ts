@@ -56,7 +56,7 @@ const factHandlersByName: {[key: string]: FactHandler} = {
         info.user = value
     },
     "unix.owner": (value, info) => { // Owner by ID
-        if (info.user === "") info.user = value
+        if (info.user === undefined) info.user = value
     },
     get "unix.uid"() {
         return this["unix.owner"]
@@ -65,7 +65,7 @@ const factHandlersByName: {[key: string]: FactHandler} = {
         info.group = value
     },
     "unix.group": (value, info) => { // Group by ID
-        if (info.group === "") info.group = value
+        if (info.group === undefined) info.group = value
     },
     get "unix.gid"() {
         return this["unix.group"]

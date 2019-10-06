@@ -12,8 +12,7 @@ export interface UnixPermissions {
 }
 
 /**
- * Describes a file, directory or symbolic link. Note that FTP file listings are not standardized. It depends
- * on the operating system of the FTP server how complete the information is.
+ * Describes a file, directory or symbolic link.
  */
 export class FileInfo {
 
@@ -26,24 +25,47 @@ export class FileInfo {
     type = FileType.Unknown
     size = 0
     /**
-     * Unix permissions if present. If the underlying FTP server is not running on Unix or doesn't report
-     * permissions this will be undefined. If set, you might be able to edit permissions with the FTP command `SITE CHMOD`.
-     */
-    permissions: UnixPermissions | undefined
-    hardLinkCount = 0
-    link = ""
-    group = ""
-    user = ""
-    /**
-     * Unparsed date as a string. Be careful when trying to parse this by yourself. There is no
-     * standard format on which FTP servers agree when using the LIST command. Date information is meant
-     * to be human-readable but not necessarily easy to parse. See `modifiedAt` for a parsed date.
+     * Unparsed modification date as a string.
+     *
+     * If `modifiedAt` is undefined, the FTP server you're connected to doesn't support the more modern
+     * MLSD command for machine-readable directory listings. The older command LIST is then used returning
+     * results that vary a lot between servers as the format hasn't been standardized. Here, directory listings
+     * and especially modification dates were meant to be human-readable first.
+     *
+     * Be careful when still trying to parse this by yourself. Parsing dates from listings using LIST is
+     * unreliable. This library decides to offer parsed dates only when they're absolutely reliable and safe to
+     * use e.g. for comparisons.
      */
     date = ""
     /**
-     * Parsed modification date is available (and reliable) if the MLSD command is supported by the FTP server.
+     * Parsed modification date.
+     *
+     * Available if the FTP server supports the MLSD command. Only MLSD guarantees dates than can be reliably
+     * parsed with the correct timezone and a resolution down to seconds. See `date` property for the unparsed
+     * date that is always available.
      */
-    modifiedAt: Date | undefined
+    modifiedAt?: Date = undefined
+    /**
+     * Unix permissions if present. If the underlying FTP server is not running on Unix this will be undefined.
+     * If set, you might be able to edit permissions with the FTP command `SITE CHMOD`.
+     */
+    permissions?: UnixPermissions = undefined
+    /**
+     * Hard link count if available.
+     */
+    hardLinkCount?: number = undefined
+    /**
+     * Link name for symbolic links if available.
+     */
+    link?: string = undefined
+    /**
+     * Unix group if available.
+     */
+    group?: string = undefined
+    /**
+     * Unix user if available.
+     */
+    user?: string = undefined
 
     constructor(public name: string) {
         this.name = name
