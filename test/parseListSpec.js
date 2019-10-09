@@ -45,7 +45,7 @@ describe("Directory listing", function() {
         },
         {
             title: "MLSD folder",
-            list: `sized=11;type=dir;modify=20190218120006; folder`,
+            list: `size=11;type=dir;modify=20190218120006; folder`,
             exp: [
                 (f = new FileInfo("folder"),
                 f.size = 11,
