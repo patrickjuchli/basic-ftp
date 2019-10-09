@@ -141,8 +141,8 @@ export function parseLine(line: string): FileInfo | undefined {
 }
 
 export function transformList(files: FileInfo[]): FileInfo[] {
-    // Resolve symbolic links encoded as `type=OS.unix=symlink`. The corresponding target will be
-    // somewhere in the list. We can identify it using the unique identifier fact.
+    // Resolve symbolic links encoded as `type=OS.unix=symlink`. The corresponding target might be
+    // somewhere in the list. We can identify it using the unique identifier.
     const unresolvedSymLinks: FileInfo[] = []
     for (const file of files) {
         if (file.type === FileType.SymbolicLink && file.link === undefined && file.uniqueID !== undefined) {
