@@ -41,7 +41,7 @@ const factHandlersByName: {[key: string]: FactHandler} = {
         // - ProFTPD source: https://github.com/proftpd/proftpd/blob/56e6dfa598cbd4ef5c6cba439bcbcd53a63e3b21/modules/mod_facts.c#L531
         // - ProFTPD bug: http://bugs.proftpd.org/show_bug.cgi?id=3318
         // - ProFTPD statement: http://www.proftpd.org/docs/modules/mod_facts.html
-        // – FileZilla bug: https://trac.filezilla-project.org/ticket/9310
+        // – FileZilla bug: https://trac.filezilla-project.org/ticket/9310
         if (value.startsWith("OS.unix=slink")) {
             info.type = FileType.SymbolicLink
             info.link = value.substr(value.indexOf(":") + 1)
