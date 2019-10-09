@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.0
+
+- Added: Support symbolic links in MLSD listings.
+
 ## 4.0.2
 
 - Fixed: Make MLSD listing detection more general. (#95)
