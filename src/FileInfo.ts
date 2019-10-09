@@ -66,6 +66,10 @@ export class FileInfo {
      * Unix user if available.
      */
     user?: string = undefined
+    /**
+     * Unique ID if available.
+     */
+    uniqueID?: string = undefined
 
     constructor(public name: string) {
         this.name = name

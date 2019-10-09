@@ -23,6 +23,9 @@ function parseSize(value: string, info: FileInfo) {
 const factHandlersByName: {[key: string]: FactHandler} = {
     "size": parseSize, // File size
     "sizd": parseSize, // Directory size
+    "unique": (value, info) => { // Unique identifier
+        info.uniqueID = value
+    },
     "modify": (value, info) => { // Modification date
         info.modifiedAt = parseMLSxDate(value)
         info.rawModifiedAt = info.modifiedAt.toISOString()
