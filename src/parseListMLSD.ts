@@ -107,7 +107,7 @@ export function parseLine(line: string): FileInfo | undefined {
         if (!factHandler) {
             continue
         }
-        const shouldIgnoreEntry = factHandler(factValue.toLowerCase(), info)
+        const shouldIgnoreEntry = factHandler(factValue, info)
         if (shouldIgnoreEntry === true) {
             return undefined
         }
