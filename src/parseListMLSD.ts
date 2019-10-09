@@ -141,33 +141,27 @@ export function parseLine(line: string): FileInfo | undefined {
 }
 
 export function transformList(files: FileInfo[]): FileInfo[] {
-    // Resolve symbolic links encoded as `type=OS.unix=symlink`. The corresponding target might be
-    // somewhere in the list. We can identify it using the unique identifier.
-    const unresolvedSymLinks: FileInfo[] = []
+    // Create a map of all files that are not symbolic links by their unique ID
+    const nonLinksByID = new Map<string, FileInfo>()
     for (const file of files) {
-        if (file.type === FileType.SymbolicLink && file.link === undefined && file.uniqueID !== undefined) {
-            unresolvedSymLinks.push(file)
+        if (!file.isSymbolicLink && file.uniqueID !== undefined) {
+            nonLinksByID.set(file.uniqueID, file)
         }
-    }
-    if (unresolvedSymLinks.length === 0) {
-        return files
     }
     const resolvedFiles: FileInfo[] = []
     for (const file of files) {
-        // It's possible that multiple symbolic links point to the same target.
-        // We can't resolve anything without unique identifiers.
-        if (file.type !== FileType.SymbolicLink && file.uniqueID !== undefined) {
-            for (const symLink of unresolvedSymLinks) {
-                if (symLink.uniqueID === file.uniqueID) {
-                    symLink.link = file.name
-                }
+        // Try to associate unresolved symbolic links with a target file/directory.
+        if (file.isSymbolicLink && file.uniqueID !== undefined && file.link === undefined) {
+            const target = nonLinksByID.get(file.uniqueID)
+            if (target !== undefined) {
+                file.link = target.name
             }
         }
-        // The targets of a symbolic link is listed as a file in the directory listing but might
+        // The target of a symbolic link is listed as an entry in the directory listing but might
         // have a path pointing outside of this directory. In that case we don't want this entry
-        // to be part of the listing. We don't want these kind of entries in general.
-        const isDirectoryFile = !file.name.includes("/")
-        if (isDirectoryFile) {
+        // to be part of the listing. We generally don't want these kind of entries at all.
+        const isPartOfDirectory = !file.name.includes("/")
+        if (isPartOfDirectory) {
             resolvedFiles.push(file)
         }
     }
