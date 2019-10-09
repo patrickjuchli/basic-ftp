@@ -147,6 +147,84 @@ describe("Directory listing", function() {
             ]
         },
         {
+            title: "MLSD symbolic link using 'OS.unix=slink:<target>'",
+            list: `type=OS.unix=slink:/actual/target; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.type = FileType.SymbolicLink,
+                f.link = "/actual/target",
+                f),
+            ]
+        },
+        {
+            title: "MLSD symbolic link without target using 'OS.unix=slink:<target>'",
+            list: `type=OS.unix=slink:; filename`,
+            exp: [
+                (f = new FileInfo("filename"),
+                f.type = FileType.SymbolicLink,
+                f.link = "",
+                f),
+            ]
+        },
+        {
+            title: "MLSD symbolic link using 'type=OS.unix=symlink', target outside of directory",
+            list: "type=OS.unix=symlink;unique=1234; filename\ntype=file;unique=1; anotherfile\ntype=file;unique=1234; /actual/target",
+            exp: [
+                (f = new FileInfo("filename"),
+                f.type = FileType.SymbolicLink,
+                f.link = "/actual/target",
+                f.uniqueID = "1234",
+                f),
+                (f = new FileInfo("anotherfile"),
+                f.type = FileType.File,
+                f.uniqueID = "1",
+                f)
+            ]
+        },
+        {
+            title: "MLSD two symbolic links using 'type=OS.unix=symlink', pointing to same target",
+            list: "type=OS.unix=symlink;unique=1234; file1\ntype=OS.unix=symlink;unique=1234; file2\ntype=file;unique=1234; /actual/target",
+            exp: [
+                (f = new FileInfo("file1"),
+                f.type = FileType.SymbolicLink,
+                f.link = "/actual/target",
+                f.uniqueID = "1234",
+                f),
+                (f = new FileInfo("file2"),
+                f.type = FileType.SymbolicLink,
+                f.link = "/actual/target",
+                f.uniqueID = "1234",
+                f)
+            ]
+        },
+        {
+            title: "MLSD symbolic link using 'type=OS.unix=symlink', target is part of directory",
+            list: "type=OS.unix=symlink;unique=1234; filename\ntype=file;unique=1234; target",
+            exp: [
+                (f = new FileInfo("filename"),
+                f.type = FileType.SymbolicLink,
+                f.link = "target",
+                f.uniqueID = "1234",
+                f),
+                (f = new FileInfo("target"),
+                f.type = FileType.File,
+                f.uniqueID = "1234",
+                f)
+            ]
+        },
+        {
+            title: "MLSD symbolic link using 'type=OS.unix=symlink', but no identifier",
+            list: "type=OS.unix=symlink; filename\ntype=file; target",
+            exp: [
+                (f = new FileInfo("filename"),
+                f.type = FileType.SymbolicLink,
+                f),
+                (f = new FileInfo("target"),
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
             title: "Regular Unix list",
             list: listUnix,
             exp: [

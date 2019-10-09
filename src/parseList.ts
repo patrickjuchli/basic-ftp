@@ -6,6 +6,7 @@ import * as mlsdParser from "./parseListMLSD"
 interface Parser {
     testLine(line: string): boolean
     parseLine(line: string): FileInfo | undefined
+    transformList(files: FileInfo[]): FileInfo[]
 }
 
 /**
@@ -43,7 +44,8 @@ export function parseList(rawList: string): FileInfo[] {
     if (!parser) {
         throw new Error("This library only supports MLSD, Unix- or DOS-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
     }
-    return lines
+    const files = lines
         .map(parser.parseLine)
         .filter((info): info is FileInfo => info !== undefined)
+    return parser.transformList(files)
 }

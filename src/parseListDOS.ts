@@ -40,3 +40,7 @@ export function parseLine(line: string): FileInfo | undefined {
     }
     return undefined
 }
+
+export function transformList(files: FileInfo[]): FileInfo[] {
+    return files
+}

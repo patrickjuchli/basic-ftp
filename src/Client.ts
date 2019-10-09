@@ -216,7 +216,7 @@ export class Client {
         await this.send("TYPE I") // Binary mode
         await this.sendIgnoringError("STRU F") // Use file structure
         await this.sendIgnoringError("OPTS UTF8 ON") // Some servers expect UTF-8 to be enabled explicitly
-        await this.sendIgnoringError("OPTS MLST type;size;modify;unix.mode;unix.owner;unix.group;unix.ownername;unix.groupname;") // Make sure MLSD listings include all we can parse
+        await this.sendIgnoringError("OPTS MLST type;size;modify;unique;unix.mode;unix.owner;unix.group;unix.ownername;unix.groupname;") // Make sure MLSD listings include all we can parse
         if (this.ftp.hasTLS) {
             await this.sendIgnoringError("PBSZ 0") // Set to 0 for TLS
             await this.sendIgnoringError("PROT P") // Protect channel (also for data connections)

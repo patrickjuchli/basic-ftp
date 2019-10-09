@@ -141,6 +141,10 @@ export function parseLine(line: string): FileInfo | undefined {
     return undefined
 }
 
+export function transformList(files: FileInfo[]): FileInfo[] {
+    return files
+}
+
 function parseMode(r: string, w: string, x: string): number {
     let value = 0
     if (r !== "-") {

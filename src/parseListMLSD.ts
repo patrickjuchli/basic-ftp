@@ -31,12 +31,33 @@ const factHandlersByName: {[key: string]: FactHandler} = {
         info.rawModifiedAt = info.modifiedAt.toISOString()
     },
     "type": (value, info) => { // File type
+        // There seems to be confusion on how to handle symbolic links for Unix. RFC 3659 doesn't describe
+        // this but mentions some examples using the syntax `type=OS.unix=slink:<target>`. But according to
+        // an entry in the Errata (https://www.rfc-editor.org/errata/eid1500) this syntax can't be valid.
+        // Instead it proposes to use `type=OS.unix=symlink` and to then list the actual target of the
+        // symbolic link as another entry in the directory listing. The unique identifiers can then be used
+        // to derive the connection between link(s) and target. We'll have to handle both cases as there
+        // are differing opinions on how to deal with this. Here are some links on this topic:
+        // - ProFTPD source: https://github.com/proftpd/proftpd/blob/56e6dfa598cbd4ef5c6cba439bcbcd53a63e3b21/modules/mod_facts.c#L531
+        // - ProFTPD bug: http://bugs.proftpd.org/show_bug.cgi?id=3318
+        // - ProFTPD statement: http://www.proftpd.org/docs/modules/mod_facts.html
+        // – FileZilla bug: https://trac.filezilla-project.org/ticket/9310
+        if (value.startsWith("OS.unix=slink")) {
+            info.type = FileType.SymbolicLink
+            info.link = value.substr(value.indexOf(":") + 1)
+            return false
+        }
         switch(value) {
             case "file":
                 info.type = FileType.File
                 break
             case "dir":
                 info.type = FileType.Directory
+                break
+            case "OS.unix=symlink":
+                info.type = FileType.SymbolicLink
+                // The target of the symbolic link might be defined in another line in the directory listing.
+                // We'll handle this in `transformList()` below.
                 break
             case "cdir": // Current directory being listed
             case "pdir": // Parent directory
@@ -101,7 +122,9 @@ export function parseLine(line: string): FileInfo | undefined {
     const info = new FileInfo(name)
     const facts = packedFacts.split(";")
     for (const fact of facts) {
-        const [ factName, factValue ] = fact.split("=", 2)
+        const firstEqualSignPos = fact.indexOf("=") // Consider `type=OS.unix=slink:<target>`
+        const factName = fact.substr(0, firstEqualSignPos)
+        const factValue = fact.substr(firstEqualSignPos + 1)
         if (!factValue) {
             continue
         }
@@ -115,6 +138,40 @@ export function parseLine(line: string): FileInfo | undefined {
         }
     }
     return info
+}
+
+export function transformList(files: FileInfo[]): FileInfo[] {
+    // Resolve symbolic links encoded as `type=OS.unix=symlink`. The corresponding target will be
+    // somewhere in the list. We can identify it using the unique identifier fact.
+    const unresolvedSymLinks: FileInfo[] = []
+    for (const file of files) {
+        if (file.type === FileType.SymbolicLink && file.link === undefined && file.uniqueID !== undefined) {
+            unresolvedSymLinks.push(file)
+        }
+    }
+    if (unresolvedSymLinks.length === 0) {
+        return files
+    }
+    const resolvedFiles: FileInfo[] = []
+    for (const file of files) {
+        // It's possible that multiple symbolic links point to the same target.
+        // We can't resolve anything without unique identifiers.
+        if (file.type !== FileType.SymbolicLink && file.uniqueID !== undefined) {
+            for (const symLink of unresolvedSymLinks) {
+                if (symLink.uniqueID === file.uniqueID) {
+                    symLink.link = file.name
+                }
+            }
+        }
+        // The targets of a symbolic link is listed as a file in the directory listing but might
+        // have a path pointing outside of this directory. In that case we don't want this entry
+        // to be part of the listing. We don't want these kind of entries in general.
+        const isDirectoryFile = !file.name.includes("/")
+        if (isDirectoryFile) {
+            resolvedFiles.push(file)
+        }
+    }
+    return resolvedFiles
 }
 
 /**
