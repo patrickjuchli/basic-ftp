@@ -108,11 +108,12 @@ const factHandlersByName: {[key: string]: FactHandler} = {
 /**
  * Parse MLSD as specified by https://tools.ietf.org/html/rfc3659#section-7.
  *
+ * Example of a line: "size=15227;type=dir;perm=el;modify=20190419065730; test one"
+ * Or just the filename: " file name"
+ *
  * @param line
  */
 export function parseLine(line: string): FileInfo | undefined {
-    // Example of a line: "size=15227;type=dir;perm=el;modify=20190419065730; test one"
-    // Can also be just: " file name"
     const [ packedFacts, name ] = splitStringAtFirst(line, " ")
     if (name === "") {
         return undefined
@@ -120,7 +121,7 @@ export function parseLine(line: string): FileInfo | undefined {
     const info = new FileInfo(name)
     const facts = packedFacts.split(";")
     for (const fact of facts) {
-        const [ factName, factValue ] = splitStringAtFirst(fact, "=") // Consider `type=OS.unix=slink:<target>`
+        const [ factName, factValue ] = splitStringAtFirst(fact, "=")
         if (!factValue) {
             continue
         }
