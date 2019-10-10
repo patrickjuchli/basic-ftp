@@ -113,18 +113,14 @@ const factHandlersByName: {[key: string]: FactHandler} = {
 export function parseLine(line: string): FileInfo | undefined {
     // Example of a line: "size=15227;type=dir;perm=el;modify=20190419065730; test one"
     // Can also be just: " file name"
-    const firstSpacePos = line.indexOf(" ")
-    const packedFacts = line.substr(0, firstSpacePos)
-    const name = line.substr(firstSpacePos + 1)
+    const [ packedFacts, name ] = splitStringAtFirst(line, " ")
     if (name === "") {
         return undefined
     }
     const info = new FileInfo(name)
     const facts = packedFacts.split(";")
     for (const fact of facts) {
-        const firstEqualSignPos = fact.indexOf("=") // Consider `type=OS.unix=slink:<target>`
-        const factName = fact.substr(0, firstEqualSignPos)
-        const factValue = fact.substr(firstEqualSignPos + 1)
+        const [ factName, factValue ] = splitStringAtFirst(fact, "=") // Consider `type=OS.unix=slink:<target>`
         if (!factValue) {
             continue
         }
@@ -181,4 +177,11 @@ export function parseMLSxDate(fact: string): Date {
     date.setUTCFullYear(+fact.slice(0, 4), +fact.slice(4, 6) - 1, +fact.slice(6, 8))
     date.setUTCHours(+fact.slice(8, 10), +fact.slice(10, 12), +fact.slice(12, 14), +fact.slice(15, 18))
     return date
+}
+
+function splitStringAtFirst(str: string, searchString: string): [string, string] {
+    const pos = str.indexOf(searchString)
+    const a = str.substr(0, pos)
+    const b = str.substr(pos + 1)
+    return [a, b]
 }
