@@ -87,58 +87,58 @@ export function testLine(line: string): boolean {
 
 export function parseLine(line: string): FileInfo | undefined {
     const groups = line.match(RE_LINE)
-    if (groups) {
-        // Ignore parent directory links
-        const name = groups[21]
-        if (name === "." || name === "..") {
-            return undefined
-        }
-        const file = new FileInfo(name)
-        file.size = parseInt(groups[18], 10)
-        file.user = groups[16]
-        file.group = groups[17]
-        file.hardLinkCount = parseInt(groups[15], 10)
-        file.rawModifiedAt = groups[19] + " " + groups[20]
-        file.permissions = {
-            user: parseMode(groups[4], groups[5], groups[6]),
-            group: parseMode(groups[8], groups[9], groups[10]),
-            world: parseMode(groups[12], groups[13], groups[14]),
-        }
-        // Set file type
-        switch (groups[1].charAt(0)) {
-            case "d":
-                file.type = FileType.Directory
-                break
-            case "e": // NET-39 => z/OS external link
-                file.type = FileType.SymbolicLink
-                break
-            case "l":
-                file.type = FileType.SymbolicLink
-                break
-            case "b":
-            case "c":
-                file.type = FileType.File // TODO change this if DEVICE_TYPE implemented
-                break
-            case "f":
-            case "-":
-                file.type = FileType.File
-                break
-            default:
-                // A 'whiteout' file is an ARTIFICIAL entry in any of several types of
-                // 'translucent' filesystems, of which a 'union' filesystem is one.
-                file.type = FileType.Unknown
-        }
-        // Separate out the link name for symbolic links
-        if (file.isSymbolicLink) {
-            const end = name.indexOf(" -> ")
-            if (end !== -1) {
-                file.name = name.substring(0, end)
-                file.link = name.substring(end + 4)
-            }
-        }
-        return file
+    if (groups === null) {
+        return undefined
     }
-    return undefined
+    // Ignore parent directory links
+    const name = groups[21]
+    if (name === "." || name === "..") {
+        return undefined
+    }
+    const file = new FileInfo(name)
+    file.size = parseInt(groups[18], 10)
+    file.user = groups[16]
+    file.group = groups[17]
+    file.hardLinkCount = parseInt(groups[15], 10)
+    file.rawModifiedAt = groups[19] + " " + groups[20]
+    file.permissions = {
+        user: parseMode(groups[4], groups[5], groups[6]),
+        group: parseMode(groups[8], groups[9], groups[10]),
+        world: parseMode(groups[12], groups[13], groups[14]),
+    }
+    // Set file type
+    switch (groups[1].charAt(0)) {
+        case "d":
+            file.type = FileType.Directory
+            break
+        case "e": // NET-39 => z/OS external link
+            file.type = FileType.SymbolicLink
+            break
+        case "l":
+            file.type = FileType.SymbolicLink
+            break
+        case "b":
+        case "c":
+            file.type = FileType.File // TODO change this if DEVICE_TYPE implemented
+            break
+        case "f":
+        case "-":
+            file.type = FileType.File
+            break
+        default:
+            // A 'whiteout' file is an ARTIFICIAL entry in any of several types of
+            // 'translucent' filesystems, of which a 'union' filesystem is one.
+            file.type = FileType.Unknown
+    }
+    // Separate out the link name for symbolic links
+    if (file.isSymbolicLink) {
+        const end = name.indexOf(" -> ")
+        if (end !== -1) {
+            file.name = name.substring(0, end)
+            file.link = name.substring(end + 4)
+        }
+    }
+    return file
 }
 
 export function transformList(files: FileInfo[]): FileInfo[] {
