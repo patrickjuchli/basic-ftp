@@ -20,25 +20,25 @@ export function testLine(line: string): boolean {
 
 export function parseLine(line: string): FileInfo | undefined {
     const groups = line.match(RE_LINE)
-    if (groups) {
-        const name = groups[5]
-        if (name === undefined || name === "." || name === "..") {
-            return undefined
-        }
-        const dirStr = groups[3]
-        const file = new FileInfo(name)
-        if (dirStr === "<DIR>") {
-            file.type = FileType.Directory
-            file.size = 0
-        }
-        else {
-            file.type = FileType.File
-            file.size = parseInt(groups[4], 10)
-        }
-        file.rawModifiedAt = groups[1] + " " + groups[2]
-        return file
+    if (groups === null) {
+        return undefined
     }
-    return undefined
+    const name = groups[5]
+    if (name === undefined || name === "." || name === "..") {
+        return undefined
+    }
+    const fileType = groups[3]
+    const file = new FileInfo(name)
+    if (fileType === "<DIR>") {
+        file.type = FileType.Directory
+        file.size = 0
+    }
+    else {
+        file.type = FileType.File
+        file.size = parseInt(groups[4], 10)
+    }
+    file.rawModifiedAt = groups[1] + " " + groups[2]
+    return file
 }
 
 export function transformList(files: FileInfo[]): FileInfo[] {
