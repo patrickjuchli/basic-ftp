@@ -516,11 +516,9 @@ export class Client {
      * @param [remoteDirPath]  Remote path of a directory to upload to. Working directory if undefined.
      */
     async uploadDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
-        // If a remote directory name has been provided, create it and cd into it.
         let userDir = ""
         if (remoteDirPath) {
-            // Remember current working directory to switch back to after this method has executed.
-            userDir = await this.pwd()
+            userDir = await this.pwd() // Remember the current working directory to switch back to after upload is done.
             await this.ensureDir(remoteDirPath)
         }
         await uploadDirContents(this, localDirPath)
