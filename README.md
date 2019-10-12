@@ -149,9 +149,9 @@ Remove all files and directories from the working directory.
 
 Remove all files and directories from a given directory, including the directory itself. When this task is done, the working directory will be the parent directory of `remoteDirPath`.
 
-`uploadDir(localDirPath, [remoteDirName]): Promise<void>`
+`uploadDir(localDirPath, [remoteDirPath]): Promise<void>`
 
-Upload all files and directories of a local directory to the current working directory. If you specify a `remoteDirName` it will place the uploads inside a directory of the given name. This will overwrite existing files with the same names and reuse existing directories. Unrelated files and directories will remain untouched.
+Upload the contents of a local directory to the current remote working directory. This will overwrite existing files with the same names and reuse existing directories. Unrelated files and directories will remain untouched. You can optionally provide a `remoteDirPath` to put the contents inside any remote directory which will be created if necessary including all intermediate directories. After calling this method, the current remote working directory will be same as before.
 
 `downloadDir(localDirPath): Promise<void>`
 
