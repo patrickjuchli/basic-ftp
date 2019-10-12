@@ -504,27 +504,28 @@ export class Client {
     }
 
     /**
-     * Upload the contents of a local directory to the working directory.
+     * Upload the contents of a local directory to the remote working directory.
      *
-     * You can optionally provide a `remoteDirName` to put the contents inside a directory which
-     * will be created if necessary. This will overwrite existing files with the same names and
-     * reuse existing directories. Unrelated files and directories will remain untouched.
+     * This will overwrite existing files with the same names and reuse existing directories.
+     * Unrelated files and directories will remain untouched. You can optionally provide a `remoteDirPath`
+     * to put the contents inside a directory which will be created if necessary including all
+     * intermediate directories. If you did provide a remoteDirPath the working directory will stay
+     * the same as before calling this method.
      *
-     * @param localDirPath  A local path, e.g. "foo/bar" or "../test"
-     * @param remoteDirName  The name of the remote directory. If undefined, directory contents will be uploaded to the working directory.
+     * @param localDirPath  Local path, e.g. "foo/bar" or "../test"
+     * @param [remoteDirPath]  Remote path of a directory to upload to. Working directory if undefined.
      */
-    async uploadDir(localDirPath: string, remoteDirName?: string): Promise<void> {
+    async uploadDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
         // If a remote directory name has been provided, create it and cd into it.
-        if (remoteDirName !== undefined) {
-            if (remoteDirName.indexOf("/") !== -1) {
-                throw new Error(`Path provided '${remoteDirName}' instead of single directory name.`)
-            }
-            await openDir(this, remoteDirName)
+        let userDir = ""
+        if (remoteDirPath) {
+            // Remember current working directory to switch back to after this method has executed.
+            userDir = await this.pwd()
+            await this.ensureDir(remoteDirPath)
         }
         await uploadDirContents(this, localDirPath)
-        // The working directory should stay the same after this operation.
-        if (remoteDirName !== undefined) {
-            await this.cdup()
+        if (remoteDirPath) {
+            await this.cd(userDir)
         }
     }
 
