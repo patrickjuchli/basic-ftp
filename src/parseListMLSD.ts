@@ -1,16 +1,6 @@
 import { FileInfo, FileType } from "./FileInfo"
 
 /**
- * Returns true if a given line might be part of an MLSD listing.
- */
-export function testLine(line: string): boolean {
-    // Examples:
-    // - "size=23;type=dir;perm=el;modify=20190218120006; filename"
-    // - " filename only"
-    return /^\S+=\S+;/.test(line) || line.startsWith(" ")
-}
-
-/**
  * Parses an MLSD fact and updates `info` in-place. May return `true`
  * if the whole MLSD entry should be disregarded.
  */
@@ -20,6 +10,9 @@ function parseSize(value: string, info: FileInfo) {
     info.size = parseInt(value, 10)
 }
 
+/**
+ * Parsers for MLSD facts.
+ */
 const factHandlersByName: {[key: string]: FactHandler} = {
     "size": parseSize, // File size
     "sizd": parseSize, // Directory size
@@ -106,22 +99,38 @@ const factHandlersByName: {[key: string]: FactHandler} = {
 }
 
 /**
- * Parse MLSD as specified by https://tools.ietf.org/html/rfc3659#section-7.
+ * Split a string once at the first position of a delimiter. For example
+ * `splitStringOnce("a b c d", " ")` returns `["a", "b c d"]`.
+ */
+function splitStringOnce(str: string, delimiter: string): [string, string] {
+    const pos = str.indexOf(delimiter)
+    const a = str.substr(0, pos)
+    const b = str.substr(pos + delimiter.length)
+    return [a, b]
+}
+
+/**
+ * Returns true if a given line might be part of an MLSD listing.
  *
- * Example of a line: "size=15227;type=dir;perm=el;modify=20190419065730; test one"
- * Or just the filename: " file name"
- *
- * @param line
+ * - Example 1: `size=15227;type=dir;perm=el;modify=20190419065730; test one`
+ * - Example 2: ` file name` (leading space)
+ */
+export function testLine(line: string): boolean {
+    return /^\S+=\S+;/.test(line) || line.startsWith(" ")
+}
+
+/**
+ * Parse single line as MLSD listing, see specification at https://tools.ietf.org/html/rfc3659#section-7.
  */
 export function parseLine(line: string): FileInfo | undefined {
-    const [ packedFacts, name ] = splitStringAtFirst(line, " ")
+    const [ packedFacts, name ] = splitStringOnce(line, " ")
     if (name === "") {
         return undefined
     }
     const info = new FileInfo(name)
     const facts = packedFacts.split(";")
     for (const fact of facts) {
-        const [ factName, factValue ] = splitStringAtFirst(fact, "=")
+        const [ factName, factValue ] = splitStringOnce(fact, "=")
         if (!factValue) {
             continue
         }
@@ -170,19 +179,10 @@ export function transformList(files: FileInfo[]): FileInfo[] {
  *
  * Message contains response code and modified time in the format: YYYYMMDDHHMMSS[.sss]
  * For example `19991005213102` or `19980615100045.014`.
- *
- * @param fact
  */
 export function parseMLSxDate(fact: string): Date {
     const date = new Date()
     date.setUTCFullYear(+fact.slice(0, 4), +fact.slice(4, 6) - 1, +fact.slice(6, 8))
     date.setUTCHours(+fact.slice(8, 10), +fact.slice(10, 12), +fact.slice(12, 14), +fact.slice(15, 18))
     return date
-}
-
-function splitStringAtFirst(str: string, searchString: string): [string, string] {
-    const pos = str.indexOf(searchString)
-    const a = str.substr(0, pos)
-    const b = str.substr(pos + 1)
-    return [a, b]
 }

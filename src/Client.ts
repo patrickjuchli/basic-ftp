@@ -300,8 +300,6 @@ export class Client {
     async lastMod(path: string): Promise<Date> {
         const validPath = await this.protectWhitespace(path)
         const res = await this.send(`MDTM ${validPath}`)
-        // Message contains response code and modified time in the format: YYYYMMDDHHMMSS[.sss]
-        // For example `213 19991005213102` or `213 19980615100045.014`.
         const date = res.message.slice(4)
         return parseMLSxDate(date)
     }

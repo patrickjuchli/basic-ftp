@@ -13,22 +13,29 @@ const RE_LINE = new RegExp(
     + "(\\S.*)"                     // First non-space followed by rest of line (name)
 )
 
+/**
+ * Returns true if a given line might be a DOS-style listing.
+ *
+ * - Example: `12-05-96  05:03PM       <DIR>          myDir`
+ */
 export function testLine(line: string): boolean {
-    // Example: "12-05-96  05:03PM       <DIR>          myDir"
     return /^\d{2}/.test(line) && RE_LINE.test(line)
 }
 
+/**
+ * Parse a single line of a DOS-style directory listing.
+ */
 export function parseLine(line: string): FileInfo | undefined {
     const groups = line.match(RE_LINE)
     if (groups === null) {
         return undefined
     }
     const name = groups[5]
-    if (name === undefined || name === "." || name === "..") {
+    if (name === "." || name === "..") { // Ignore parent directory links
         return undefined
     }
-    const fileType = groups[3]
     const file = new FileInfo(name)
+    const fileType = groups[3]
     if (fileType === "<DIR>") {
         file.type = FileType.Directory
         file.size = 0

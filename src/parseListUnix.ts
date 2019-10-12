@@ -80,19 +80,25 @@ const RE_LINE = new RegExp(
 
     + "(.*)") // the rest (21)
 
+/**
+ * Returns true if a given line might be a Unix-style listing.
+ *
+ * - Example: `-rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 test.txt`
+ */
 export function testLine(line: string): boolean {
-    // Example: "-rw-r--r--+   1 patrick  staff   1057 Dec 11 14:35 test.txt"
     return RE_LINE.test(line)
 }
 
+/**
+ * Parse a single line of a Unix-style directory listing.
+ */
 export function parseLine(line: string): FileInfo | undefined {
     const groups = line.match(RE_LINE)
     if (groups === null) {
         return undefined
     }
-    // Ignore parent directory links
     const name = groups[21]
-    if (name === "." || name === "..") {
+    if (name === "." || name === "..") { // Ignore parent directory links
         return undefined
     }
     const file = new FileInfo(name)
