@@ -10,7 +10,7 @@ import { parseList as parseListAutoDetect } from "./parseList"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
 import { parseMLSxDate } from "./parseListMLSD"
-import { describeAddress, describeTLS, upgradeSocket } from "./net"
+import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
 import { upload, download, enterPassiveModeIPv6, enterPassiveModeIPv4 } from "./transfer"
 import { isMultiline, positiveCompletion } from "./parseControlResponse"
 
@@ -36,6 +36,7 @@ export interface AccessOptions {
 
 /** Prepares a data connection for transfer. */
 export type TransferStrategy = (ftp: FTPContext) => Promise<FTPResponse>
+
 /** Parses raw directoy listing data. */
 export type RawListParser = (rawList: string) => FileInfo[]
 
@@ -52,7 +53,7 @@ export class Client {
      * entry that worked.
      */
     availableListCommands = ["MLSD", "LIST -a", "LIST"]
-    /** Low-level API for FTP server. */
+    /** Low-level API to interact with FTP server. */
     readonly ftp: FTPContext
     /** Tracks progress of data transfers. */
     protected _progressTracker: ProgressTracker
@@ -125,27 +126,14 @@ export class Client {
     }
 
     /**
-     * Send an FTP command.
-     *
-     * If successful it will return a response object that contains the return code as well
-     * as the whole message.
-     *
-     * @param command  FTP command to send.
-     * @param ignoreErrorCodesDEPRECATED  Deprecated in 3.9.0, use `sendIgnoringError` to ignore FTP error responses.
+     * Send an FTP command and handle the first response.
      */
     send(command: string, ignoreErrorCodesDEPRECATED = false): Promise<FTPResponse> {
         if (ignoreErrorCodesDEPRECATED) { // Deprecated starting from 3.9.0
             this.ftp.log("Deprecated call using send(command, flag) with boolean flag to ignore errors. Use sendIgnoringError(command).")
             return this.sendIgnoringError(command)
         }
-        return this.ftp.handle(command, (res, task) => {
-            if (res instanceof Error) {
-                task.reject(res)
-            }
-            else {
-                task.resolve(res)
-            }
-        })
+        return this.ftp.request(command)
     }
 
     /**
@@ -197,7 +185,7 @@ export class Client {
                 task.resolve(res)
             }
             else if (res.code === 331) { // User name okay, need password
-                this.ftp.sendCommand("PASS " + password)
+                this.ftp.send("PASS " + password)
             }
             else { // Also report error on 332 (Need account)
                 task.reject(new FTPError(res))

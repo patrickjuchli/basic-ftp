@@ -1,5 +1,5 @@
 import { EventEmitter } from "events"
-import { describeAddress, describeTLS } from "./net"
+import { describeAddress, describeTLS } from "./netUtils"
 import { Writable, Readable } from "stream"
 import { TLSSocket, connect as connectTLS } from "tls"
 import { FTPContext, FTPResponse, TaskResolver } from "./FtpContext"
@@ -92,7 +92,6 @@ function ipIsPrivateV4Address(ip = ""): boolean {
         || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31)    // 172.16.0.0 - 172.31.255.255
         || (octets[0] === 192 && octets[1] === 168)                    // 192.168.0.0 - 192.168.255.255
 }
-
 
 export function connectForPassiveTransfer(host: string, port: number, ftp: FTPContext): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -291,7 +290,7 @@ export function download(ftp: FTPContext, progress: ProgressTracker, destination
             onConditionOrEvent(dataSocket.destroyed, dataSocket, "end", () => resolver.onDataDone(task))
         }
         else if (res.code === 350) { // Restarting at startAt.
-            ftp.sendCommand("RETR " + remoteFilename)
+            ftp.send("RETR " + remoteFilename)
         }
         else if (positiveCompletion(res.code)) { // Transfer complete
             resolver.onControlDone(task, res)

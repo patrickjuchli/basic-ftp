@@ -210,13 +210,17 @@ export class FTPContext {
     /**
      * Send an FTP command without waiting for or handling the result.
      */
-    sendCommand(command: string) {
-        // Don't log passwords.
-        const message = command.startsWith("PASS") ? "> PASS ###" : `> ${command}`
+    send(command: string) {
+        const containsPassword = command.startsWith("PASS")
+        const message = containsPassword ? "> PASS ###" : `> ${command}`
         this.log(message)
         this._socket.write(command + "\r\n", this.encoding)
     }
 
+    /**
+     * Send an FTP command and handle the first response. Use this if you have a simple
+     * request-response situation.
+     */
     request(command: string): Promise<FTPResponse> {
         return this.handle(command, (res, task) => {
             if (res instanceof Error) {
@@ -229,26 +233,8 @@ export class FTPContext {
     }
 
     /**
-     * Log message if set to be verbose.
-     */
-    log(message: string) {
-        if (this.verbose) {
-            // tslint:disable-next-line no-console
-            console.log(message)
-        }
-    }
-
-    /**
-     * Return true if the control socket is using TLS. This does not mean that a session
-     * has already been negotiated.
-     */
-    get hasTLS(): boolean {
-        return "encrypted" in this._socket
-    }
-
-    /**
-     * Send an FTP command and handle any response until the new task is resolved. This returns a Promise that
-     * will hold whatever the handler passed on when resolving/rejecting its task.
+     * Send an FTP command and handle any response until you resolve/reject. Use this if you expect multiple responses
+     * to a request. This returns a Promise that will hold whatever the response handler passed on when resolving/rejecting its task.
      */
     handle(command: string | undefined, responseHandler: ResponseHandler): Promise<any> {
         if (this._task) {
@@ -290,9 +276,27 @@ export class FTPContext {
             // the default socket behaviour which is not expected by most users.
             this.socket.setTimeout(this.timeout)
             if (command) {
-                this.sendCommand(command)
+                this.send(command)
             }
         })
+    }
+
+    /**
+     * Log message if set to be verbose.
+     */
+    log(message: string) {
+        if (this.verbose) {
+            // tslint:disable-next-line no-console
+            console.log(message)
+        }
+    }
+
+    /**
+     * Return true if the control socket is using TLS. This does not mean that a session
+     * has already been negotiated.
+     */
+    get hasTLS(): boolean {
+        return "encrypted" in this._socket
     }
 
     /**
