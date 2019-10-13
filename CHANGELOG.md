@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.2.0
 
 - Added: Support uploading a local directory to any specific remote directory instead of just the working directory.
 
