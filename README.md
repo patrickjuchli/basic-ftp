@@ -238,51 +238,6 @@ Set the encoding applied to all incoming and outgoing messages of the control co
 
 Set the preferred version of the IP stack: `4` (IPv4), `6` (IPv6) or `undefined` (Node.js default). Set to `undefined` by default.
 
-`get/set socket`
-
-Set the socket for the control connection. This will only close the current control socket if the new one is not a TLS upgrade to the current one.
-
-`get/set dataSocket`
-
-Set the socket for the data connection. When setting a new socket the current one will be closed and all listeners will be removed.
-
-`handle(command, handler): Promise<FTPResponse>`
-
-Send an FTP command and register a handler function to handle all subsequent responses and socket events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. This is the central method of this library, see the example below for a more detailed explanation.
-
-`sendCommand(command)`
-
-Send an FTP command without waiting for or handling the response.
-
-`log(message)`
-
-Log a message if the client is set to be `verbose`.
-
-### Using FTPContext
-
-The best source of examples is the implementation of the `Client` itself as it's using the same single pattern you will use. The code below shows a simplified file upload. Let's assume a transfer connection has already been established.
-
-```js
-function mySimpleUpload(ftp, readableStream, remoteFilename) {
-    const command = "STOR " + remoteFilename
-    return ftp.handle(command, (res, task) => {
-        if (res instanceof Error) {
-            task.reject(res)
-        }
-        else if (res.code === 150) { // Ready to upload
-            readableStream.pipe(ftp.dataSocket)
-        }
-        else if (res.code === 226) { // Transfer complete
-            task.resolve(res)
-        }
-    })
-}
-
-await mySimpleUpload(client.ftp, myStream, myName)
-```
-
-This function represents an asynchronously executed task. It uses a method offered by the FTPContext: `handle(command, callback)`. This will send a command to the FTP server and register a callback that is in charge for handling all responses from now on. The callback function might be called several times as in the example above. Error and timeout events from both the control and data socket will be rerouted through this callback as well. Also, `client.handle` returns a `Promise` that is created for you and which the upload function above returns. That is why the function `myUpload` can now be used with async/await. The promise is resolved or rejected when you call `resolve` or `reject` on the `task` reference passed to you as a callback argument. The callback function will not be called anymore after resolving or rejecting the task.
-
 ## Acknowledgment
 
 This library uses parts of the [directory listing parsers](https://github.com/apache/commons-net/tree/master/src/main/java/org/apache/commons/net/ftp/parser) written by The Apache Software Foundation. They've been made available under the Apache 2.0 license. See the [included notice](NOTICE.txt) and headers in the respective files containing the original copyright texts and a description of changes.
