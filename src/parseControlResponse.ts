@@ -27,7 +27,7 @@ export function parseControlResponse(text: string): ParsedResponse {
                 tokenRegex = new RegExp(`^${token}(?:$| )`)
                 startAt = i
             }
-            else if (isSingle(line)) {
+            else if (isSingleLine(line)) {
                 // Single lines can be grouped immediately.
                 messages.push(line)
             }
@@ -43,10 +43,24 @@ export function parseControlResponse(text: string): ParsedResponse {
     return { messages, rest }
 }
 
-function isSingle(line: string) {
+export function isSingleLine(line: string) {
     return /^\d\d\d(?:$| )/.test(line)
 }
 
-function isMultiline(line: string) {
+export function isMultiline(line: string) {
     return /^\d\d\d-/.test(line)
+}
+
+/**
+ * Return true if an FTP return code describes a positive completion.
+ */
+export function positiveCompletion(code: number): boolean {
+    return code >= 200 && code < 300
+}
+
+/**
+ * Return true if an FTP return code describes a positive intermediate response.
+ */
+export function positiveIntermediate(code: number): boolean {
+    return code >= 300 && code < 400
 }

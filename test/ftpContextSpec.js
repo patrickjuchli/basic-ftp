@@ -128,7 +128,7 @@ describe("FTPContext", function() {
             assert.equal(buf.toString(), "HELLO TEST\r\n");
             done();
         });
-        ftp.send("HELLO TEST");
+        ftp.sendCommand("HELLO TEST");
     });
 
     it("is using UTF-8 by default", function(done) {
@@ -136,7 +136,7 @@ describe("FTPContext", function() {
             assert.equal(buf.toString(), "HELLO 直己\r\n");
             done();
         });
-        ftp.send("HELLO 直己");
+        ftp.sendCommand("HELLO 直己");
     });
 
     it("reports whether socket has TLS", function() {

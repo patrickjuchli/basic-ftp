@@ -210,11 +210,22 @@ export class FTPContext {
     /**
      * Send an FTP command without waiting for or handling the result.
      */
-    send(command: string) {
+    sendCommand(command: string) {
         // Don't log passwords.
         const message = command.startsWith("PASS") ? "> PASS ###" : `> ${command}`
         this.log(message)
         this._socket.write(command + "\r\n", this.encoding)
+    }
+
+    request(command: string): Promise<FTPResponse> {
+        return this.handle(command, (res, task) => {
+            if (res instanceof Error) {
+                task.reject(res)
+            }
+            else {
+                task.resolve(res)
+            }
+        })
     }
 
     /**
@@ -279,7 +290,7 @@ export class FTPContext {
             // the default socket behaviour which is not expected by most users.
             this.socket.setTimeout(this.timeout)
             if (command) {
-                this.send(command)
+                this.sendCommand(command)
             }
         })
     }

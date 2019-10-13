@@ -216,7 +216,7 @@ In addition to unit tests and linting, the source code is written in Typescript 
 
 `get/set client.prepareTransfer`
 
-Provide a function that initializes a data connection. FTP uses a dedicated socket connection for each file upload, download and directory listing. This library supports two strategies: Passive Mode over IPv4 (PASV) and IPv6 (EPSV). Active Mode is not supported but could be added using this extension point. The signature of the function is `(client: Client) => Promise<void>` and its job is to set `client.ftp.dataSocket`.
+Provide a function that initializes a data connection. FTP uses a dedicated socket connection for each file upload, download and directory listing. This library supports two strategies: Passive Mode over IPv4 (PASV) and IPv6 (EPSV). Active Mode is not supported but could be added using this extension point. The signature of the function is `(ftp: FTPContext) => Promise<FTPResponse>` and its job is to set `ftp.dataSocket`.
 
 `get/set client.parseList`
 
@@ -250,7 +250,7 @@ Set the socket for the data connection. When setting a new socket the current on
 
 Send an FTP command and register a handler function to handle all subsequent responses and socket events until the task is rejected or resolved. `command` may be undefined. This returns a promise that is resolved/rejected when the task given to the handler is resolved/rejected. This is the central method of this library, see the example below for a more detailed explanation.
 
-`send(command)`
+`sendCommand(command)`
 
 Send an FTP command without waiting for or handling the response.
 

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { parsePasvResponse, parseEpsvResponse } = require("../dist/Client");
+const { parsePasvResponse, parseEpsvResponse } = require("../dist/transfer");
 
 describe("Parse passive transfer setup response", function() {
 
