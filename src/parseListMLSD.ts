@@ -124,7 +124,7 @@ export function testLine(line: string): boolean {
  */
 export function parseLine(line: string): FileInfo | undefined {
     const [ packedFacts, name ] = splitStringOnce(line, " ")
-    if (name === "") {
+    if (name === "" || name === "." || name === "..") {
         return undefined
     }
     const info = new FileInfo(name)
