@@ -66,12 +66,12 @@ describe("Directory listing", function() {
             exp: []
         },
         {
-            title: "MLSD ignore current folder by name",
+            title: "MLSD ignore current folder by name (issue #99)",
             list: `type=dir; .`,
             exp: []
         },
         {
-            title: "MLSD ignore parent folder by name",
+            title: "MLSD ignore parent folder by name (issue #99)",
             list: `type=dir; ..`,
             exp: []
         },
