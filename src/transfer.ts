@@ -6,6 +6,8 @@ import { FTPContext, FTPResponse, TaskResolver } from "./FtpContext"
 import { ProgressTracker } from "./ProgressTracker"
 import { positiveIntermediate, positiveCompletion } from "./parseControlResponse"
 
+export type UploadCommand = "STOR" | "APPE"
+
 /**
  * Prepare a data socket using passive mode over IPv6.
  */
@@ -225,7 +227,7 @@ class TransferResolver {
  *
  * `upload(ftp, fs.createReadStream(localFilePath), remoteFilename)`
  */
-export function upload(ftp: FTPContext, progress: ProgressTracker, source: Readable, command: "STOR" | "APPE", remoteFilename: string): Promise<FTPResponse> {
+export function upload(ftp: FTPContext, progress: ProgressTracker, source: Readable, command: UploadCommand, remoteFilename: string): Promise<FTPResponse> {
     const resolver = new TransferResolver(ftp, progress)
     const fullCommand = `${command} ${remoteFilename}`
     return ftp.handle(fullCommand, (res, task) => {

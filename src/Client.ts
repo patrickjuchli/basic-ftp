@@ -1,4 +1,4 @@
-import { createReadStream, createWriteStream, mkdir, readdir, stat } from "fs"
+import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink, access } from "fs"
 import { join } from "path"
 import { Readable, Writable } from "stream"
 import { ConnectionOptions } from "tls"
@@ -11,13 +11,17 @@ import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
 import { parseMLSxDate } from "./parseListMLSD"
 import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
-import { upload, download, enterPassiveModeIPv6, enterPassiveModeIPv4 } from "./transfer"
+import { upload, download, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand } from "./transfer"
 import { isMultiline, positiveCompletion } from "./parseControlResponse"
 
 // Use promisify to keep the library compatible with Node 8.
 const fsReadDir = promisify(readdir)
 const fsMkDir = promisify(mkdir)
 const fsStat = promisify(stat)
+const fsOpen = promisify(open)
+const fsClose = promisify(close)
+const fsUnlink = promisify(unlink)
+const fsAccess = promisify(access)
 
 export interface AccessOptions {
     /** Host the client should connect to. Optional, default is "localhost". */
@@ -39,6 +43,11 @@ export type TransferStrategy = (ftp: FTPContext) => Promise<FTPResponse>
 
 /** Parses raw directoy listing data. */
 export type RawListParser = (rawList: string) => FileInfo[]
+
+export interface UploadOptions {
+    localStart?: number
+    localEndInclusive?: number
+}
 
 /**
  * High-level API to interact with an FTP server.
@@ -347,31 +356,54 @@ export class Client {
     }
 
     /**
-     * Upload data from a readable stream and store it as a file with a given filename in the current working directory.
-     * If such a file already exists it will be overwritten.
+     * Upload data from a readable stream or from a local file and store it as a file with a given filename in the current
+     * working directory. If such a file already exists it will be overwritten.
      *
-     * @param source  The stream to read from.
+     * @param source  Any readable stream or the path to the local file to read from.
      * @param remotePath  The path of the remote file to write to.
      */
-    async upload(source: Readable, remotePath: string): Promise<FTPResponse> {
-        return this._uploadWithCommand(source, remotePath, "STOR")
+    async upload(source: Readable | string, remotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        return this._uploadWithCommand(source, remotePath, "STOR", options)
     }
 
     /**
-     * Upload data from a readable stream and append it to an existing file with a given filename in the current working directory.
-     * If the file doesn't exist the FTP server should create it.
+     * Upload data from a readable stream or from a local file and and append it to an existing file with a given filename in
+     * the current working directory. If the file doesn't exist the FTP server should create it.
      *
-     * @param source  The stream to read from.
-     * @param remotePath  The path of the existing remote file to append to.
+     * @param source  Any readable stream or the path to the local file to read from.
+     * @param remotePath  The path of the remote file to write to.
      */
-    async append(source: Readable, remotePath: string): Promise<FTPResponse> {
-        return this._uploadWithCommand(source, remotePath, "APPE")
+    async append(source: Readable | string, remotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        return this._uploadWithCommand(source, remotePath, "APPE", options)
+    }
+
+    protected async _uploadWithCommand(source: Readable | string, remotePath: string, command: UploadCommand, options: UploadOptions): Promise<FTPResponse> {
+        if (typeof source === "string") {
+            return this._uploadLocalFile(source, remotePath, command, options)
+        }
+        return this._uploadFromStream(source, remotePath, command)
+    }
+
+    protected async _uploadLocalFile(localPath: string, remotePath: string, command: UploadCommand, options: UploadOptions): Promise<FTPResponse> {
+        const fd = await fsOpen(localPath, "r")
+        const source = createReadStream("", {
+            fd,
+            start: options.localStart,
+            end: options.localEndInclusive,
+            autoClose: false
+        })
+        try {
+            return await this._uploadFromStream(source, remotePath, command)
+        }
+        finally {
+            await tryCloseFile(fd)
+        }
     }
 
     /**
      * @protected
      */
-    protected async _uploadWithCommand(source: Readable, remotePath: string, command: "STOR" | "APPE"): Promise<FTPResponse> {
+    protected async _uploadFromStream(source: Readable, remotePath: string, command: UploadCommand): Promise<FTPResponse> {
         const onError = (err: Error) => this.ftp.closeWithError(err)
         source.once("error", onError)
         try {
@@ -388,14 +420,66 @@ export class Client {
 
     /**
      * Download a file with a given filename from the current working directory
-     * and pipe its data to a writable stream. You may optionally start at a specific
-     * offset, for example to resume a cancelled transfer.
+     * and pipe its data to a writable stream or to a local file at the given path.
+     * You may optionally start at a specific offset for the remote file and the local
+     * counterpart, for example to resume a cancelled transfer.
      *
-     * @param destination  The stream to write to.
+     * @param toDestination  The stream or the path of a local file to write to.
      * @param remotePath  The name of the remote file to read from.
-     * @param startAt  The offset to start at.
+     * @param remoteStart  The position within the remote file to start at.
+     * @param localStart  The position within the local file to start at. Only used if destination is local file.
      */
-    async download(destination: Writable, remotePath: string, startAt = 0): Promise<FTPResponse> {
+    async download(toDestination: Writable | string, remotePath: string, remoteStart = 0, localStart = 0) {
+        if (typeof toDestination === "string") {
+            return this._downloadToFile(toDestination, remotePath, remoteStart, localStart)
+        }
+        return this._downloadToStream(toDestination, remotePath, remoteStart)
+    }
+
+    protected async _downloadToFile(localPath: string, remotePath: string, remoteStart: number, localStart: number) {
+        const appendingToLocal = localStart > 0
+        if (appendingToLocal) {
+            if (await fileExists(localPath)) {
+
+            }
+        }
+
+
+        let fd: number
+
+
+        // TODO okay...
+        if (localStart > 0) {
+            try {
+                fd = await fsOpen(localPath, "r+")
+            }
+            catch(err) {
+                fd = await fsOpen(localPath, "w")
+                localStart = 0
+            }
+        }
+        else {
+            fd = await fsOpen(localPath, "w")
+        }
+        const destination = createWriteStream("", {
+            fd,
+            start: localStart,
+            autoClose: false
+        })
+        try {
+            return await this._downloadToStream(destination, remotePath, remoteStart)
+        }
+        catch(err) {
+            // TODO but only if file was created new...
+            await fsUnlink(localPath)
+            throw err
+        }
+        finally {
+            await tryCloseFile(fd)
+        }
+    }
+
+    protected async _downloadToStream(destination: Writable, remotePath: string, startAt: number): Promise<FTPResponse> {
         const onError = (err: Error) => this.ftp.closeWithError(err)
         destination.once("error", onError)
         try {
@@ -531,8 +615,7 @@ export class Client {
                 await this.cdup()
             }
             else {
-                const writable = createWriteStream(localPath)
-                await this.download(writable, file.name)
+                await this.download(localPath, file.name)
             }
         }
     }
@@ -616,7 +699,7 @@ async function uploadDirContents(client: Client, localDirPath: string): Promise<
         const fullPath = join(localDirPath, file)
         const stats = await fsStat(fullPath)
         if (stats.isFile()) {
-            await client.upload(createReadStream(fullPath), file)
+            await client.upload(fullPath, file)
         }
         else if (stats.isDirectory()) {
             await openDir(client, file)
@@ -641,5 +724,25 @@ async function ensureLocalDirectory(path: string) {
     }
     catch(err) {
         await fsMkDir(path)
+    }
+}
+
+async function tryCloseFile(fd: number) {
+    try {
+        await fsClose(fd)
+    }
+    catch(err) {
+        console.log("-->", err)
+        // Ignore, file descriptor might have been closed already.
+    }
+}
+
+async function fileExists(path: string): Promise<boolean> {
+    try {
+        await fsAccess(path)
+        return true
+    }
+    catch {
+        return false
     }
 }
