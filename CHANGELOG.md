@@ -2,9 +2,9 @@
 
 ## 4.3.0
 
-- Added: Upload from files and download to files by providing paths instead of streams.
 - Added: More explicit API `uploadFrom`, `appendFrom` and `downloadTo`. `upload` and `download` are still available but deprecated.
-- Changed: When providing a stream to upload from or download to, the stream will be closed if there is an error.
+- Added: Handle file downloads and uploads directly by supporting local file paths in `uploadFrom` and `downloadTo`.
+- Added: Make it easier to resume a download of a partially downloaded file. See documentation of `downloadTo` for more details.
 
 ## 4.2.1
 
