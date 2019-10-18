@@ -95,7 +95,7 @@ Send an FTP command.
 
 Send an FTP command and ignore an FTP error response. Any other error or timeout will still reject the Promise.
 
-`cd(remotePath): Promise<FTPResponse>`
+`cd(path): Promise<FTPResponse>`
 
 Change the working directory.
 
@@ -107,21 +107,21 @@ Get the path of the current working directory.
 
 List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports MLSD, Unix and DOS directory listings. See [FileInfo](src/FileInfo.ts) for more details.
 
-`lastMod(filename): Promise<Date>`
+`lastMod(path): Promise<Date>`
 
-Get the last modification time of a file in the working directory. This command might not be supported by your FTP server and throw an exception.
+Get the last modification time of a file. This command might not be supported by your FTP server and throw an exception.
 
-`size(filename): Promise<number>`
+`size(path): Promise<number>`
 
-Get the size of a file in the working directory.
+Get the size of a file.
 
 `rename(path, newPath): Promise<FTPResponse>`
 
 Rename a file. Depending on the server you may also use this to move a file to another directory by providing full paths.
 
-`remove(filename): Promise<FTPResponse>`
+`remove(path): Promise<FTPResponse>`
 
-Remove a file from the working directory.
+Remove a file.
 
 `uploadFrom(readableStream | localPath, remotePath): Promise<FTPResponse>`
 
