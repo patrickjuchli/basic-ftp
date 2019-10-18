@@ -1,4 +1,4 @@
-import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink, access } from "fs"
+import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink } from "fs"
 import { join } from "path"
 import { Readable, Writable } from "stream"
 import { ConnectionOptions } from "tls"
@@ -21,7 +21,6 @@ const fsStat = promisify(stat)
 const fsOpen = promisify(open)
 const fsClose = promisify(close)
 const fsUnlink = promisify(unlink)
-const fsAccess = promisify(access)
 
 export interface AccessOptions {
     /** Host the client should connect to. Optional, default is "localhost". */
@@ -356,22 +355,21 @@ export class Client {
     }
 
     /**
-     * Upload data from a readable stream or from a local file and store it as a file with a given filename in the current
-     * working directory. If such a file already exists it will be overwritten.
+     * Upload data from a readable stream or a local file to a remote file.
      *
-     * @param source  Any readable stream or the path to the local file to read from.
-     * @param remotePath  The path of the remote file to write to.
+     * @param source  Readable stream or path to a local file.
+     * @param remotePath  Path to a remote file to write to.
      */
     async upload(source: Readable | string, remotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
         return this._uploadWithCommand(source, remotePath, "STOR", options)
     }
 
     /**
-     * Upload data from a readable stream or from a local file and and append it to an existing file with a given filename in
-     * the current working directory. If the file doesn't exist the FTP server should create it.
+     * Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't
+     * exist the FTP server should create it.
      *
-     * @param source  Any readable stream or the path to the local file to read from.
-     * @param remotePath  The path of the remote file to write to.
+     * @param source  Readable stream or path to a local file.
+     * @param remotePath  Path to a remote file to write to.
      */
     async append(source: Readable | string, remotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
         return this._uploadWithCommand(source, remotePath, "APPE", options)
@@ -396,7 +394,7 @@ export class Client {
             return await this._uploadFromStream(source, remotePath, command)
         }
         finally {
-            await tryCloseFile(fd)
+            await ignoreException(() => fsClose(fd))
         }
     }
 
@@ -419,15 +417,16 @@ export class Client {
     }
 
     /**
-     * Download a file with a given filename from the current working directory
-     * and pipe its data to a writable stream or to a local file at the given path.
-     * You may optionally start at a specific offset for the remote file and the local
-     * counterpart, for example to resume a cancelled transfer.
+     * Download a remote file and pipe its data to a writable stream or to a local file.
      *
-     * @param toDestination  The stream or the path of a local file to write to.
-     * @param remotePath  The name of the remote file to read from.
-     * @param remoteStart  The position within the remote file to start at.
-     * @param localStart  The position within the local file to start at. Only used if destination is local file.
+     * You can set `remoteStart` to start downloading at a given position of the remote file. You can
+     * also set `localStart` to start writing at a specific position within a local file. An exception
+     * will be thrown if the local file doesn't exist if `localStart` is larger than 0.
+     *
+     * @param toDestination  Stream or path for a local file to write to.
+     * @param remotePath  Path of the remote file to read from.
+     * @param remoteStart  Position within the remote file to start downloading at.
+     * @param localStart  Position within an existing local file to start writing to. Only used if destination is a file.
      */
     async download(toDestination: Writable | string, remotePath: string, remoteStart = 0, localStart = 0) {
         if (typeof toDestination === "string") {
@@ -437,30 +436,9 @@ export class Client {
     }
 
     protected async _downloadToFile(localPath: string, remotePath: string, remoteStart: number, localStart: number) {
-        const appendingToLocal = localStart > 0
-        if (appendingToLocal) {
-            if (await fileExists(localPath)) {
-
-            }
-        }
-
-
-        let fd: number
-
-
-        // TODO okay...
-        if (localStart > 0) {
-            try {
-                fd = await fsOpen(localPath, "r+")
-            }
-            catch(err) {
-                fd = await fsOpen(localPath, "w")
-                localStart = 0
-            }
-        }
-        else {
-            fd = await fsOpen(localPath, "w")
-        }
+        const expectLocalFile = localStart > 0
+        const fileSystemFlags = expectLocalFile ? "r+" : "w"
+        const fd = await fsOpen(localPath, fileSystemFlags)
         const destination = createWriteStream("", {
             fd,
             start: localStart,
@@ -470,12 +448,13 @@ export class Client {
             return await this._downloadToStream(destination, remotePath, remoteStart)
         }
         catch(err) {
-            // TODO but only if file was created new...
-            await fsUnlink(localPath)
+            if (!expectLocalFile) {
+                await ignoreException(() => fsUnlink(localPath))
+            }
             throw err
         }
         finally {
-            await tryCloseFile(fd)
+            await ignoreException(() => fsClose(fd))
         }
     }
 
@@ -727,22 +706,11 @@ async function ensureLocalDirectory(path: string) {
     }
 }
 
-async function tryCloseFile(fd: number) {
+async function ignoreException(func: () => Promise<void>) {
     try {
-        await fsClose(fd)
+        await func()
     }
     catch(err) {
-        console.log("-->", err)
-        // Ignore, file descriptor might have been closed already.
-    }
-}
-
-async function fileExists(path: string): Promise<boolean> {
-    try {
-        await fsAccess(path)
-        return true
-    }
-    catch {
-        return false
+        // Ignore
     }
 }
