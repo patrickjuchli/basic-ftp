@@ -358,10 +358,18 @@ export class Client {
      * Upload data from a readable stream or a local file to a remote file.
      *
      * @param source  Readable stream or path to a local file.
-     * @param remotePath  Path to a remote file to write to.
+     * @param toRemotePath  Path to a remote file to write to.
      */
-    async upload(source: Readable | string, remotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
-        return this._uploadWithCommand(source, remotePath, "STOR", options)
+    async uploadFrom(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        return this._uploadWithCommand(source, toRemotePath, "STOR", options)
+    }
+
+    /**
+     * DEPRECATED, use `uploadFrom`.
+     * @deprecated
+     */
+    async upload(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        return this.uploadFrom(source, toRemotePath, options)
     }
 
     /**
@@ -369,10 +377,18 @@ export class Client {
      * exist the FTP server should create it.
      *
      * @param source  Readable stream or path to a local file.
-     * @param remotePath  Path to a remote file to write to.
+     * @param toRemotePath  Path to a remote file to write to.
      */
-    async append(source: Readable | string, remotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
-        return this._uploadWithCommand(source, remotePath, "APPE", options)
+    async appendFrom(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        return this._uploadWithCommand(source, toRemotePath, "APPE", options)
+    }
+
+    /**
+     * DEPRECATED, use `appendFrom`.
+     * @deprecated
+     */
+    async append(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        return this.appendFrom(source, toRemotePath, options)
     }
 
     protected async _uploadWithCommand(source: Readable | string, remotePath: string, command: UploadCommand, options: UploadOptions): Promise<FTPResponse> {
@@ -419,33 +435,42 @@ export class Client {
     /**
      * Download a remote file and pipe its data to a writable stream or to a local file.
      *
-     * You can set `remoteStart` to start downloading at a given position of the remote file. You can
-     * also set `localStart` to start writing at a specific position within a local file. An exception
-     * will be thrown if the local file doesn't exist if `localStart` is larger than 0.
+     * You can optionally define at which position of the remote file you'd like to start
+     * downloading. If the destination you provide is a file, the offset will be applied
+     * to it as well. For example: To resume a failed download, you'd request the size of
+     * the local, partially downloaded file and use that as the offset. Assuming the size
+     * is 23, you'd download the rest using `downloadTo("local.txt", "remote.txt", 23)`.
      *
-     * @param toDestination  Stream or path for a local file to write to.
-     * @param remotePath  Path of the remote file to read from.
-     * @param remoteStart  Position within the remote file to start downloading at.
-     * @param localStart  Position within an existing local file to start writing to. Only used if destination is a file.
+     * @param destination  Stream or path for a local file to write to.
+     * @param fromRemotePath  Path of the remote file to read from.
+     * @param startAt  Position within the remote file to start downloading at.
      */
-    async download(toDestination: Writable | string, remotePath: string, remoteStart = 0, localStart = 0) {
-        if (typeof toDestination === "string") {
-            return this._downloadToFile(toDestination, remotePath, remoteStart, localStart)
+    async downloadTo(destination: Writable | string, fromRemotePath: string, startAt = 0) {
+        if (typeof destination === "string") {
+            return this._downloadToFile(destination, fromRemotePath, startAt)
         }
-        return this._downloadToStream(toDestination, remotePath, remoteStart)
+        return this._downloadToStream(destination, fromRemotePath, startAt)
     }
 
-    protected async _downloadToFile(localPath: string, remotePath: string, remoteStart: number, localStart: number) {
-        const expectLocalFile = localStart > 0
+    /**
+     * DEPRECATED, use `downloadTo`.
+     * @deprecated
+     */
+    async download(destination: Writable | string, fromRemotePath: string, startAt = 0) {
+        return this.downloadTo(destination, fromRemotePath, startAt)
+    }
+
+    protected async _downloadToFile(localPath: string, remotePath: string, startAt: number) {
+        const expectLocalFile = startAt > 0
         const fileSystemFlags = expectLocalFile ? "r+" : "w"
         const fd = await fsOpen(localPath, fileSystemFlags)
         const destination = createWriteStream("", {
             fd,
-            start: localStart,
+            start: startAt,
             autoClose: false
         })
         try {
-            return await this._downloadToStream(destination, remotePath, remoteStart)
+            return await this._downloadToStream(destination, remotePath, startAt)
         }
         catch(err) {
             if (!expectLocalFile) {

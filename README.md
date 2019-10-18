@@ -14,7 +14,7 @@ Node 8.0 or later is the only dependency.
 
 ## Introduction
 
-The first example will connect to an FTP server using TLS, get a directory listing, and upload a file. Note that the FTP protocol doesn't allow multiple requests running in parallel.
+The first example will connect to an FTP server using TLS, get a directory listing, upload a file and download it as a copy. Note that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
 const ftp = require("basic-ftp")
@@ -33,7 +33,8 @@ async function example() {
             secure: true
         })
         console.log(await client.list())
-        await client.upload(fs.createReadStream("README.md"), "README.md")
+        await client.uploadFrom("README.md", "README_FTP.md")
+        await client.downloadTo("README_COPY.md", "README_FTP.md")
     }
     catch(err) {
         console.log(err)
@@ -123,17 +124,17 @@ Rename a file. Depending on the server you may also use this to move a file to a
 
 Remove a file from the working directory.
 
-`upload(readableStream, remoteFilename): Promise<FTPResponse>`
+`uploadFrom(readableStream | localPath, remotePath): Promise<FTPResponse>`
 
-Upload data from a readable stream and store it as a file with a given filename in the current working directory. If such a file already exists it will be overwritten.
+Upload data from a readable stream or a local file to a remote file. If such a file already exists it will be overwritten.
 
-`append(readableStream, remoteFilename): Promise<FTPResponse>`
+`appendFrom(readableStream | localPath, remotePath): Promise<FTPResponse>`
 
-Upload data from a readable stream and append it to an existing file with a given filename in the current working directory. If the file doesn't exist the FTP server should create it.
+Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't exist the FTP server should create it.
 
-`download(writableStream, remoteFilename, startAt = 0): Promise<FTPResponse>`
+`downloadTo(writableStream | localPath, remotePath, startAt = 0): Promise<FTPResponse>`
 
-Download a file with a given filename from the current working directory and pipe its data to a writable stream. You may optionally start at a specific offset, for example to resume a cancelled transfer.
+Download a remote file and pipe its data to a writable stream or to a local file. You can optionally define at which position of the remote file you'd like to start downloading. If the destination you provide is a file, the offset will be applied to it as well. For example: To resume a failed download, you'd request the size of the local, partially downloaded file and use that as the offset.
 
 ---
 

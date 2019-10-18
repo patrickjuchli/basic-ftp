@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.0
+
+- Added: Upload from files and download to files by providing paths instead of streams.
+- Added: More explicit API `uploadFrom`, `appendFrom` and `downloadTo`. `upload` and `download` are still available but deprecated.
+- Changed: When providing a stream to upload from or download to, the stream will be closed if there is an error.
+
 ## 4.2.1
 
 - Fixed: Don't rely on MLSD types 'cdir' and 'pdir'. (#99)
