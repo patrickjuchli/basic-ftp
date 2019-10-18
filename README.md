@@ -89,15 +89,15 @@ Get a description of supported features. This will return a Map where keys corre
 
 `send(command): Promise<FTPResponse>`
 
-Send an FTP command.
+Send an FTP command and return the first response.
 
 `sendIgnoringError(command): Promise<FTPResponse>`
 
-Send an FTP command and ignore an FTP error response. Any other error or timeout will still reject the Promise.
+Send an FTP command, return the first response, and ignore an FTP error response. Any other error or timeout will still reject the Promise.
 
 `cd(path): Promise<FTPResponse>`
 
-Change the working directory.
+Change the current working directory.
 
 `pwd(): Promise<string>`
 
@@ -105,7 +105,7 @@ Get the path of the current working directory.
 
 `list([path]): Promise<FileInfo[]>`
 
-List files and directories in the current working directory, or from `path` if specified. Currently, this library only supports MLSD, Unix and DOS directory listings. See [FileInfo](src/FileInfo.ts) for more details.
+List files and directories in the current working directory, or at `path` if specified. Currently, this library only supports MLSD, Unix and DOS directory listings. See [FileInfo](src/FileInfo.ts) for more details.
 
 `lastMod(path): Promise<Date>`
 
@@ -113,7 +113,7 @@ Get the last modification time of a file. This command might not be supported by
 
 `size(path): Promise<number>`
 
-Get the size of a file.
+Get the size of a file in bytes.
 
 `rename(path, newPath): Promise<FTPResponse>`
 
