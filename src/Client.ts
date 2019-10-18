@@ -619,7 +619,7 @@ export class Client {
                 await this.cdup()
             }
             else {
-                await this.download(localPath, file.name)
+                await this.downloadTo(localPath, file.name)
             }
         }
     }
@@ -703,7 +703,7 @@ async function uploadDirContents(client: Client, localDirPath: string): Promise<
         const fullPath = join(localDirPath, file)
         const stats = await fsStat(fullPath)
         if (stats.isFile()) {
-            await client.upload(fullPath, file)
+            await client.uploadFrom(fullPath, file)
         }
         else if (stats.isDirectory()) {
             await openDir(client, file)
