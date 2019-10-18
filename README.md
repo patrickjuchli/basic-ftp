@@ -18,7 +18,6 @@ The first example will connect to an FTP server using TLS, get a directory listi
 
 ```js
 const ftp = require("basic-ftp")
-const fs = require("fs")
 
 example()
 
