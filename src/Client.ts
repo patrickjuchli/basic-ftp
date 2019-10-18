@@ -410,7 +410,7 @@ export class Client {
             return await this._uploadFromStream(source, remotePath, command)
         }
         finally {
-            await ignoreException(() => fsClose(fd))
+            await ignoreError(() => fsClose(fd))
         }
     }
 
@@ -474,12 +474,12 @@ export class Client {
         }
         catch(err) {
             if (!expectLocalFile) {
-                await ignoreException(() => fsUnlink(localPath))
+                await ignoreError(() => fsUnlink(localPath))
             }
             throw err
         }
         finally {
-            await ignoreException(() => fsClose(fd))
+            await ignoreError(() => fsClose(fd))
         }
     }
 
@@ -731,7 +731,7 @@ async function ensureLocalDirectory(path: string) {
     }
 }
 
-async function ignoreException(func: () => Promise<void>) {
+async function ignoreError(func: () => Promise<void>) {
     try {
         await func()
     }
