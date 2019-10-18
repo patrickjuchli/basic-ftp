@@ -727,7 +727,7 @@ async function ensureLocalDirectory(path: string) {
         await fsStat(path)
     }
     catch(err) {
-        await fsMkDir(path)
+        await fsMkDir(path, { recursive: true })
     }
 }
 
