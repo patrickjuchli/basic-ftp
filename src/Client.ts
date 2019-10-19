@@ -44,7 +44,9 @@ export type TransferStrategy = (ftp: FTPContext) => Promise<FTPResponse>
 export type RawListParser = (rawList: string) => FileInfo[]
 
 export interface UploadOptions {
+    /** Offset in the local file to start uploading from. */
     localStart?: number
+    /** Final byte position to include in upload from the local file. */
     localEndInclusive?: number
 }
 
@@ -443,7 +445,7 @@ export class Client {
      *
      * @param destination  Stream or path for a local file to write to.
      * @param fromRemotePath  Path of the remote file to read from.
-     * @param startAt  Position within the remote file to start downloading at.
+     * @param startAt  Position within the remote file to start downloading at. If the destination is a file, this offset is also applied to it.
      */
     async downloadTo(destination: Writable | string, fromRemotePath: string, startAt = 0) {
         if (typeof destination === "string") {
