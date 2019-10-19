@@ -25,7 +25,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "STOR NAME.TXT\r\n");
             done();
         });
-        client.upload(readable, "NAME.TXT").catch(() => {});
+        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
     });
 
     it("starts uploading after receiving 'ready to upload'", function(done) {
@@ -35,7 +35,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "123", "Wrong data sent");
             done();
         });
-        client.upload(readable, "NAME.TXT").catch(() => {});
+        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
         setTimeout(() => {
             didSendReady = true;
             client.ftp.socket.emit("data", "150 Ready");
@@ -51,7 +51,7 @@ describe("Upload", function() {
             assert.equal(buf.toString(), "123", "Wrong data sent");
             done();
         });
-        client.upload(readable, "NAME.TXT").catch(() => {});
+        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
         setTimeout(() => {
             client.ftp.socket.emit("data", "150 Ready");
             setTimeout(() => {
@@ -70,7 +70,7 @@ describe("Upload", function() {
                 done();
             });
         });
-        client.upload(readable, "NAME.TXT").catch(() => {});
+        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
         setTimeout(() => {
             client.ftp.socket.emit("data", "150 Ready");
             // Don't send completion message, we don't want the TransferResolver
@@ -83,7 +83,7 @@ describe("Upload", function() {
             client.ftp.dataSocket.emit("finish");
             setTimeout(() => client.ftp.socket.emit("data", "200 Done"));
         });
-        const promise = client.upload(readable, "NAME.TXT");
+        const promise = client.uploadFrom(readable, "NAME.TXT");
         setTimeout(() => client.ftp.socket.emit("data", "150 Ready"));
         return promise;
     });
@@ -93,7 +93,7 @@ describe("Upload", function() {
             client.ftp.dataSocket.emit("finish");
             setTimeout(() => client.ftp.socket.emit("data", "200 Done"));
         });
-        const promise = client.upload(readable, "NAME.TXT");
+        const promise = client.uploadFrom(readable, "NAME.TXT");
         setTimeout(() => client.ftp.socket.emit("data", "150 Ready"));
         return promise;
     });
@@ -103,20 +103,20 @@ describe("Upload", function() {
             client.ftp.socket.emit("data", "150 Ready");
             client.ftp.socket.emit("data", "500 Error");
         });
-        return client.upload(readable, "NAME.TXT").catch(err => {
+        return client.uploadFrom(readable, "NAME.TXT").catch(err => {
             assert.deepEqual(err, new FTPError({code: 500, message: "500 Error"}));
         });
     });
 
     it("handles error events from the source stream", function() {
         const nonExistingFile = fs.createReadStream("nothing.txt");
-        return client.upload(nonExistingFile, "NAME.TXT").catch(err => {
+        return client.uploadFrom(nonExistingFile, "NAME.TXT").catch(err => {
             assert.equal(err.code, "ENOENT")
         })
     })
 
     it("uses data connection exclusively for timeout tracking during upload", function(done) {
-        client.upload(readable, "NAME.TXT").catch(() => {});
+        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
         // Before anything: No timeout tracking at all
         assert.equal(client.ftp.socket.timeout, 0, "before task (control)");
         assert.equal(client.ftp.dataSocket.timeout, 0, "before task (data)");
