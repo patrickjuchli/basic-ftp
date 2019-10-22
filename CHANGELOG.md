@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Changed: When downloading to a local file and an error occurs, only remove it if no data has been downloaded so far.
+
 ## 4.3.0
 
 - Added: More explicit API `uploadFrom`, `appendFrom` and `downloadTo`. `upload` and `download` are still available but deprecated.

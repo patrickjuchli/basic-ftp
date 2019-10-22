@@ -463,8 +463,8 @@ export class Client {
     }
 
     protected async _downloadToFile(localPath: string, remotePath: string, startAt: number) {
-        const expectLocalFile = startAt > 0
-        const fileSystemFlags = expectLocalFile ? "r+" : "w"
+        const appendingToLocalFile = startAt > 0
+        const fileSystemFlags = appendingToLocalFile ? "r+" : "w"
         const fd = await fsOpen(localPath, fileSystemFlags)
         const destination = createWriteStream("", {
             fd,
@@ -475,7 +475,10 @@ export class Client {
             return await this._downloadToStream(destination, remotePath, startAt)
         }
         catch(err) {
-            if (!expectLocalFile) {
+            const localFileStats = await ignoreError(() => fsStat(localPath))
+            const hasDownloadedData = localFileStats && localFileStats.size > 0
+            const shouldRemoveLocalFile = !appendingToLocalFile && !hasDownloadedData
+            if (shouldRemoveLocalFile) {
                 await ignoreError(() => fsUnlink(localPath))
             }
             throw err
@@ -733,11 +736,12 @@ async function ensureLocalDirectory(path: string) {
     }
 }
 
-async function ignoreError(func: () => Promise<void>) {
+async function ignoreError<T>(func: () => Promise<T | undefined>) {
     try {
-        await func()
+        return await func()
     }
     catch(err) {
         // Ignore
+        return undefined
     }
 }
