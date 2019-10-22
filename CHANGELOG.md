@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 4.3.1
 
-- Changed: When downloading to a local file and an error occurs, only remove it if no data has been downloaded so far.
+- Fixed: When downloading to a local file and an error occurs, only remove it if no data has been downloaded so far.
 
 ## 4.3.0
 
