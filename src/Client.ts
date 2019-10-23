@@ -501,6 +501,7 @@ export class Client {
         }
         finally {
             destination.removeListener("error", onError)
+            destination.end()
         }
     }
 
