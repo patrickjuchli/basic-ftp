@@ -236,7 +236,7 @@ export function upload(ftp: FTPContext, progress: ProgressTracker, source: Reada
         }
         else if (res.code === 150 || res.code === 125) { // Ready to upload
             const dataSocket = ftp.dataSocket
-            if (!dataSocket) {
+            if (!dataSocket || !dataSocket.remoteAddress) {
                 resolver.onError(task, new Error("Upload should begin but no data connection is available."))
                 return
             }
