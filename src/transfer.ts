@@ -279,7 +279,7 @@ export function download(ftp: FTPContext, progress: ProgressTracker, destination
         }
         else if (res.code === 150 || res.code === 125) { // Ready to download
             const dataSocket = ftp.dataSocket
-            if (!dataSocket) {
+            if (!dataSocket || !dataSocket.remoteAddress) {
                 resolver.onError(task, new Error("Download should begin but no data connection is available."))
                 return
             }
