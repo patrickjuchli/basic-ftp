@@ -25,6 +25,8 @@ describe("Download directory listing", function() {
         client.prepareTransfer = ftp => {
             //@ts-ignore that SocketMock can't be assigned to client.ftp
             ftp.dataSocket = new SocketMock();
+            //@ts-ignore
+            ftp.dataSocket.connect()
             return Promise.resolve({code: 200, message: "OK"});
         };
         //@ts-ignore
@@ -38,75 +40,74 @@ describe("Download directory listing", function() {
     function sendCompleteList() {
         client.ftp.socket.emit("data", "125 Sending");
         client.ftp.dataSocket.emit("data", bufList);
-        client.ftp.dataSocket.end();
+        client.ftp.dataSocket.end()
         client.ftp.socket.emit("data", "250 Done");
     }
 
-    function requestListAndVerify(done) {
-        client.list().then(result => {
+    function requestListAndVerify() {
+        return client.list().then(result => {
             assert.deepEqual(result, expList);
-            done();
         });
     }
 
-    it("handles data socket ending before control confirms", function(done) {
-        requestListAndVerify(done);
+    it("handles data socket ending before control confirms", function() {
         setTimeout(() => {
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", "250 Done");
         });
+        return requestListAndVerify();
     });
 
-    it("handles control confirming before data socket ends", function(done) {
-        requestListAndVerify(done);
+    it("handles control confirming before data socket ends", function() {
         setTimeout(() => {
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.socket.emit("data", "250 Done");
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
         });
+        return requestListAndVerify();
     });
 
-    it("handles data coming in before control announces beginning", function(done) {
-        requestListAndVerify(done);
+    it("handles data coming in before control announces beginning", function() {
         setTimeout(() => {
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", "250 Done");
         });
+        return requestListAndVerify();
     });
 
-    it("handles data transmission being complete before control announces beginning", function(done) {
-        requestListAndVerify(done);
+    it("handles data transmission being complete before control announces beginning", function() {
         setTimeout(() => {
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.socket.emit("data", "250 Done");
         });
+        return requestListAndVerify();
     });
 
-    it("handles control announcing with 150 instead of 125", function(done) {
-        requestListAndVerify(done);
+    it("handles control announcing with 150 instead of 125", function() {
         setTimeout(() => {
             client.ftp.socket.emit("data", "150 Sending");
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", "250 Done");
         });
+        return requestListAndVerify();
     });
 
-    it("handles control confirming end with 200 instead of 250", function(done) {
-        requestListAndVerify(done);
+    it("handles control confirming end with 200 instead of 250", function() {
         setTimeout(() => {
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
             client.ftp.socket.emit("data", "200 Done");
         });
+        return requestListAndVerify();
     });
 
     it("relays FTP error response even if data transmitted completely", function() {

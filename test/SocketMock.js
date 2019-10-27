@@ -15,7 +15,8 @@ module.exports = class SocketMock extends EventEmitter {
     connect() {
         this.remoteAddress = "somewhere"
     }
-    setEncoding() {
+    setEncoding(encoding) {
+        return this
     }
     removeAllListeners() {
         return this
@@ -32,10 +33,10 @@ module.exports = class SocketMock extends EventEmitter {
         this.emit("didSend", buf);
     }
     end() {
-        this.emit("end");
+        this.emit("data", null);
         this.destroyed = true;
     }
     pipe(target) {
-        this.on("data", chunk => target.write(chunk));
+        this.on("data", chunk => chunk ? target.write(chunk) : target.end());
     }
 };

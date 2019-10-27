@@ -14,6 +14,8 @@ describe("Upload", function() {
         client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
+        //@ts-ignore
+        client.ftp.dataSocket.connect()
     });
 
     afterEach(function() {

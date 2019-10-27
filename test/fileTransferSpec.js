@@ -20,6 +20,8 @@ describe("Download to file", function() {
         client.prepareTransfer = ftp => {
             //@ts-ignore that SocketMock can't be assigned to client.ftp
             ftp.dataSocket = new SocketMock();
+            //@ts-ignore
+            ftp.dataSocket.connect()
             return Promise.resolve({code: 200, message: "OK"});
         };
         //@ts-ignore
