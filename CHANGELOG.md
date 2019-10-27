@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3.2
+
+- Fixed regression at 4.3.0: File descriptor closed too early. (#103)
+
 ## 4.3.1
 
 - Fixed: When downloading to a local file and an error occurs, only remove it if no data has been downloaded so far.
