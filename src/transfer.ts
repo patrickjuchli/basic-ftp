@@ -285,11 +285,7 @@ export function download(ftp: FTPContext, progress: ProgressTracker, destination
             }
             ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
             resolver.onDataStart(remoteFilename, "download")
-            // Confirm the transfer as soon as the data socket transmission ended.
-            // It's possible, though, that the data transmission is complete before
-            // the control socket receives the accouncement that it will begin.
-            // Check if the data socket is not already closed.
-            onConditionOrEvent(destination.destroyed, destination, "finish", () => resolver.onDataDone(task))
+            onConditionOrEvent(destination.destroyed || destination.writableFinished, destination, "finish", () => resolver.onDataDone(task))
         }
         else if (res.code === 350) { // Restarting at startAt.
             ftp.send("RETR " + remoteFilename)
