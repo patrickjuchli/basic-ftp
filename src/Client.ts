@@ -367,14 +367,6 @@ export class Client {
     }
 
     /**
-     * DEPRECATED, use `uploadFrom`.
-     * @deprecated
-     */
-    async upload(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
-        return this.uploadFrom(source, toRemotePath, options)
-    }
-
-    /**
      * Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't
      * exist the FTP server should create it.
      *
@@ -386,13 +378,8 @@ export class Client {
     }
 
     /**
-     * DEPRECATED, use `appendFrom`.
-     * @deprecated
+     * @protected
      */
-    async append(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
-        return this.appendFrom(source, toRemotePath, options)
-    }
-
     protected async _uploadWithCommand(source: Readable | string, remotePath: string, command: UploadCommand, options: UploadOptions): Promise<FTPResponse> {
         if (typeof source === "string") {
             return this._uploadLocalFile(source, remotePath, command, options)
@@ -400,6 +387,9 @@ export class Client {
         return this._uploadFromStream(source, remotePath, command)
     }
 
+    /**
+     * @protected
+     */
     protected async _uploadLocalFile(localPath: string, remotePath: string, command: UploadCommand, options: UploadOptions): Promise<FTPResponse> {
         const fd = await fsOpen(localPath, "r")
         const source = createReadStream("", {
@@ -455,13 +445,8 @@ export class Client {
     }
 
     /**
-     * DEPRECATED, use `downloadTo`.
-     * @deprecated
+     * @protected
      */
-    async download(destination: Writable | string, fromRemotePath: string, startAt = 0) {
-        return this.downloadTo(destination, fromRemotePath, startAt)
-    }
-
     protected async _downloadToFile(localPath: string, remotePath: string, startAt: number) {
         const appendingToLocalFile = startAt > 0
         const fileSystemFlags = appendingToLocalFile ? "r+" : "w"
@@ -488,6 +473,9 @@ export class Client {
         }
     }
 
+    /**
+     * @protected
+     */
     protected async _downloadToStream(destination: Writable, remotePath: string, startAt: number): Promise<FTPResponse> {
         const onError = (err: Error) => this.ftp.closeWithError(err)
         destination.once("error", onError)
@@ -598,15 +586,34 @@ export class Client {
      * @param localDirPath  Local path, e.g. "foo/bar" or "../test"
      * @param [remoteDirPath]  Remote path of a directory to upload to. Working directory if undefined.
      */
-    async uploadDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
+    async uploadFromDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
         let userDir = ""
         if (remoteDirPath) {
             userDir = await this.pwd() // Remember the current working directory to switch back to after upload is done.
             await this.ensureDir(remoteDirPath)
         }
-        await uploadDirContents(this, localDirPath)
+        await this._uploadToWorkingDir(localDirPath)
         if (remoteDirPath) {
             await this.cd(userDir)
+        }
+    }
+
+    /**
+     * @protected
+     */
+    protected async _uploadToWorkingDir(localDirPath: string): Promise<void> {
+        const files = await fsReadDir(localDirPath)
+        for (const file of files) {
+            const fullPath = join(localDirPath, file)
+            const stats = await fsStat(fullPath)
+            if (stats.isFile()) {
+                await this.uploadFrom(fullPath, file)
+            }
+            else if (stats.isDirectory()) {
+                await this._openDir(file)
+                await this._uploadToWorkingDir(fullPath)
+                await this.cdup()
+            }
         }
     }
 
@@ -614,8 +621,24 @@ export class Client {
      * Download all files and directories of the working directory to a local directory.
      *
      * @param localDirPath  The local directory to download to.
+     * @param remoteDirPath  Remote directory to download. Current working directory if not specified.
      */
-    async downloadDir(localDirPath: string): Promise<void> {
+    async downloadToDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
+        let userDir = ""
+        if (remoteDirPath) {
+            userDir = await this.pwd()
+            await this.cd(remoteDirPath)
+        }
+        await this._downloadFromWorkingDir(localDirPath)
+        if (remoteDirPath) {
+            await this.cd(userDir)
+        }
+    }
+
+    /**
+     * @protected
+     */
+    protected async _downloadFromWorkingDir(localDirPath: string): Promise<void> {
         await ensureLocalDirectory(localDirPath)
         for (const file of await this.list()) {
             const localPath = join(localDirPath, file.name)
@@ -641,8 +664,18 @@ export class Client {
         }
         const names = remoteDirPath.split("/").filter(name => name !== "")
         for (const name of names) {
-            await openDir(this, name)
+            await this._openDir(name)
         }
+    }
+
+    /**
+     * Try to create a directory and enter it. This will not raise an exception if the directory
+     * couldn't be created if for example it already exists.
+     * @protected
+     */
+    protected async _openDir(dirName: string) {
+        await this.sendIgnoringError("MKD " + dirName)
+        await this.cd(dirName)
     }
 
     /**
@@ -666,6 +699,51 @@ export class Client {
         const pwd = await this.pwd()
         const absolutePathPrefix = pwd.endsWith("/") ? pwd : pwd + "/"
         return absolutePathPrefix + path
+    }
+
+    /**
+     * DEPRECATED, use `uploadFrom`.
+     * @deprecated
+     */
+    async upload(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        this.ftp.log("Warning: upload() has been deprecated, use uploadFrom().")
+        return this.uploadFrom(source, toRemotePath, options)
+    }
+
+    /**
+     * DEPRECATED, use `appendFrom`.
+     * @deprecated
+     */
+    async append(source: Readable | string, toRemotePath: string, options: UploadOptions = {}): Promise<FTPResponse> {
+        this.ftp.log("Warning: append() has been deprecated, use appendFrom().")
+        return this.appendFrom(source, toRemotePath, options)
+    }
+
+    /**
+     * DEPRECATED, use `downloadTo`.
+     * @deprecated
+     */
+    async download(destination: Writable | string, fromRemotePath: string, startAt = 0) {
+        this.ftp.log("Warning: download() has been deprecated, use downloadTo().")
+        return this.downloadTo(destination, fromRemotePath, startAt)
+    }
+
+    /**
+     * DEPRECATED, use `uploadFromDir`.
+     * @deprecated
+     */
+    async uploadDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
+        this.ftp.log("Warning: uploadDir() has been deprecated, use uploadFromDir().")
+        return this.uploadFromDir(localDirPath, remoteDirPath)
+    }
+
+    /**
+     * DEPRECATED, use `downloadToDir`.
+     * @deprecated
+     */
+    async downloadDir(localDirPath: string): Promise<void> {
+        this.ftp.log("Warning: downloadDir() has been deprecated, use downloadToDir().")
+        return this.downloadToDir(localDirPath)
     }
 }
 
@@ -697,35 +775,6 @@ export function enterFirstCompatibleMode(strategies: TransferStrategy[], client:
         }
         throw new Error("None of the available transfer strategies work.")
     }
-}
-
-/**
- * Upload the contents of a local directory to the working directory. This will overwrite
- * existing files and reuse existing directories.
- */
-async function uploadDirContents(client: Client, localDirPath: string): Promise<void> {
-    const files = await fsReadDir(localDirPath)
-    for (const file of files) {
-        const fullPath = join(localDirPath, file)
-        const stats = await fsStat(fullPath)
-        if (stats.isFile()) {
-            await client.uploadFrom(fullPath, file)
-        }
-        else if (stats.isDirectory()) {
-            await openDir(client, file)
-            await uploadDirContents(client, fullPath)
-            await client.cdup()
-        }
-    }
-}
-
-/**
- * Try to create a directory and enter it. This will not raise an exception if the directory
- * couldn't be created if for example it already exists.
- */
-async function openDir(client: Client, dirName: string) {
-    await client.send("MKD " + dirName, true) // Ignore FTP error codes
-    await client.cd(dirName)
 }
 
 async function ensureLocalDirectory(path: string) {
