@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.0
+
+- Changed: Current API `uploadDir` and `downloadDir` has been deprecated, use `uploadFromDir` and `downloadToDir`.
+- Added: You can specifiy a custom remote directory with `downloadToDir`.
+
 ## 4.3.2
 
 - Fixed regression at 4.3.0: File descriptor closed too early. (#103)
