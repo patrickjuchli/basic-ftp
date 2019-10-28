@@ -47,7 +47,7 @@ The next example deals with directories and their content. First, we make sure a
 ```js
 await client.ensureDir("my/remote/directory")
 await client.clearWorkingDir()
-await client.uploadDir("my/local/directory")
+await client.uploadFromDir("my/local/directory")
 ```
 
 If you encounter a problem, it may help to log out all communication with the FTP server.
