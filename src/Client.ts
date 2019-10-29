@@ -655,7 +655,7 @@ export class Client {
                 await this._downloadFromWorkingDir(localPath)
                 await this.cdup()
             }
-            else {
+            else if (file.isFile) {
                 await this.downloadTo(localPath, file.name)
             }
         }
