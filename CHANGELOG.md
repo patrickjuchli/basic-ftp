@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.1
+
+- Fixed: Return to former working directory also after error when calling directory-related methods.
+
 ## 4.4.0
 
 - Changed: Current API `uploadDir` and `downloadDir` has been deprecated, use `uploadFromDir` and `downloadToDir`.
