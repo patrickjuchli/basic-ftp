@@ -788,7 +788,7 @@ async function ignoreError<T>(func: () => Promise<T | undefined>) {
 }
 
 async function exitAtCurrentDirectory<T>(func: () => Promise<T>, client: Client): Promise<T> {
-    let userDir = await client.pwd()
+    const userDir = await client.pwd()
     try {
         return await func()
     }
