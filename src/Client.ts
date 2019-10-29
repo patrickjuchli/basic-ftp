@@ -652,7 +652,7 @@ export class Client {
             const localPath = join(localDirPath, file.name)
             if (file.isDirectory) {
                 await this.cd(file.name)
-                await this.downloadDir(localPath)
+                await this._downloadFromWorkingDir(localPath)
                 await this.cdup()
             }
             else {
