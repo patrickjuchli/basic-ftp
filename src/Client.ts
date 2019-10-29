@@ -592,9 +592,13 @@ export class Client {
             userDir = await this.pwd() // Remember the current working directory to switch back to after upload is done.
             await this.ensureDir(remoteDirPath)
         }
-        await this._uploadToWorkingDir(localDirPath)
-        if (remoteDirPath) {
-            await this.cd(userDir)
+        try {
+            return await this._uploadToWorkingDir(localDirPath)
+        }
+        finally {
+            if (remoteDirPath && !this.closed) {
+                await ignoreError(() => this.cd(userDir))
+            }
         }
     }
 
@@ -629,9 +633,13 @@ export class Client {
             userDir = await this.pwd()
             await this.cd(remoteDirPath)
         }
-        await this._downloadFromWorkingDir(localDirPath)
-        if (remoteDirPath) {
-            await this.cd(userDir)
+        try {
+            return await this._downloadFromWorkingDir(localDirPath)
+        }
+        finally {
+            if (remoteDirPath && !this.closed) {
+                await ignoreError(() => this.cd(userDir))
+            }
         }
     }
 
