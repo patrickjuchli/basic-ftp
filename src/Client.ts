@@ -536,9 +536,6 @@ export class Client {
     /**
      * Remove a directory and all of its content.
      *
-     * After successfull completion the current working directory will be the parent
-     * of the removed directory if possible.
-     *
      * @param remoteDirPath  The path of the remote directory to delete.
      * @example client.removeDir("foo") // Remove directory 'foo' using a relative path.
      * @example client.removeDir("foo/bar") // Remove directory 'bar' using a relative path.
@@ -546,14 +543,14 @@ export class Client {
      * @example client.removeDir("/") // Remove everything.
      */
     async removeDir(remoteDirPath: string): Promise<void> {
-        await this.cd(remoteDirPath)
-        await this.clearWorkingDir()
-        // Remove the directory itself if we're not already on root.
-        const workingDir = await this.pwd()
-        if (workingDir !== "/") {
-            await this.cdup()
-            await this.removeEmptyDir(remoteDirPath)
-        }
+        return exitAtCurrentDirectory(async () => {
+            await this.cd(remoteDirPath)
+            await this.clearWorkingDir()
+            if (remoteDirPath !== "/") {
+                await this.cdup()
+                await this.removeEmptyDir(remoteDirPath)
+            }
+        }, this)
     }
 
     /**
@@ -587,19 +584,12 @@ export class Client {
      * @param [remoteDirPath]  Remote path of a directory to upload to. Working directory if undefined.
      */
     async uploadFromDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
-        let userDir = ""
-        if (remoteDirPath) {
-            userDir = await this.pwd() // Remember the current working directory to switch back to after upload is done.
-            await this.ensureDir(remoteDirPath)
-        }
-        try {
-            return await this._uploadToWorkingDir(localDirPath)
-        }
-        finally {
-            if (remoteDirPath && !this.closed) {
-                await ignoreError(() => this.cd(userDir))
+        return exitAtCurrentDirectory(async () => {
+            if (remoteDirPath) {
+                await this.ensureDir(remoteDirPath)
             }
-        }
+            return await this._uploadToWorkingDir(localDirPath)
+        }, this)
     }
 
     /**
@@ -628,19 +618,12 @@ export class Client {
      * @param remoteDirPath  Remote directory to download. Current working directory if not specified.
      */
     async downloadToDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
-        let userDir = ""
-        if (remoteDirPath) {
-            userDir = await this.pwd()
-            await this.cd(remoteDirPath)
-        }
-        try {
-            return await this._downloadFromWorkingDir(localDirPath)
-        }
-        finally {
-            if (remoteDirPath && !this.closed) {
-                await ignoreError(() => this.cd(userDir))
+        return exitAtCurrentDirectory(async () => {
+            if (remoteDirPath) {
+                await this.cd(remoteDirPath)
             }
-        }
+            return await this._downloadFromWorkingDir(localDirPath)
+        }, this)
     }
 
     /**
@@ -801,5 +784,17 @@ async function ignoreError<T>(func: () => Promise<T | undefined>) {
     catch(err) {
         // Ignore
         return undefined
+    }
+}
+
+async function exitAtCurrentDirectory<T>(func: () => Promise<T>, client: Client): Promise<T> {
+    let userDir = await client.pwd()
+    try {
+        return await func()
+    }
+    finally {
+        if (!client.closed) {
+            await ignoreError(() => client.cd(userDir))
+        }
     }
 }
