@@ -499,9 +499,6 @@ export class Client {
         }
         finally {
             destination.removeListener("error", onError)
-            // Close destination stream in any case, even if there was an error we
-            // want error handling for the user to happen exclusively through exceptions,
-            // not also through error events of streams.
             destination.end()
         }
     }

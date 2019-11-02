@@ -230,15 +230,15 @@ export interface TransferConfig {
     tracker: ProgressTracker
 }
 
-export function uploadFrom(source: Readable, transfer: TransferConfig): Promise<FTPResponse> {
-    const resolver = new TransferResolver(transfer.ftp, transfer.tracker)
-    const fullCommand = `${transfer.command} ${transfer.remotePath}`
-    return transfer.ftp.handle(fullCommand, (res, task) => {
+export function uploadFrom(source: Readable, config: TransferConfig): Promise<FTPResponse> {
+    const resolver = new TransferResolver(config.ftp, config.tracker)
+    const fullCommand = `${config.command} ${config.remotePath}`
+    return config.ftp.handle(fullCommand, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
         else if (res.code === 150 || res.code === 125) { // Ready to upload
-            const dataSocket = transfer.ftp.dataSocket
+            const dataSocket = config.ftp.dataSocket
             if (!dataSocket || !dataSocket.remoteAddress) {
                 resolver.onError(task, new Error("Upload should begin but no data connection is available."))
                 return
@@ -247,8 +247,8 @@ export function uploadFrom(source: Readable, transfer: TransferConfig): Promise<
             // 'secureConnect'. If this hasn't happened yet, getCipher() returns undefined.
             const canUpload = "getCipher" in dataSocket ? dataSocket.getCipher() !== undefined : true
             onConditionOrEvent(canUpload, dataSocket, "secureConnect", () => {
-                transfer.ftp.log(`Uploading to ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
-                resolver.onDataStart(transfer.remotePath, transfer.type)
+                config.ftp.log(`Uploading to ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
+                resolver.onDataStart(config.remotePath, config.type)
                 source.pipe(dataSocket).once("finish", () => {
                     dataSocket.destroy() // Explicitly close/destroy the socket to signal the end.
                     resolver.onDataDone(task)
@@ -265,30 +265,30 @@ export function uploadFrom(source: Readable, transfer: TransferConfig): Promise<
     })
 }
 
-export function downloadTo(destination: Writable, transfer: TransferConfig): Promise<FTPResponse> {
-    if (!transfer.ftp.dataSocket) {
+export function downloadTo(destination: Writable, config: TransferConfig): Promise<FTPResponse> {
+    if (!config.ftp.dataSocket) {
         throw new Error("Download will be initiated but no data connection is available.")
     }
     // It's possible that data transmission begins before the control socket
     // receives the announcement. Start listening for data immediately.
-    transfer.ftp.dataSocket.pipe(destination)
-    const resolver = new TransferResolver(transfer.ftp, transfer.tracker)
-    return transfer.ftp.handle(transfer.command, (res, task) => {
+    config.ftp.dataSocket.pipe(destination)
+    const resolver = new TransferResolver(config.ftp, config.tracker)
+    return config.ftp.handle(config.command, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
         else if (res.code === 150 || res.code === 125) { // Ready to download
-            const dataSocket = transfer.ftp.dataSocket
+            const dataSocket = config.ftp.dataSocket
             if (!dataSocket || !dataSocket.remoteAddress) {
                 resolver.onError(task, new Error("Download should begin but no data connection is available."))
                 return
             }
-            transfer.ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
-            resolver.onDataStart(transfer.remotePath, transfer.type)
+            config.ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
+            resolver.onDataStart(config.remotePath, config.type)
             onConditionOrEvent(destination.destroyed || destination.writableFinished, destination, "finish", () => resolver.onDataDone(task))
         }
         else if (res.code === 350) { // Restarting at startAt.
-            transfer.ftp.send("RETR " + transfer.remotePath)
+            config.ftp.send("RETR " + config.remotePath)
         }
         else if (positiveCompletion(res.code)) { // Transfer complete
             resolver.onControlDone(task, res)
