@@ -5,13 +5,12 @@ import { ConnectionOptions } from "tls"
 import { promisify } from "util"
 import { FileInfo } from "./FileInfo"
 import { FTPContext, FTPError, FTPResponse } from "./FtpContext"
-import { createNullObject } from "./nullObject"
 import { parseList as parseListAutoDetect } from "./parseList"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
 import { parseMLSxDate } from "./parseListMLSD"
 import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
-import { upload, download, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand } from "./transfer"
+import { uploadFrom, downloadTo, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand } from "./transfer"
 import { isMultiline, positiveCompletion } from "./parseControlResponse"
 
 // Use promisify to keep the library compatible with Node 8.
@@ -417,7 +416,13 @@ export class Client {
             await this.prepareTransfer(this.ftp)
             // Keep the keyword `await` or the `finally` clause below runs too early
             // and removes the event listener for the source stream too early.
-            return await upload(this.ftp, this._progressTracker, source, command, validPath)
+            return await uploadFrom(source, {
+                ftp: this.ftp,
+                tracker: this._progressTracker,
+                command,
+                remotePath: validPath,
+                type: "upload"
+            })
         }
         finally {
             source.removeListener("error", onError)
@@ -482,13 +487,21 @@ export class Client {
         try {
             const validPath = await this.protectWhitespace(remotePath)
             await this.prepareTransfer(this.ftp)
-            const command = startAt > 0 ? `REST ${startAt}` : `RETR ${validPath}`
             // Keep the keyword `await` or the `finally` clause below runs too early
             // and removes the event listener for the source stream too early.
-            return await download(this.ftp, this._progressTracker, destination, command, validPath)
+            return await downloadTo(destination, {
+                ftp: this.ftp,
+                tracker: this._progressTracker,
+                command: startAt > 0 ? `REST ${startAt}` : `RETR ${validPath}`,
+                remotePath: validPath,
+                type: "download"
+            })
         }
         finally {
             destination.removeListener("error", onError)
+            // Close destination stream in any case, even if there was an error we
+            // want error handling for the user to happen exclusively through exceptions,
+            // not also through error events of streams.
             destination.end()
         }
     }
@@ -526,8 +539,13 @@ export class Client {
      */
     protected async _requestListWithCommand(command: string): Promise<FileInfo[]> {
         const writable = new StringWriter()
-        const noTracker = createNullObject() as ProgressTracker // Don't track progress of list transfers.
-        await download(this.ftp, noTracker, writable, command)
+        await downloadTo(writable, {
+            ftp: this.ftp,
+            tracker: this._progressTracker,
+            command,
+            remotePath: "",
+            type: "list"
+        })
         const text = writable.getText(this.ftp.encoding)
         this.ftp.log(text)
         return this.parseList(text)

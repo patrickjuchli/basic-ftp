@@ -1,5 +1,7 @@
 import { Socket } from "net"
 
+export type ProgressType = "upload" | "download" | "list"
+
 /**
  * Describes progress of file transfer.
  */
@@ -7,7 +9,7 @@ export interface ProgressInfo {
     /** A name describing this info, e.g. the filename of the transfer. */
     readonly name: string
     /** The type of transfer, typically "upload" or "download". */
-    readonly type: string
+    readonly type: ProgressType
     /** Transferred bytes in current transfer. */
     readonly bytes: number
     /** Transferred bytes since last counter reset. Useful for tracking multiple transfers. */
@@ -39,7 +41,7 @@ export class ProgressTracker {
      * @param name  A name associated with this progress tracking, e.g. a filename.
      * @param type  The type of the transfer, typically "upload" or "download".
      */
-    start(socket: Socket, name: string, type: string) {
+    start(socket: Socket, name: string, type: ProgressType) {
         let lastBytes = 0
         this.onStop = poll(this.intervalMs, () => {
             const bytes = socket.bytesRead + socket.bytesWritten

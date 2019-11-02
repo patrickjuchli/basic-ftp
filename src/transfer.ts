@@ -3,7 +3,7 @@ import { describeAddress, describeTLS } from "./netUtils"
 import { Writable, Readable } from "stream"
 import { TLSSocket, connect as connectTLS } from "tls"
 import { FTPContext, FTPResponse, TaskResolver } from "./FtpContext"
-import { ProgressTracker } from "./ProgressTracker"
+import { ProgressTracker, ProgressType } from "./ProgressTracker"
 import { positiveIntermediate, positiveCompletion } from "./parseControlResponse"
 
 export type UploadCommand = "STOR" | "APPE"
@@ -154,7 +154,7 @@ class TransferResolver {
      * @param name - Name of the transfer, usually the filename.
      * @param type - Type of transfer, usually "upload" or "download".
      */
-    onDataStart(name: string, type: string) {
+    onDataStart(name: string, type: ProgressType) {
         // Let the data socket be in charge of tracking timeouts during transfer.
         // The control socket sits idle during this time anyway and might provoke
         // a timeout unnecessarily. The control connection will take care
@@ -222,20 +222,23 @@ class TransferResolver {
     }
 }
 
-/**
- * Upload stream data as a file. For example:
- *
- * `upload(ftp, fs.createReadStream(localFilePath), remoteFilename)`
- */
-export function upload(ftp: FTPContext, progress: ProgressTracker, source: Readable, command: UploadCommand, remoteFilename: string): Promise<FTPResponse> {
-    const resolver = new TransferResolver(ftp, progress)
-    const fullCommand = `${command} ${remoteFilename}`
-    return ftp.handle(fullCommand, (res, task) => {
+export interface TransferConfig {
+    command: string
+    remotePath: string
+    type: ProgressType
+    ftp: FTPContext
+    tracker: ProgressTracker
+}
+
+export function uploadFrom(source: Readable, transfer: TransferConfig): Promise<FTPResponse> {
+    const resolver = new TransferResolver(transfer.ftp, transfer.tracker)
+    const fullCommand = `${transfer.command} ${transfer.remotePath}`
+    return transfer.ftp.handle(fullCommand, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
         else if (res.code === 150 || res.code === 125) { // Ready to upload
-            const dataSocket = ftp.dataSocket
+            const dataSocket = transfer.ftp.dataSocket
             if (!dataSocket || !dataSocket.remoteAddress) {
                 resolver.onError(task, new Error("Upload should begin but no data connection is available."))
                 return
@@ -244,8 +247,8 @@ export function upload(ftp: FTPContext, progress: ProgressTracker, source: Reada
             // 'secureConnect'. If this hasn't happened yet, getCipher() returns undefined.
             const canUpload = "getCipher" in dataSocket ? dataSocket.getCipher() !== undefined : true
             onConditionOrEvent(canUpload, dataSocket, "secureConnect", () => {
-                ftp.log(`Uploading to ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
-                resolver.onDataStart(remoteFilename, "upload")
+                transfer.ftp.log(`Uploading to ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
+                resolver.onDataStart(transfer.remotePath, transfer.type)
                 source.pipe(dataSocket).once("finish", () => {
                     dataSocket.destroy() // Explicitly close/destroy the socket to signal the end.
                     resolver.onDataDone(task)
@@ -262,33 +265,30 @@ export function upload(ftp: FTPContext, progress: ProgressTracker, source: Reada
     })
 }
 
-/**
- * Download data from the data connection. Used for downloading files and directory listings.
- */
-export function download(ftp: FTPContext, progress: ProgressTracker, destination: Writable, command: string, remoteFilename = ""): Promise<FTPResponse> {
-    if (!ftp.dataSocket) {
+export function downloadTo(destination: Writable, transfer: TransferConfig): Promise<FTPResponse> {
+    if (!transfer.ftp.dataSocket) {
         throw new Error("Download will be initiated but no data connection is available.")
     }
     // It's possible that data transmission begins before the control socket
     // receives the announcement. Start listening for data immediately.
-    ftp.dataSocket.pipe(destination)
-    const resolver = new TransferResolver(ftp, progress)
-    return ftp.handle(command, (res, task) => {
+    transfer.ftp.dataSocket.pipe(destination)
+    const resolver = new TransferResolver(transfer.ftp, transfer.tracker)
+    return transfer.ftp.handle(transfer.command, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
         else if (res.code === 150 || res.code === 125) { // Ready to download
-            const dataSocket = ftp.dataSocket
+            const dataSocket = transfer.ftp.dataSocket
             if (!dataSocket || !dataSocket.remoteAddress) {
                 resolver.onError(task, new Error("Download should begin but no data connection is available."))
                 return
             }
-            ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
-            resolver.onDataStart(remoteFilename, "download")
+            transfer.ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
+            resolver.onDataStart(transfer.remotePath, transfer.type)
             onConditionOrEvent(destination.destroyed || destination.writableFinished, destination, "finish", () => resolver.onDataDone(task))
         }
         else if (res.code === 350) { // Restarting at startAt.
-            ftp.send("RETR " + remoteFilename)
+            transfer.ftp.send("RETR " + transfer.remotePath)
         }
         else if (positiveCompletion(res.code)) { // Transfer complete
             resolver.onControlDone(task, res)
