@@ -165,7 +165,7 @@ Report any transfer progress using the given handler function. See the next sect
 
 ## Transfer Progress
 
-Set a callback function with `client.trackProgress` to track the progress of all uploads and downloads. To disable progress reporting, call `trackProgress` with an undefined handler.
+Set a callback function with `client.trackProgress` to track the progress of any transfer. Transfers are uploads, downloads or directory listings. To disable progress reporting, call `trackProgress` with an undefined handler.
 
 ```js
 // Log progress for any transfer from now on.
@@ -188,7 +188,7 @@ await client.downloadToDir("local/path", "remote/path")
 client.trackProgress()
 ```
 
-For each transfer, the callback function will receive the filename, transfer type (upload/download) and number of bytes transferred. The function will be called at a regular interval during a transfer.
+For each transfer, the callback function will receive the filename, transfer type (`upload`, `download` or `list`) and number of bytes transferred. The function will be called at a regular interval during a transfer.
 
 There is also a counter for all bytes transferred since the last time `trackProgress` was called. This is useful when downloading a directory with multiple files where you want to show the total bytes downloaded so far.
 
