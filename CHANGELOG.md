@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.5.0
+
+- Added: Directory listings are included in transfer progress tracking.
+- Fixed: Possible edge case where socket is disconnected but client still says it's open.
+
 ## 4.4.1
 
 - Fixed: Return to former working directory also after error when calling directory-related methods.
