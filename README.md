@@ -232,11 +232,7 @@ Set the verbosity level to optionally log out all communication between the clie
 
 `get/set encoding`
 
-Set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. Node supports `utf8`, `latin1` and `ascii`. Default is `utf8` because it's backwards-compatible with `ascii` and many modern servers support it, some of them without mentioning it when requesting features.
-
-`get/set ipFamily`
-
-Set the preferred version of the IP stack: `4` (IPv4), `6` (IPv6) or `undefined` (Node.js default). Set to `undefined` by default.
+Set the encoding applied to all incoming and outgoing messages of the control connection. This encoding is also used when parsing a list response from a data connection. See https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings for what encodings are supported by Node.js. Default is `utf8` because most modern servers support it, some of them without mentioning it when requesting features.
 
 ## Acknowledgment
 
