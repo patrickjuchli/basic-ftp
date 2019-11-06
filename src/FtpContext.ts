@@ -116,7 +116,7 @@ export class FTPContext {
      * Returns true if this context has been closed or hasn't been connected yet. You can reopen it with `access`.
      */
     get closed(): boolean {
-        return this.socket.remoteAddress === undefined
+        return this.socket.remoteAddress === undefined || this._closingError !== undefined
     }
 
     /**
