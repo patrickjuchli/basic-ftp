@@ -182,8 +182,13 @@ export function transformList(files: FileInfo[]): FileInfo[] {
  * For example `19991005213102` or `19980615100045.014`.
  */
 export function parseMLSxDate(fact: string): Date {
-    const date = new Date()
-    date.setUTCFullYear(+fact.slice(0, 4), +fact.slice(4, 6) - 1, +fact.slice(6, 8))
-    date.setUTCHours(+fact.slice(8, 10), +fact.slice(10, 12), +fact.slice(12, 14), +fact.slice(15, 18))
-    return date
+    return new Date(Date.UTC(
+        +fact.slice(0, 4), // Year
+        +fact.slice(4, 6) - 1, // Month
+        +fact.slice(6, 8), // Date
+        +fact.slice(8, 10), // Hours
+        +fact.slice(10, 12), // Minutes
+        +fact.slice(12, 14), // Seconds
+        +fact.slice(15, 18) // Milliseconds
+    ))
 }

@@ -1,7 +1,7 @@
 const assert = require("assert");
 const { parseList } = require("../dist/parseList");
 const { FileInfo, FileType } = require("../dist");
-
+const { parseMLSxDate } = require("../dist/parseListMLSD")
 /**
  * As the parsers themselves are based on the implementation of the Apache Net Commons FTP parser
  * we don't need to test every edge case here again.
@@ -331,3 +331,19 @@ describe("Directory listing", function() {
         });
     }
 });
+
+describe("MLSx Date", function() {
+    const tests = [{
+        input: "19991005213102",
+        exp: "1999-10-05T21:31:02.000Z"
+    }, {
+        input: "19991005213102.014",
+        exp: "1999-10-05T21:31:02.014Z"
+    }]
+    for (const test of tests) {
+        it(test.input, function() {
+            const actual = parseMLSxDate(test.input)
+            assert.equal(actual.toISOString(), test.exp)
+        })
+    }
+})
