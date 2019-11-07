@@ -239,7 +239,7 @@ export function uploadFrom(source: Readable, config: TransferConfig): Promise<FT
         }
         else if (res.code === 150 || res.code === 125) { // Ready to upload
             const dataSocket = config.ftp.dataSocket
-            if (!dataSocket || !dataSocket.remoteAddress) {
+            if (!dataSocket) {
                 resolver.onError(task, new Error("Upload should begin but no data connection is available."))
                 return
             }
@@ -279,7 +279,7 @@ export function downloadTo(destination: Writable, config: TransferConfig): Promi
         }
         else if (res.code === 150 || res.code === 125) { // Ready to download
             const dataSocket = config.ftp.dataSocket
-            if (!dataSocket || !dataSocket.remoteAddress) {
+            if (!dataSocket) {
                 resolver.onError(task, new Error("Download should begin but no data connection is available."))
                 return
             }
