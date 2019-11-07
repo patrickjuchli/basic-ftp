@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.5.1
+
+- Fixed: Remove eager check for `remoteAddress` of a socket. (#106)
+
 ## 4.5.0
 
 - Added: Directory listings are included in transfer progress tracking.
