@@ -1,10 +1,11 @@
 import { FileInfo, FileType } from "./FileInfo"
 
-/**
- * Parses an MLSD fact and updates `info` in-place. May return `true`
- * if the whole MLSD entry should be disregarded.
- */
-type FactHandler = (value: string, info: FileInfo) => boolean | void
+const enum FactHandlerResult {
+    Continue = 1,
+    IgnoreFile = 2
+}
+
+type FactHandler = (value: string, info: FileInfo) => FactHandlerResult | void
 
 function parseSize(value: string, info: FileInfo) {
     info.size = parseInt(value, 10)
@@ -38,7 +39,7 @@ const factHandlersByName: {[key: string]: FactHandler} = {
         if (value.startsWith("OS.unix=slink")) {
             info.type = FileType.SymbolicLink
             info.link = value.substr(value.indexOf(":") + 1)
-            return false
+            return FactHandlerResult.Continue
         }
         switch(value) {
             case "file":
@@ -54,11 +55,11 @@ const factHandlersByName: {[key: string]: FactHandler} = {
                 break
             case "cdir": // Current directory being listed
             case "pdir": // Parent directory
-                return true // Don't include these entries in the listing
+                return FactHandlerResult.IgnoreFile // Don't include these entries in the listing
             default:
                 info.type = FileType.Unknown
         }
-        return false
+        return FactHandlerResult.Continue
     },
     "unix.mode": (value, info) => { // Unix permissions, e.g. 0[1]755
         const digits = value.substr(-3)
@@ -138,8 +139,8 @@ export function parseLine(line: string): FileInfo | undefined {
         if (!factHandler) {
             continue
         }
-        const shouldIgnoreEntry = factHandler(factValue, info)
-        if (shouldIgnoreEntry === true) {
+        const result = factHandler(factValue, info)
+        if (result === FactHandlerResult.IgnoreFile) {
             return undefined
         }
     }
