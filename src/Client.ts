@@ -535,15 +535,15 @@ export class Client {
      * @protected
      */
     protected async _requestListWithCommand(command: string): Promise<FileInfo[]> {
-        const writable = new StringWriter()
-        await downloadTo(writable, {
+        const buffer = new StringWriter()
+        await downloadTo(buffer, {
             ftp: this.ftp,
             tracker: this._progressTracker,
             command,
             remotePath: "",
             type: "list"
         })
-        const text = writable.getText(this.ftp.encoding)
+        const text = buffer.getText(this.ftp.encoding)
         this.ftp.log(text)
         return this.parseList(text)
     }
