@@ -521,8 +521,8 @@ export class Client {
                 return parsedList
             }
             catch (err) {
-                const maybeSyntaxError = err instanceof FTPError && err.code >= 500
-                if (!maybeSyntaxError) {
+                const shouldTryNext = err instanceof FTPError
+                if (!shouldTryNext) {
                     throw err
                 }
                 lastError = err

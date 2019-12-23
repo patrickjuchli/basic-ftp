@@ -115,10 +115,11 @@ describe("Download directory listing", function() {
             client.ftp.socket.emit("data", "125 Sending");
             client.ftp.dataSocket.emit("data", bufList);
             client.ftp.dataSocket.end();
-            client.ftp.socket.emit("data", "499 Error");
+            client.ftp.socket.emit("data", "500 Error");
         });
+        client.availableListCommands = ["LIST"]
         return client.list().catch(err => {
-            assert.deepEqual(err, new FTPError({code: 499, message: "499 Error"}));
+            assert.deepEqual(err, new FTPError({code: 500, message: "500 Error"}));
         });
     });
 
