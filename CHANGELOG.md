@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.5.2
+
+- Fixed: Try next available list command after any FTP error. (#117)
+
 ## 4.5.1
 
 - Fixed: Remove eager check for `remoteAddress` of a socket. (#106)
