@@ -11,10 +11,9 @@ describe("StringWriter", function() {
     })
 
     it("can handle chunked multi-byte unicode codepoints", function() {
-        const euro = [[0xE2, 0x82], [0xAC]].map(Buffer.from);
         const w = new StringWriter()
-        w.write(euro[0])
-        w.end(euro[1])
+        w.write(Buffer.from([0xE2, 0x82]))
+        w.end(Buffer.from([0xAC]))
         assert.equal(w.getText("utf-8"), "€")
     })
 });
