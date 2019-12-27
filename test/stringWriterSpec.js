@@ -10,7 +10,7 @@ describe("StringWriter", function() {
         assert.equal(w.getText("utf-8"), "helloworld")
     })
 
-    it("can handle chunked multi-byte utf-8 codepoints", function() {
+    it("can handle chunked multi-byte unicode codepoints", function() {
         const euro = [[0xE2, 0x82], [0xAC]].map(Buffer.from);
         const w = new StringWriter()
         w.write(euro[0])
