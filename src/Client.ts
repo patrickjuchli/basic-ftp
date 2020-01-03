@@ -74,7 +74,7 @@ export class Client {
      */
     constructor(timeout = 30000) {
         this.ftp = new FTPContext(timeout)
-        this.prepareTransfer = enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4], this)
+        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }
@@ -720,6 +720,36 @@ export class Client {
     }
 
     /**
+     * Try all available transfer strategies and pick the first one that works. Update `client` to
+     * use the working strategy for all successive transfer requests.
+     *
+     * @param strategies
+     * @returns a function that will try the provided strategies.
+     */
+    protected _enterFirstCompatibleMode(strategies: TransferStrategy[]): TransferStrategy {
+        return async (ftp: FTPContext) => {
+            ftp.log("Trying to find optimal transfer strategy...")
+            for (const strategy of strategies) {
+                try {
+                    const res = await strategy(ftp)
+                    ftp.log("Optimal transfer strategy found.")
+                    this.prepareTransfer = strategy // eslint-disable-line require-atomic-updates
+                    return res
+                }
+                catch(err) {
+                    // Receiving an FTPError means that the last transfer strategy failed and we should
+                    // try the next one. Any other exception should stop the evaluation of strategies because
+                    // something else went wrong.
+                    if (!(err instanceof FTPError)) {
+                        throw err
+                    }
+                }
+            }
+            throw new Error("None of the available transfer strategies work.")
+        }
+    }
+
+    /**
      * DEPRECATED, use `uploadFrom`.
      * @deprecated
      */
@@ -762,36 +792,6 @@ export class Client {
     async downloadDir(localDirPath: string): Promise<void> {
         this.ftp.log("Warning: downloadDir() has been deprecated, use downloadToDir().")
         return this.downloadToDir(localDirPath)
-    }
-}
-
-/**
- * Try all available transfer strategies and pick the first one that works. Update `client` to
- * use the working strategy for all successive transfer requests.
- *
- * @param strategies
- * @returns a function that will try the provided strategies.
- */
-export function enterFirstCompatibleMode(strategies: TransferStrategy[], client: Client): TransferStrategy {
-    return async function autoDetect(ftp) {
-        ftp.log("Trying to find optimal transfer strategy...")
-        for (const strategy of strategies) {
-            try {
-                const res = await strategy(ftp)
-                ftp.log("Optimal transfer strategy found.")
-                client.prepareTransfer = strategy // eslint-disable-line require-atomic-updates
-                return res
-            }
-            catch(err) {
-                // Receiving an FTPError means that the last transfer strategy failed and we should
-                // try the next one. Any other exception should stop the evaluation of strategies because
-                // something else went wrong.
-                if (!(err instanceof FTPError)) {
-                    throw err
-                }
-            }
-        }
-        throw new Error("None of the available transfer strategies work.")
     }
 }
 
