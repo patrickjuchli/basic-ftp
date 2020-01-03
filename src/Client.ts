@@ -558,14 +558,14 @@ export class Client {
      * @example client.removeDir("/") // Remove everything.
      */
     async removeDir(remoteDirPath: string): Promise<void> {
-        return exitAtCurrentDirectory(async () => {
+        return this._exitAtCurrentDirectory(async () => {
             await this.cd(remoteDirPath)
             await this.clearWorkingDir()
             if (remoteDirPath !== "/") {
                 await this.cdup()
                 await this.removeEmptyDir(remoteDirPath)
             }
-        }, this)
+        })
     }
 
     /**
@@ -599,12 +599,12 @@ export class Client {
      * @param [remoteDirPath]  Remote path of a directory to upload to. Working directory if undefined.
      */
     async uploadFromDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
-        return exitAtCurrentDirectory(async () => {
+        return this._exitAtCurrentDirectory(async () => {
             if (remoteDirPath) {
                 await this.ensureDir(remoteDirPath)
             }
             return await this._uploadToWorkingDir(localDirPath)
-        }, this)
+        })
     }
 
     /**
@@ -633,12 +633,12 @@ export class Client {
      * @param remoteDirPath  Remote directory to download. Current working directory if not specified.
      */
     async downloadToDir(localDirPath: string, remoteDirPath?: string): Promise<void> {
-        return exitAtCurrentDirectory(async () => {
+        return this._exitAtCurrentDirectory(async () => {
             if (remoteDirPath) {
                 await this.cd(remoteDirPath)
             }
             return await this._downloadFromWorkingDir(localDirPath)
-        }, this)
+        })
     }
 
     /**
@@ -705,6 +705,18 @@ export class Client {
         const pwd = await this.pwd()
         const absolutePathPrefix = pwd.endsWith("/") ? pwd : pwd + "/"
         return absolutePathPrefix + path
+    }
+
+    protected async _exitAtCurrentDirectory<T>(func: () => Promise<T>): Promise<T> {
+        const userDir = await this.pwd()
+        try {
+            return await func()
+        }
+        finally {
+            if (!this.closed) {
+                await ignoreError(() => this.cd(userDir))
+            }
+        }
     }
 
     /**
@@ -799,17 +811,5 @@ async function ignoreError<T>(func: () => Promise<T | undefined>) {
     catch(err) {
         // Ignore
         return undefined
-    }
-}
-
-async function exitAtCurrentDirectory<T>(func: () => Promise<T>, client: Client): Promise<T> {
-    const userDir = await client.pwd()
-    try {
-        return await func()
-    }
-    finally {
-        if (!client.closed) {
-            await ignoreError(() => client.cd(userDir))
-        }
     }
 }
