@@ -4,7 +4,7 @@ import { Readable, Writable } from "stream"
 import { ConnectionOptions } from "tls"
 import { promisify } from "util"
 import { FileInfo } from "./FileInfo"
-import { FTPContext, FTPError, FTPResponse } from "./FtpContext"
+import { FTPContext, FTPError, FTPResponse, Middleware } from "./FtpContext"
 import { parseList as parseListAutoDetect } from "./parseList"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
@@ -49,6 +49,13 @@ export interface UploadOptions {
     localEndInclusive?: number
 }
 
+/** Options for instantiating FTPContext */
+export interface ClientOptions {
+    timeout?: number
+    encoding?: string
+    middleware?: Middleware[]
+}
+
 /**
  * High-level API to interact with an FTP server.
  */
@@ -72,8 +79,15 @@ export class Client {
      *
      * @param timeout  Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
      */
-    constructor(timeout = 30000) {
-        this.ftp = new FTPContext(timeout)
+    constructor();
+    constructor(timeout: number);
+    constructor(options: ClientOptions);
+    constructor(_options: number | ClientOptions = {}) {
+        const options: ClientOptions = typeof _options === "number" ? { timeout: _options} : _options
+        const timeout = options.timeout ?? 30000
+        const encoding = options.encoding ?? "utf8"
+        const middleware = options.middleware ?? []
+        this.ftp = new FTPContext(timeout, encoding, middleware)
         this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()

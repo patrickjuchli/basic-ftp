@@ -39,6 +39,26 @@ export class FTPError extends Error {
     }
 }
 
+/** Indicates that the request should be forwarded to the next middleware function. */
+export interface MiddlewareActionNext {
+    readonly kind: "next"
+    readonly rewriteCommand?: string | null
+}
+
+/** Indicates that the request should be responded to immediately. */
+export interface MiddlewareActionRespond {
+    readonly kind: "respond"
+    readonly response: Error | FTPResponse
+}
+
+/** Returned by Middleware to indicate how a request should be handled. */
+export type MiddlewareAction = MiddlewareActionNext | MiddlewareActionRespond
+
+/** Intercepts a request */
+export interface Middleware {
+    (command: string): MiddlewareAction | Promise<MiddlewareAction>
+}
+
 /**
  * FTPContext holds the control and data sockets of an FTP connection and provides a
  * simplified way to interact with an FTP server, handle responses, errors and timeouts.
@@ -72,7 +92,7 @@ export class FTPContext {
      * @param timeout - Timeout in milliseconds to apply to control and data connections. Use 0 for no timeout.
      * @param encoding - Encoding to use for control connection. UTF-8 by default. Use "latin1" for older servers.
      */
-    constructor(readonly timeout = 0, encoding = "utf8") {
+    constructor(readonly timeout = 0, encoding = "utf8", readonly middleware: Middleware[] = []) {
         this._encoding = encoding
         // Help Typescript understand that we do indeed set _socket in the constructor but use the setter method to do so.
         this._socket = this.socket = this._newSocket()
@@ -276,9 +296,47 @@ export class FTPContext {
             // the default socket behaviour which is not expected by most users.
             this.socket.setTimeout(this.timeout)
             if (command) {
-                this.send(command)
+                this.handleMiddleware(command)
+                    .then(action => {
+                        if (action.kind === "next") {
+                            if (action.rewriteCommand == null) {
+                                throw new Error("Expected rewriteCommand to be not null")
+                            }
+                            this.send(action.rewriteCommand)
+                        }
+                        else if(action.kind === "respond") {
+                            this._passToHandler(action.response)
+                        }
+                        else {
+                            throw new Error(`Expected "kind" of action to be "next" or "respond" but "${(action as any).kind}" was received instead.`)
+                        }
+
+                    })
+                    .catch(err => {
+                        this._passToHandler(err)
+                    })
+                return
             }
         })
+    }
+
+    async handleMiddleware(command: string): Promise<MiddlewareAction> {
+        for (const middleware of this.middleware) {
+            const action = await middleware(command)
+            if (action.kind === "next") {
+                command = action.rewriteCommand ?? command
+            }
+            else if(action.kind === "respond") {
+                return action
+            }
+            else {
+                throw new Error(`Expected "kind" of action to be "next" or "respond" but "${(action as any).kind}" was received instead.`)
+            }
+        }
+        return {
+            kind: "next",
+            rewriteCommand: command
+        }
     }
 
     /**
