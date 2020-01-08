@@ -21,7 +21,7 @@ const fsOpen = promisify(open)
 const fsClose = promisify(close)
 const fsUnlink = promisify(unlink)
 
-export type AccessOptionsSecurity = boolean | "implicit" | "explicit"
+export type AccessOptionsSecurity = boolean | "implicit"
 
 export interface AccessOptions {
     /** Host the client should connect to. Optional, default is "localhost". */
@@ -253,7 +253,7 @@ export class Client {
     async access(options: AccessOptions = {}): Promise<FTPResponse> {
         const welcomeSecureOptions = options.secure !== "implicit" ? undefined : options.secureOptions != null ? options.secureOptions : {}
         const welcome = await this.connect(options.host, options.port, welcomeSecureOptions)
-        if (options.secure === true || options.secure === "explicit") {
+        if (options.secure === true) {
             await this.useTLS(options.secureOptions)
         }
         await this.login(options.user, options.password)
