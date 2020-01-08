@@ -129,13 +129,14 @@ export class Client {
                     secureOptions,
                     () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} over TLS`)
                 )
+                this.ftp.tlsOptions = secureOptions
             }
             catch (error) {
                 this.ftp.reset()
                 throw error
             }
         }
-    
+
         return this.ftp.handle(undefined, (res, task) => {
             if (res instanceof Error) {
                 // The connection has been destroyed by the FTPContext at this point.
