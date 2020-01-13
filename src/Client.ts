@@ -350,7 +350,7 @@ export class Client {
      *
      * @param handler  Handler function to call on transfer progress.
      */
-    trackProgress(handler: ProgressHandler) {
+    trackProgress(handler: ProgressHandler | undefined) {
         this._progressTracker.bytesOverall = 0
         this._progressTracker.reportTo(handler)
     }
