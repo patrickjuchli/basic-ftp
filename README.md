@@ -165,7 +165,7 @@ Report any transfer progress using the given handler function. See the next sect
 
 ## Transfer Progress
 
-Set a callback function with `client.trackProgress` to track the progress of any transfer. Transfers are uploads, downloads or directory listings. To disable progress reporting, call `trackProgress` with an undefined handler.
+Set a callback function with `client.trackProgress` to track the progress of any transfer. Transfers are uploads, downloads or directory listings. To disable progress reporting, call `trackProgress` without a handler.
 
 ```js
 // Log progress for any transfer from now on.
