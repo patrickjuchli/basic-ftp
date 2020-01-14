@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 4.5.3
+
+- Fixed: Allow 'undefined' to be passed to trackProgress. (#125, @FabianMeul)
+
 ## 4.5.2
 
 - Fixed: Try next available list command after any FTP error. (#117)
