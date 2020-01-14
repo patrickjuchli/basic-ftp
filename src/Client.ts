@@ -346,7 +346,7 @@ export class Client {
      * Report transfer progress for any upload or download to a given handler.
      *
      * This will also reset the overall transfer counter that can be used for multiple transfers. You can
-     * also pass `undefined` as a handler to stop reporting to an earlier one.
+     * also call the function without a handler to stop reporting to an earlier one.
      *
      * @param handler  Handler function to call on transfer progress.
      */
