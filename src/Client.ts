@@ -12,7 +12,7 @@ import { parseMLSxDate } from "./parseListMLSD"
 import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
 import { uploadFrom, downloadTo, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand } from "./transfer"
 import { isMultiline, positiveCompletion } from "./parseControlResponse"
-
+import { constants } from "crypto"
 // Use promisify to keep the library compatible with Node 8.
 const fsReadDir = promisify(readdir)
 const fsMkDir = promisify(mkdir)
@@ -231,7 +231,7 @@ export class Client {
      */
     async access(options: AccessOptions = {}): Promise<FTPResponse> {
         const welcome = await this.connect(options.host, options.port)
-        const  { user, password, secure, secureOptions } = {...{ secure: true, secureOptions: {} },...options}
+        const  { user, password, secure, secureOptions } = {...{ secure: true, secureOptions: constants.SSL_OP_ALL },...options}
         if (secure === true) {
             await this.useTLS(secureOptions)
         }
