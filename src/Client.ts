@@ -30,7 +30,7 @@ export interface AccessOptions {
     readonly user?: string
     /** Password to use for login. Optional, default is "guest". */
     readonly password?: string
-    /** Use explicit FTPS over TLS. Optional, default is false. */
+    /** Use explicit FTPS over TLS. Optional, default is true. */
     readonly secure?: boolean
     /** TLS options as in [tls.connect(options)](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback), optional. */
     readonly secureOptions?: ConnectionOptions
@@ -231,10 +231,11 @@ export class Client {
      */
     async access(options: AccessOptions = {}): Promise<FTPResponse> {
         const welcome = await this.connect(options.host, options.port)
-        if (options.secure === true) {
-            await this.useTLS(options.secureOptions)
+        const  { user, password, secure, secureOptions } = {...{ secure: true, secureOptions: {} },...options}
+        if (secure === true) {
+            await this.useTLS(secureOptions)
         }
-        await this.login(options.user, options.password)
+        await this.login(user, password)
         await this.useDefaultSettings()
         return welcome
     }
