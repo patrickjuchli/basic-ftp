@@ -6,7 +6,7 @@ This is an FTP client for Node.js. It supports explicit FTPS over TLS, Passive M
 
 ## Advisory
 
-Prefer alternative transfer protocols like HTTPS or SFTP (SSH). Use this library when you have no choice and need to use FTP. Try to use FTPS whenever possible, FTP alone does not provide any security.
+Prefer alternative transfer protocols like HTTPS or SFTP (SSH). Use this library when you have no choice and need to use FTP. Try to use FTPS (FTP over TLS) whenever possible, FTP alone does not provide any security.
 
 ## Dependencies
 
