@@ -162,9 +162,9 @@ export class FTPContext {
             socket.setKeepAlive(true)
             socket.on("data", data => this._onControlSocketData(data))
             // Server sending a FIN packet is treated as an error.
-            socket.on("end", () => this.closeWithError(new Error("Server closed connection.")))
+            socket.on("end", () => this.closeWithError(new Error("Server sent FIN packet unexpectedly, closing connection.")))
             // Control being closed without error by server is treated as an error.
-            socket.on("close", hadError => { if (!hadError) this.closeWithError(new Error("Server closed connection.")) })
+            socket.on("close", hadError => { if (!hadError) this.closeWithError(new Error("Server closed connection unexpectedly.")) })
             this._setupErrorHandlers(socket, "control socket")
         }
         this._socket = socket
