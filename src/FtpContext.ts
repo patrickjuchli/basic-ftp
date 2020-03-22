@@ -165,7 +165,7 @@ export class FTPContext {
             socket.on("end", () => this.closeWithError(new Error("Server sent FIN packet unexpectedly, closing connection.")))
             // Control being closed without error by server is treated as an error.
             socket.on("close", hadError => { if (!hadError) this.closeWithError(new Error("Server closed connection unexpectedly.")) })
-            this._setupErrorHandlers(socket, "control socket")
+            this._setupDefaultErrorHandlers(socket, "control socket")
         }
         this._socket = socket
     }
@@ -186,7 +186,7 @@ export class FTPContext {
             // Don't set a timeout yet. Timeout data socket should be activated when data transmission starts
             // and timeout on control socket is deactivated.
             socket.setTimeout(0)
-            this._setupErrorHandlers(socket, "data socket")
+            this._setupDefaultErrorHandlers(socket, "data socket")
         }
         this._dataSocket = socket
     }
@@ -356,7 +356,7 @@ export class FTPContext {
      * Setup all error handlers for a socket.
      * @protected
      */
-    protected _setupErrorHandlers(socket: Socket, identifier: string) {
+    protected _setupDefaultErrorHandlers(socket: Socket, identifier: string) {
         socket.once("error", error => {
             error.message += ` (${identifier})`
             this.closeWithError(error)
