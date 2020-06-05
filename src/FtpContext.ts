@@ -60,7 +60,7 @@ export class FTPContext {
     /** The reason why a context has been closed. */
     protected _closingError: NodeJS.ErrnoException | undefined
     /** Encoding supported by Node applied to commands, responses and directory listing data. */
-    protected _encoding: string
+    protected _encoding: StringEncoding
     /** FTP control connection */
     protected _socket: Socket | TLSSocket
     /** FTP data connection */
@@ -72,7 +72,7 @@ export class FTPContext {
      * @param timeout - Timeout in milliseconds to apply to control and data connections. Use 0 for no timeout.
      * @param encoding - Encoding to use for control connection. UTF-8 by default. Use "latin1" for older servers.
      */
-    constructor(readonly timeout = 0, encoding = "utf8") {
+    constructor(readonly timeout = 0, encoding: StringEncoding = "utf8") {
         this._encoding = encoding
         // Help Typescript understand that we do indeed set _socket in the constructor but use the setter method to do so.
         this._socket = this.socket = this._newSocket()
@@ -194,7 +194,7 @@ export class FTPContext {
     /**
      * Get the currently used encoding.
      */
-    get encoding(): string {
+    get encoding(): StringEncoding {
         return this._encoding
     }
 
@@ -204,7 +204,7 @@ export class FTPContext {
      * See https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings for what encodings
      * are supported by Node.
      */
-    set encoding(encoding: string) {
+    set encoding(encoding: StringEncoding) {
         this._encoding = encoding
         if (this.socket) {
             this.socket.setEncoding(encoding)

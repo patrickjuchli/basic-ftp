@@ -14,7 +14,7 @@ export class StringWriter extends Writable {
         }
     }
 
-    getText(encoding: string) {
+    getText(encoding: StringEncoding) {
         return this.buf.toString(encoding)
     }
 }
