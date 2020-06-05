@@ -268,7 +268,7 @@ export function downloadTo(destination: Writable, config: TransferConfig): Promi
             }
             config.ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
             resolver.onDataStart(config.remotePath, config.type)
-            onConditionOrEvent(destination.destroyed || destination.writableFinished, destination, "finish", () => resolver.onDataDone(task))
+            onConditionOrEvent(isWritableFinished(destination), destination, "finish", () => resolver.onDataDone(task))
         }
         else if (res.code === 350) { // Restarting at startAt.
             config.ftp.send("RETR " + config.remotePath)
@@ -299,4 +299,15 @@ function onConditionOrEvent(condition: boolean, emitter: EventEmitter, eventName
     else {
         emitter.once(eventName, () => action())
     }
+}
+
+/**
+ * Detect whether a writable stream is finished, supporting Node 8.
+ * From https://github.com/nodejs/node/blob/3e2a3007107b7a100794f4e4adbde19263fc7464/lib/internal/streams/end-of-stream.js#L28-L33
+ */
+function isWritableFinished(stream: any) {
+    if (stream.writableFinished) return true
+    const wState = stream._writableState
+    if (!wState || wState.errored) return false
+    return wState.finished || (wState.ended && wState.length === 0)
 }
