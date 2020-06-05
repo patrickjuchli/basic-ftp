@@ -140,13 +140,15 @@ describe("Download directory listing", function() {
             assert.equal(client.ftp.dataSocket.timeout, 5000, "transfer start (data)");
             // Data transfer is done, control socket tracks timeout
             client.ftp.dataSocket.end();
-            assert.equal(client.ftp.socket.timeout, 5000, "transfer end (control)");
-            assert.equal(client.ftp.dataSocket.timeout, 0, "transfer end (data)");
-            // Transfer confirmed via control socket, stop tracking timeout altogether
-            client.ftp.socket.emit("data", "250 Done");
-            assert.equal(client.ftp.socket.timeout, 0, "confirmed end (control)");
-            assert.equal(client.ftp.dataSocket, undefined, "data connection");
-            done();
+            setTimeout(() => {
+                assert.equal(client.ftp.socket.timeout, 5000, "transfer end (control)");
+                assert.equal(client.ftp.dataSocket.timeout, 0, "transfer end (data)");
+                // Transfer confirmed via control socket, stop tracking timeout altogether
+                client.ftp.socket.emit("data", "250 Done");
+                assert.equal(client.ftp.socket.timeout, 0, "confirmed end (control)");
+                assert.equal(client.ftp.dataSocket, undefined, "data connection");
+                done();
+            })
         });
     });
 
