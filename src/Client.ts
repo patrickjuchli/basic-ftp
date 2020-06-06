@@ -123,15 +123,15 @@ export class Client {
      * As `connect` but using implicit TLS. Implicit TLS is not an FTP standard and has been replaced by
      * explicit TLS. There are still FTP servers that support only implicit TLS, though.
      */
-    connectImplicitTLS(host = "localhost", port = 21, secureOptions: TLSConnectionOptions = {}): Promise<FTPResponse> {
+    connectImplicitTLS(host = "localhost", port = 21, tlsOptions: TLSConnectionOptions = {}): Promise<FTPResponse> {
         this.ftp.reset()
-        this.ftp.tlsOptions = secureOptions
         this.ftp.socket = connectTLS(
             port,
             host,
-            secureOptions,
+            tlsOptions,
             () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`)
         )
+        this.ftp.tlsOptions = tlsOptions
         return this._handleConnectResponse()
     }
 
