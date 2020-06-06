@@ -1,5 +1,10 @@
 # Changelog
 
+## UNRELEASED
+
+- Added: Support for implicit FTPS. (#121, @sparebytes)
+- Fixed: Detection of stream being finished early. (#143)
+
 ## 4.5.4
 
 - Fixed: Catch server closing connection without error. (#138)
