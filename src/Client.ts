@@ -32,7 +32,7 @@ export interface AccessOptions {
     readonly user?: string
     /** Password to use for login. Optional, default is "guest". */
     readonly password?: string
-    /** Use explicit FTPS over TLS. Optional, default is false. */
+    /** Use FTPS over TLS. Optional, default is false. True is preferred explicit TLS, "implicit" supports legacy, non-standardized implicit TLS. */
     readonly secure?: AccessOptionsSecurity
     /** TLS options as in [tls.connect(options)](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback), optional. */
     readonly secureOptions?: ConnectionOptions
@@ -111,32 +111,36 @@ export class Client {
      * @param host  Host the client should connect to. Optional, default is "localhost".
      * @param port  Port the client should connect to. Optional, default is 21.
      */
-    connect(host = "localhost", port = 21, secureOptions?: ConnectionOptions): Promise<FTPResponse> {
-        if (secureOptions == null) {
-            this.ftp.reset()
+    connect(host = "localhost", port = 21): Promise<FTPResponse> {
+        this.ftp.reset()
+        this.ftp.socket.connect({
+            host,
+            port,
+            family: this.ftp.ipFamily
+        }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)}`))
+        return this._handleConnectResponse()
+    }
 
-            this.ftp.socket.connect({
-                host,
-                port,
-                family: this.ftp.ipFamily
-            }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)}`))
-        }
-        else {
-            try {
-                this.ftp.socket = connectTLS(
-                    port,
-                    host,
-                    secureOptions,
-                    () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} over TLS`)
-                )
-                this.ftp.tlsOptions = secureOptions
-            }
-            catch (error) {
-                this.ftp.reset()
-                throw error
-            }
-        }
+    /**
+     * As `connect` but using implicit TLS. Implicit TLS is not an FTP standard and has been replaced by
+     * explicit TLS. There are still FTP servers that support only implicit TLS, though.
+     */
+    connectImplicitTLS(host = "localhost", port = 21, secureOptions: ConnectionOptions = {}): Promise<FTPResponse> {
+        this.ftp.reset()
+        this.ftp.tlsOptions = secureOptions
+        this.ftp.socket = connectTLS(
+            port,
+            host,
+            secureOptions,
+            () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} using implicit TLS (${describeTLS(this.ftp.socket)})`)
+        )
+        return this._handleConnectResponse()
+    }
 
+    /**
+     * Handles the first reponse by an FTP server after the socket connection has been established.
+     */
+    private _handleConnectResponse(): Promise<FTPResponse> {
         return this.ftp.handle(undefined, (res, task) => {
             if (res instanceof Error) {
                 // The connection has been destroyed by the FTPContext at this point.
@@ -251,9 +255,16 @@ export class Client {
      * method. In fact, reconnecting is the only way to continue using a closed `Client`.
      */
     async access(options: AccessOptions = {}): Promise<FTPResponse> {
-        const welcomeSecureOptions = options.secure !== "implicit" ? undefined : options.secureOptions != null ? options.secureOptions : {}
-        const welcome = await this.connect(options.host, options.port, welcomeSecureOptions)
-        if (options.secure === true) {
+        const useExplicitTLS = options.secure === true
+        const useImplicitTLS = options.secure === "implicit"
+        let welcome
+        if (useImplicitTLS) {
+            welcome = await this.connectImplicitTLS(options.host, options.port, options.secureOptions)
+        }
+        else {
+            welcome = await this.connect(options.host, options.port)
+        }
+        if (useExplicitTLS) {
             await this.useTLS(options.secureOptions)
         }
         await this.login(options.user, options.password)
