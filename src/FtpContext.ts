@@ -1,5 +1,5 @@
 import { Socket } from "net"
-import { ConnectionOptions, TLSSocket } from "tls"
+import { ConnectionOptions as TLSConnectionOptions, TLSSocket } from "tls"
 import { parseControlResponse } from "./parseControlResponse"
 
 interface Task {
@@ -52,7 +52,7 @@ export class FTPContext {
     /** IP version to prefer (4: IPv4, 6: IPv6, undefined: automatic). */
     ipFamily: number | undefined = undefined
     /** Options for TLS connections. */
-    tlsOptions: ConnectionOptions = {}
+    tlsOptions: TLSConnectionOptions = {}
     /** Current task to be resolved or rejected. */
     protected _task: Task | undefined
     /** A multiline response might be received as multiple chunks. */

@@ -1,7 +1,7 @@
 import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink } from "fs"
 import { join } from "path"
 import { Readable, Writable } from "stream"
-import { connect as connectTLS, ConnectionOptions } from "tls"
+import { connect as connectTLS, ConnectionOptions as TLSConnectionOptions } from "tls"
 import { promisify } from "util"
 import { FileInfo } from "./FileInfo"
 import { FTPContext, FTPError, FTPResponse } from "./FtpContext"
@@ -33,7 +33,7 @@ export interface AccessOptions {
     /** Use FTPS over TLS. Optional, default is false. True is preferred explicit TLS, "implicit" supports legacy, non-standardized implicit TLS. */
     readonly secure?: boolean | "implicit"
     /** TLS options as in [tls.connect(options)](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback), optional. */
-    readonly secureOptions?: ConnectionOptions
+    readonly secureOptions?: TLSConnectionOptions
 }
 
 /** Prepares a data connection for transfer. */
@@ -115,7 +115,7 @@ export class Client {
             host,
             port,
             family: this.ftp.ipFamily
-        }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)}`))
+        }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`))
         return this._handleConnectResponse()
     }
 
@@ -123,14 +123,14 @@ export class Client {
      * As `connect` but using implicit TLS. Implicit TLS is not an FTP standard and has been replaced by
      * explicit TLS. There are still FTP servers that support only implicit TLS, though.
      */
-    connectImplicitTLS(host = "localhost", port = 21, secureOptions: ConnectionOptions = {}): Promise<FTPResponse> {
+    connectImplicitTLS(host = "localhost", port = 21, secureOptions: TLSConnectionOptions = {}): Promise<FTPResponse> {
         this.ftp.reset()
         this.ftp.tlsOptions = secureOptions
         this.ftp.socket = connectTLS(
             port,
             host,
             secureOptions,
-            () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} using implicit TLS (${describeTLS(this.ftp.socket)})`)
+            () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`)
         )
         return this._handleConnectResponse()
     }
@@ -193,7 +193,7 @@ export class Client {
      * @param options  TLS options as in `tls.connect(options)`, optional.
      * @param command  Set the authentication command. Optional, default is "AUTH TLS".
      */
-    async useTLS(options: ConnectionOptions = {}, command = "AUTH TLS"): Promise<FTPResponse> {
+    async useTLS(options: TLSConnectionOptions = {}, command = "AUTH TLS"): Promise<FTPResponse> {
         const ret = await this.send(command)
         this.ftp.socket = await upgradeSocket(this.ftp.socket, options)
         this.ftp.tlsOptions = options // Keep the TLS options for later data connections that should use the same options.
