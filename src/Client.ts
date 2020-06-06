@@ -1,7 +1,7 @@
 import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink } from "fs"
 import { join } from "path"
 import { Readable, Writable } from "stream"
-import { ConnectionOptions } from "tls"
+import { connect as connectTLS, ConnectionOptions } from "tls"
 import { promisify } from "util"
 import { FileInfo } from "./FileInfo"
 import { FTPContext, FTPError, FTPResponse } from "./FtpContext"
@@ -21,6 +21,8 @@ const fsOpen = promisify(open)
 const fsClose = promisify(close)
 const fsUnlink = promisify(unlink)
 
+export type AccessOptionsSecurity = boolean | "implicit"
+
 export interface AccessOptions {
     /** Host the client should connect to. Optional, default is "localhost". */
     readonly host?: string
@@ -31,7 +33,7 @@ export interface AccessOptions {
     /** Password to use for login. Optional, default is "guest". */
     readonly password?: string
     /** Use explicit FTPS over TLS. Optional, default is false. */
-    readonly secure?: boolean
+    readonly secure?: AccessOptionsSecurity
     /** TLS options as in [tls.connect(options)](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback), optional. */
     readonly secureOptions?: ConnectionOptions
 }
@@ -109,13 +111,32 @@ export class Client {
      * @param host  Host the client should connect to. Optional, default is "localhost".
      * @param port  Port the client should connect to. Optional, default is 21.
      */
-    connect(host = "localhost", port = 21): Promise<FTPResponse> {
-        this.ftp.reset()
-        this.ftp.socket.connect({
-            host,
-            port,
-            family: this.ftp.ipFamily
-        }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)}`))
+    connect(host = "localhost", port = 21, secureOptions?: ConnectionOptions): Promise<FTPResponse> {
+        if (secureOptions == null) {
+            this.ftp.reset()
+
+            this.ftp.socket.connect({
+                host,
+                port,
+                family: this.ftp.ipFamily
+            }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)}`))
+        }
+        else {
+            try {
+                this.ftp.socket = connectTLS(
+                    port,
+                    host,
+                    secureOptions,
+                    () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} over TLS`)
+                )
+                this.ftp.tlsOptions = secureOptions
+            }
+            catch (error) {
+                this.ftp.reset()
+                throw error
+            }
+        }
+
         return this.ftp.handle(undefined, (res, task) => {
             if (res instanceof Error) {
                 // The connection has been destroyed by the FTPContext at this point.
@@ -230,7 +251,8 @@ export class Client {
      * method. In fact, reconnecting is the only way to continue using a closed `Client`.
      */
     async access(options: AccessOptions = {}): Promise<FTPResponse> {
-        const welcome = await this.connect(options.host, options.port)
+        const welcomeSecureOptions = options.secure !== "implicit" ? undefined : options.secureOptions != null ? options.secureOptions : {}
+        const welcome = await this.connect(options.host, options.port, welcomeSecureOptions)
         if (options.secure === true) {
             await this.useTLS(options.secureOptions)
         }
