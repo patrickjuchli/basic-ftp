@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/patrickjuchli/basic-ftp.svg?branch=master)](https://travis-ci.org/patrickjuchli/basic-ftp) [![dependencies](https://img.shields.io/david/patrickjuchli/basic-ftp)](https://david-dm.org/patrickjuchli/basic-ftp) [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for Node.js. It supports explicit FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories.
+This is an FTP client for Node.js. It supports FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories.
 
 ## Advisory
 
@@ -78,7 +78,7 @@ Get access to an FTP server. This method will connect to a server, optionally se
 - `port (number)` Server port, default: 21
 - `user (string)` Username, default: anonymous
 - `password (string)` Password, default: guest
-- `secure (boolean)` Explicit FTPS over TLS, default: false
+- `secure (boolean | "implicit")` Explicit FTPS over TLS, default: false. Use "implicit" if you need support for legacy implicit FTPS.
 - `secureOptions` Options for TLS, same as for [tls.connect()](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) in Node.js.
 
 ---
