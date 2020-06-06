@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 4.6.0
 
 - Added: Support for implicit FTPS. (#121, @sparebytes)
 - Fixed: Detection of stream being finished early. (#143)
