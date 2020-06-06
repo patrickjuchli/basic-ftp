@@ -140,6 +140,7 @@ export class FTPContext {
     set socket(socket: Socket | TLSSocket) {
         // No data socket should be open in any case where the control socket is set or upgraded.
         this.dataSocket = undefined
+        this.tlsOptions = {}
         // This being a soft reset, remove any remaining partial response.
         this._partialResponse = ""
         if (this._socket) {
