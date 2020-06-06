@@ -21,8 +21,6 @@ const fsOpen = promisify(open)
 const fsClose = promisify(close)
 const fsUnlink = promisify(unlink)
 
-export type AccessOptionsSecurity = boolean | "implicit"
-
 export interface AccessOptions {
     /** Host the client should connect to. Optional, default is "localhost". */
     readonly host?: string
@@ -33,7 +31,7 @@ export interface AccessOptions {
     /** Password to use for login. Optional, default is "guest". */
     readonly password?: string
     /** Use FTPS over TLS. Optional, default is false. True is preferred explicit TLS, "implicit" supports legacy, non-standardized implicit TLS. */
-    readonly secure?: AccessOptionsSecurity
+    readonly secure?: boolean | "implicit"
     /** TLS options as in [tls.connect(options)](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback), optional. */
     readonly secureOptions?: ConnectionOptions
 }
