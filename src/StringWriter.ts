@@ -1,4 +1,5 @@
 import { Writable } from "stream"
+import { StringEncoding } from "./StringEncoding"
 
 export class StringWriter extends Writable {
 

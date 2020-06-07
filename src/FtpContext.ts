@@ -1,6 +1,7 @@
 import { Socket } from "net"
 import { ConnectionOptions as TLSConnectionOptions, TLSSocket } from "tls"
 import { parseControlResponse } from "./parseControlResponse"
+import { StringEncoding } from "./StringEncoding"
 
 interface Task {
     /** Handles a response for a task. */

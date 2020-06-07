@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.1
+
+- Fixed: Missing StringEncoding in export. (#144)
+
 ## 4.6.0
 
 - Added: Support for implicit FTPS. (#121, @sparebytes)
