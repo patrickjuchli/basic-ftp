@@ -1,4 +1,4 @@
-import { Socket } from "net"
+import {Socket, SocketConnectOpts} from "net"
 import { ConnectionOptions as TLSConnectionOptions, TLSSocket } from "tls"
 import { parseControlResponse } from "./parseControlResponse"
 import { StringEncoding } from "./StringEncoding"
@@ -54,6 +54,8 @@ export class FTPContext {
     ipFamily: number | undefined = undefined
     /** Options for TLS connections. */
     tlsOptions: TLSConnectionOptions = {}
+    /** Provide a new socket instance and connect */
+    createConnection: (preparer: ((err: any, s: Socket) => void) | null, options: SocketConnectOpts, connectionListener?: (s: Socket) => void) => void
     /** Current task to be resolved or rejected. */
     protected _task: Task | undefined
     /** A multiline response might be received as multiple chunks. */
@@ -63,7 +65,7 @@ export class FTPContext {
     /** Encoding supported by Node applied to commands, responses and directory listing data. */
     protected _encoding: StringEncoding
     /** FTP control connection */
-    protected _socket: Socket | TLSSocket
+    protected _socket!: Socket | TLSSocket
     /** FTP data connection */
     protected _dataSocket: Socket | TLSSocket | undefined
 
@@ -75,9 +77,20 @@ export class FTPContext {
      */
     constructor(readonly timeout = 0, encoding: StringEncoding = "utf8") {
         this._encoding = encoding
-        // Help Typescript understand that we do indeed set _socket in the constructor but use the setter method to do so.
-        this._socket = this.socket = this._newSocket()
+
         this._dataSocket = undefined
+
+        this.createConnection = (preparer: ((err: any, s: Socket) => void) | null, options: SocketConnectOpts, connectionListener?: (s: Socket) => void) => {
+            const s = new Socket()
+            if(preparer) {
+                preparer(null, s)
+            }
+            s.connect(options, () => {
+                if (connectionListener) {
+                    connectionListener(s)
+                }
+            })
+        }
     }
 
     /**
@@ -117,14 +130,14 @@ export class FTPContext {
      * Returns true if this context has been closed or hasn't been connected yet. You can reopen it with `access`.
      */
     get closed(): boolean {
-        return this.socket.remoteAddress === undefined || this._closingError !== undefined
+        return !this.socket || this.socket.remoteAddress === undefined || this._closingError !== undefined
     }
 
     /**
      * Reset this contex and all of its state.
      */
     reset() {
-        this.socket = this._newSocket()
+        this._socket = undefined as any
     }
 
     /**
@@ -395,14 +408,5 @@ export class FTPContext {
         socket.removeAllListeners("error")
         socket.removeAllListeners("close")
         socket.removeAllListeners("connect")
-    }
-
-    /**
-     * Provide a new socket instance.
-     *
-     * Internal use only, replaced for unit tests.
-     */
-    _newSocket(): Socket {
-        return new Socket()
     }
 }

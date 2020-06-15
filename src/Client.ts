@@ -111,12 +111,21 @@ export class Client {
      */
     connect(host = "localhost", port = 21): Promise<FTPResponse> {
         this.ftp.reset()
-        this.ftp.socket.connect({
-            host,
-            port,
-            family: this.ftp.ipFamily
-        }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`))
-        return this._handleConnectResponse()
+        return new Promise((resolve, reject) => {
+            this.ftp.createConnection((err, s) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                this.ftp.socket = s
+                resolve(s)
+            },{
+                host, port, family: this.ftp.ipFamily
+            }, () => {
+                this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`)
+            })
+        })
+          .then(() => this._handleConnectResponse())
     }
 
     /**

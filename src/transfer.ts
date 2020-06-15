@@ -84,9 +84,10 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
             err.message = "Can't open data connection in passive mode: " + err.message
             reject(err)
         }
-        let socket = ftp._newSocket()
-        socket.on("error", handleConnErr)
-        socket.connect({ port, host, family: ftp.ipFamily }, () => {
+        ftp.createConnection(s => {
+            s.on("error", handleConnErr)
+        }, { port, host, family: ftp.ipFamily }, s => {
+            let socket = s
             if (ftp.socket instanceof TLSSocket) {
                 socket = connectTLS(Object.assign({}, ftp.tlsOptions, {
                     socket,

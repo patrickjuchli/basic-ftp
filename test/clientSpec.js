@@ -19,10 +19,15 @@ describe("Convenience API", function() {
 
     beforeEach(function() {
         client = new Client(2000);
-        client.ftp._newSocket = () => new SocketMock();
+        client.ftp.createConnection = (preparer, options, connectionListener) => {
+            const s = new SocketMock()
+            if(preparer) {
+                preparer(null, s)
+            }
+            s.connect(options, () => connectionListener(s))
+        };
         client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
-        client.ftp.dataSocket = new SocketMock();
     });
 
     afterEach(function() {
@@ -151,13 +156,19 @@ describe("Convenience API", function() {
     });
 
     it("can connect", function() {
-        const s = new SocketMock()
-        s.connect = (options) => {
-            assert.equal(options.host, "host");
-            assert.equal(options.port, 22, "Socket port");
-            setTimeout(() => client.ftp.socket.emit("data", "200 OK"));
-        };
-        client.ftp._newSocket = () => s
+        client.ftp.createConnection = (preparer, options, connectionListener) => {
+            const s = new SocketMock()
+            s.connect = (options) => {
+                console.log("ONCONNECT")
+                assert.equal(options.host, "host");
+                assert.equal(options.port, 22, "Socket port");
+                setTimeout(() => client.ftp.socket.emit("data", "200 OK"));
+            };
+            if(preparer) {
+                preparer(null, s)
+            }
+            s.connect(options, () => connectionListener(s))
+        }
         return client.connect("host", 22).then(result => assert.deepEqual(result, { code: 200, message: "200 OK"}));
     });
 
@@ -178,23 +189,33 @@ describe("Convenience API", function() {
     })
 
     it("declines connect for code 120", function() {
-        const s = new SocketMock()
-        s.connect = () => {
-            setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
+        client.ftp.createConnection = (preparer, options, connectionListener) => {
+            const s = new SocketMock()
+            s.connect = () => {
+                setTimeout(() => client.ftp.socket.emit("data", "120 Ready in 5 hours"));
+            };
+            if(preparer) {
+                preparer(null, s)
+            }
+            s.connect(options, () => connectionListener(s))
         };
-        client.ftp._newSocket = () => s
         return client.connect().catch(result => assert.deepEqual(result, new FTPError({code: 120, message: "120 Ready in 5 hours"})));
     });
 
     it("tracks timeout during connect", function() {
-        const s = new SocketMock()
-        s.connect = () => {
-            setTimeout(() => {
-                assert.equal(s.timeout, 2000);
-                setTimeout(() => client.ftp.socket.emit("data", "200 Ok"));
-            });
-        };
-        client.ftp._newSocket = () => s
+        client.ftp.createConnection = (preparer, options, connectionListener) => {
+            const s = new SocketMock()
+            s.connect = () => {
+                setTimeout(() => {
+                    assert.equal(s.timeout, 2000);
+                    setTimeout(() => client.ftp.socket.emit("data", "200 Ok"));
+                });
+            };
+            if(preparer) {
+                preparer(null, s)
+            }
+            s.connect(options, () => connectionListener(s))
+        }
         return client.connect().catch(() => {});
     });
 
