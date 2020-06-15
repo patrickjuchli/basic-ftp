@@ -49,6 +49,31 @@ export interface UploadOptions {
     localEndInclusive?: number
 }
 
+export interface ClientOptions {
+    /** Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds */
+    timeout: number
+    /** preferIPv4Stack. Optional, default is true */
+    preferIPv4Stack: boolean
+    /** preferIPv6Stack. Optional, default is true */
+    preferIPv6Stack: boolean
+}
+
+function fillClientOptions(input?: Partial<ClientOptions> | number): ClientOptions {
+    if (!input || typeof input === "number") {
+        return {
+            timeout: input || 30,
+            preferIPv4Stack: true,
+            preferIPv6Stack: true
+        }
+    }else{
+        return {
+            timeout: input.timeout || 30,
+            preferIPv4Stack: (typeof input.preferIPv4Stack !== 'undefined') ? input.preferIPv4Stack : true,
+            preferIPv6Stack: (typeof input.preferIPv6Stack !== 'undefined') ? input.preferIPv6Stack : true
+        }
+    }
+}
+
 /**
  * High-level API to interact with an FTP server.
  */
@@ -70,11 +95,21 @@ export class Client {
     /**
      * Instantiate an FTP client.
      *
-     * @param timeout  Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
+     * @param optionsOrTimeout
      */
-    constructor(timeout = 30000) {
-        this.ftp = new FTPContext(timeout)
-        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
+    constructor(optionsOrTimeout?: Partial<ClientOptions> | number) {
+        const options = fillClientOptions(optionsOrTimeout)
+        this.ftp = new FTPContext(options.timeout)
+
+        const prepareTransferStrategies: any = []
+        if (options.preferIPv6Stack) {
+            prepareTransferStrategies.push(enterPassiveModeIPv6)
+        }
+        if (options.preferIPv4Stack) {
+            prepareTransferStrategies.push(enterPassiveModeIPv4)
+        }
+
+        this.prepareTransfer = this._enterFirstCompatibleMode(prepareTransferStrategies)
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }
