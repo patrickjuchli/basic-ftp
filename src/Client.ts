@@ -543,7 +543,7 @@ export class Client {
         const validPath = await this.protectWhitespace(path)
         let lastError: any
         for (const candidate of this.availableListCommands) {
-            const command = `${candidate} ${validPath}`.trim()
+            const command = validPath === '' ? candidate : `${candidate} ${validPath}`
             await this.prepareTransfer(this.ftp)
             try {
                 const parsedList = await this._requestListWithCommand(command)
