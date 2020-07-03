@@ -13,7 +13,7 @@ export interface ParsedResponse {
  * describes a `rest`. This function converts all CRLF to LF.
  */
 export function parseControlResponse(text: string): ParsedResponse {
-    const lines = text.split(/\r?\n/)
+    const lines = text.split(/\r?\n/).filter(isNotBlank)
     const messages = []
     let startAt = 0
     let tokenRegex: RegExp | undefined
@@ -63,4 +63,8 @@ export function positiveCompletion(code: number): boolean {
  */
 export function positiveIntermediate(code: number): boolean {
     return code >= 300 && code < 400
+}
+
+function isNotBlank(str: string): boolean {
+    return str !== ""
 }

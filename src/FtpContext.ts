@@ -321,10 +321,9 @@ export class FTPContext {
      * @protected
      */
     protected _onControlSocketData(chunk: string) {
-        const trimmedChunk = chunk.trim()
-        this.log(`< ${trimmedChunk}`)
+        this.log(`< ${chunk}`)
         // This chunk might complete an earlier partial response.
-        const completeResponse = this._partialResponse + trimmedChunk
+        const completeResponse = this._partialResponse + chunk
         const parsed = parseControlResponse(completeResponse)
         // Remember any incomplete remainder.
         this._partialResponse = parsed.rest
