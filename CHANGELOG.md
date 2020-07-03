@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.6.2
+
+- Fixed: Allow directory names ending with space in client.list(). (#149, @inithink)
+- Fixed: Don't trim incoming message chunks.
+- Fixed: Reference Node.js types in tsconfig settings.
+
 ## 4.6.1
 
 - Fixed: Missing StringEncoding in export. (#144)
