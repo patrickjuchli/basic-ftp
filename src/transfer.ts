@@ -21,7 +21,7 @@ export async function enterPassiveModeIPv6(ftp: FTPContext): Promise<FTPResponse
     if (controlHost === undefined) {
         throw new Error("Control socket is disconnected, can't get remote address.")
     }
-    await connectForPassiveTransfer(controlHost, port, ftp)
+    await connectForPassiveTransfer(ftp.config.useInitialHost && ftp.connectedTo.host ? ftp.connectedTo.host : controlHost, port, ftp)
     return res
 }
 
@@ -56,7 +56,9 @@ export async function enterPassiveModeIPv4(ftp: FTPContext): Promise<FTPResponse
     // We can't always perform this replacement because it's possible (although unlikely) that the FTP server
     // indeed uses a different host for data connections.
     const controlHost = ftp.socket.remoteAddress
-    if (ipIsPrivateV4Address(target.host) && controlHost && !ipIsPrivateV4Address(controlHost)) {
+    if(ftp.config.useInitialHost) {
+        target.host = ftp.connectedTo.host
+    } else if (ipIsPrivateV4Address(target.host) && controlHost && !ipIsPrivateV4Address(controlHost)) {
         target.host = controlHost
     }
     await connectForPassiveTransfer(target.host, target.port, ftp)

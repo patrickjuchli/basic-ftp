@@ -18,8 +18,10 @@ describe("Convenience API", function() {
     let client;
 
     beforeEach(function() {
-        client = new Client(2000);
-        client.ftp._newSocket = () => new SocketMock();
+        client = new Client({
+            timeout: 2000,
+            buildSocket: () => new SocketMock()
+        });
         client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
         client.ftp.socket = new SocketMock();
         client.ftp.dataSocket = new SocketMock();
@@ -165,6 +167,8 @@ describe("Convenience API", function() {
         client.close()
         client.connect().catch(() => {})
         assert.equal(client.closed, false)
+        assert.equal(client.ftp.connectedTo.host, '')
+        assert.equal(client.ftp.connectedTo.port, 0)
     })
 
     it("closing client reports client as closed", function() {
@@ -175,6 +179,12 @@ describe("Convenience API", function() {
     it("client is described as closed when not connected yet", function() {
         const realClient = new Client()
         assert.equal(realClient.closed, true)
+    })
+
+    it("client can be initialized with timeout only", function() {
+        const realClient = new Client(1500)
+        assert.equal(realClient.ftp.timeout, 1500)
+        assert.equal(realClient.ftp.encoding, "utf8")
     })
 
     it("declines connect for code 120", function() {

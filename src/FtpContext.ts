@@ -3,6 +3,19 @@ import { ConnectionOptions as TLSConnectionOptions, TLSSocket } from "tls"
 import { parseControlResponse } from "./parseControlResponse"
 import { StringEncoding } from "./StringEncoding"
 
+/** Config for instantiating the FTPContext */
+export interface Config {
+    /** Timeout in milliseconds, use 0 for no timeout. */
+    timeout?: number
+    /** Encoding to use for control connection. UTF-8 by default. Use "latin1" for older servers. */
+    encoding?: StringEncoding
+    /** If true, data connection shall be opened with the same host used during connection */
+    useInitialHost?: boolean
+    /** If true, data connection shall be opened with the same host used during connection */
+    buildSocket?: () => Socket
+}
+
+
 interface Task {
     /** Handles a response for a task. */
     readonly responseHandler: ResponseHandler
@@ -25,6 +38,8 @@ export interface FTPResponse {
 }
 
 export type ResponseHandler = (response: Error | FTPResponse, task: TaskResolver) => void
+
+type HostPort = { host: string, port: number }
 
 /**
  * Describes an FTP server error response including the FTP response code.
@@ -66,15 +81,20 @@ export class FTPContext {
     protected _socket: Socket | TLSSocket
     /** FTP data connection */
     protected _dataSocket: Socket | TLSSocket | undefined
+    /** Connection params */
+    protected _connectedTo: HostPort = { host: '', port: 0 }
 
     /**
      * Instantiate an FTP context.
      *
      * @param timeout - Timeout in milliseconds to apply to control and data connections. Use 0 for no timeout.
      * @param encoding - Encoding to use for control connection. UTF-8 by default. Use "latin1" for older servers.
+     * @param config - Additional options
      */
-    constructor(readonly timeout = 0, encoding: StringEncoding = "utf8") {
+    constructor(readonly timeout = 0, encoding: StringEncoding = "utf8", readonly config: Config = {}) {
         this._encoding = encoding
+        if(this.config.buildSocket)
+            this._newSocket = this.config.buildSocket
         // Help Typescript understand that we do indeed set _socket in the constructor but use the setter method to do so.
         this._socket = this.socket = this._newSocket()
         this._dataSocket = undefined
@@ -92,6 +112,7 @@ export class FTPContext {
         // for closing a context making the implementation easier.
         const message = this._task ? "User closed client during task" : "User closed client"
         const err = new Error(message)
+        this._setupConnectedTo()
         this.closeWithError(err)
     }
 
@@ -125,6 +146,7 @@ export class FTPContext {
      */
     reset() {
         this.socket = this._newSocket()
+        this._setupConnectedTo()
     }
 
     /**
@@ -403,5 +425,20 @@ export class FTPContext {
      */
     _newSocket(): Socket {
         return new Socket()
+    }
+
+    /**
+     * Setup the params of the active connection
+     * Internal use only.
+     */
+    _setupConnectedTo(host = '', port = 0): void {
+        this._connectedTo = { host, port }
+    }
+
+    /**
+     * Params of the active connection
+     */
+    get connectedTo(): Readonly<HostPort> {
+        return this._connectedTo
     }
 }

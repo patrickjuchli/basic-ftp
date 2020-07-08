@@ -4,7 +4,7 @@ import { Readable, Writable } from "stream"
 import { connect as connectTLS, ConnectionOptions as TLSConnectionOptions } from "tls"
 import { promisify } from "util"
 import { FileInfo } from "./FileInfo"
-import { FTPContext, FTPError, FTPResponse } from "./FtpContext"
+import { Config, FTPContext, FTPError, FTPResponse } from "./FtpContext"
 import { parseList as parseListAutoDetect } from "./parseList"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
@@ -70,10 +70,12 @@ export class Client {
     /**
      * Instantiate an FTP client.
      *
-     * @param timeout  Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
+     * @param configOrTimeout  Config or Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
      */
-    constructor(timeout = 30000) {
-        this.ftp = new FTPContext(timeout)
+    constructor(configOrTimeout: Config | number = 30000) {
+        this.ftp = typeof configOrTimeout === 'number'
+            ? new FTPContext(configOrTimeout, undefined, { timeout: configOrTimeout })
+            : new FTPContext(configOrTimeout.timeout ?? 30000, configOrTimeout.encoding, configOrTimeout)
         this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
@@ -116,7 +118,7 @@ export class Client {
             port,
             family: this.ftp.ipFamily
         }, () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`))
-        return this._handleConnectResponse()
+        return this._handleConnectResponse(host, port)
     }
 
     /**
@@ -132,19 +134,20 @@ export class Client {
             () => this.ftp.log(`Connected to ${describeAddress(this.ftp.socket)} (${describeTLS(this.ftp.socket)})`)
         )
         this.ftp.tlsOptions = tlsOptions
-        return this._handleConnectResponse()
+        return this._handleConnectResponse(host, port)
     }
 
     /**
      * Handles the first reponse by an FTP server after the socket connection has been established.
      */
-    private _handleConnectResponse(): Promise<FTPResponse> {
+    private _handleConnectResponse(connectHost: string, port: number): Promise<FTPResponse> {
         return this.ftp.handle(undefined, (res, task) => {
             if (res instanceof Error) {
                 // The connection has been destroyed by the FTPContext at this point.
                 task.reject(res)
             }
             else if (positiveCompletion(res.code)) {
+                this.ftp._setupConnectedTo(connectHost, port)
                 task.resolve(res)
             }
             // Reject all other codes, including 120 "Service ready in nnn minutes".

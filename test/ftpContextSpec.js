@@ -174,4 +174,32 @@ describe("FTPContext", function() {
             assert.equal(c.socket.timeout, 0, "timeout after resolving task");
         });
     });
+
+    it("reset set a new socket and clear connection info", function() {
+        const initialSocket = new SocketMock()
+        const c = new FTPContext(10000);
+        c.socket = initialSocket;
+        c._setupConnectedTo('host', 2121)
+
+        c.reset()
+
+        assert.notEqual(c.socket, initialSocket)
+        assert.equal(c.connectedTo.host, '')
+        assert.equal(c.connectedTo.port, 0)
+    });
+
+    it("_setupConnectedTo sets data correctly", function() {
+        const c = new FTPContext(10000);
+        c._setupConnectedTo('host', 2121)
+        assert.equal(c.connectedTo.host, 'host')
+        assert.equal(c.connectedTo.port, 2121)
+    });
+
+    it("_setupConnectedTo without params clears info", function() {
+        const c = new FTPContext(10000);
+        c._setupConnectedTo('host', 2121)
+        c._setupConnectedTo()
+        assert.equal(c.connectedTo.host, '')
+        assert.equal(c.connectedTo.port, 0)
+    });
 });
