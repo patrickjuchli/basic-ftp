@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.3
+
+- Improved: Continue trying transfer strategies even after unexpected errors. (#164)
+
 ## 4.6.2
 
 - Fixed: Allow directory names ending with space in client.list(). (#149, @inithink)
