@@ -768,12 +768,8 @@ export class Client {
                     return res
                 }
                 catch(err) {
-                    // Receiving an FTPError means that the last transfer strategy failed and we should
-                    // try the next one. Any other exception should stop the evaluation of strategies because
-                    // something else went wrong.
-                    if (!(err instanceof FTPError)) {
-                        throw err
-                    }
+                    // Try the next candidate no matter the exact error. It's possible that a server
+                    // answered incorrectly to a strategy, for example a PASV answer to an EPSV.
                 }
             }
             throw new Error("None of the available transfer strategies work.")
