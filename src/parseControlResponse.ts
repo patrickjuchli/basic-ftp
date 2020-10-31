@@ -66,5 +66,5 @@ export function positiveIntermediate(code: number): boolean {
 }
 
 function isNotBlank(str: string): boolean {
-    return str !== ""
+    return str.trim() !== ""
 }
