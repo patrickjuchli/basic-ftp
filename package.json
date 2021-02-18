@@ -1,5 +1,5 @@
 {
-  "name": "basic-ftp",
+  "name": "@riipen/basic-ftp",
   "version": "4.6.3",
   "description": "FTP client for Node.js, supports FTPS over TLS, IPv6, Async/Await, and Typescript.",
   "main": "dist/index",
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/patrickjuchli/basic-ftp.git"
+    "url": "https://github.com/riipen/basic-ftp.git"
   },
   "author": "Patrick Juchli <patrickjuchli@gmail.com>",
   "license": "MIT",
