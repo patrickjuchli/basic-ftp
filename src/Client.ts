@@ -264,6 +264,8 @@ export class Client {
         }
         if (useExplicitTLS) {
             const secureOptions = options.secureOptions ?? {}
+            // Fixes https://github.com/patrickjuchli/basic-ftp/issues/166 by making sure
+            // host is set for any future data connection as well.
             secureOptions.host = secureOptions.host ?? options.host
             await this.useTLS(secureOptions)
         }
