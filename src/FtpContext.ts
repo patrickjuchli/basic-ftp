@@ -13,7 +13,7 @@ interface Task {
 }
 
 export interface TaskResolver {
-    resolve(...args: any[]): void
+    resolve(args: any): void
     reject(err: Error): void
 }
 
@@ -255,9 +255,9 @@ export class FTPContext {
         return new Promise((resolvePromise, rejectPromise) => {
             const stack = new Error().stack || "Unknown call stack"
             const resolver: TaskResolver = {
-                resolve: (...args) => {
+                resolve: (arg) => {
                     this._stopTrackingTask()
-                    resolvePromise(...args)
+                    resolvePromise(arg)
                 },
                 reject: err => {
                     this._stopTrackingTask()
