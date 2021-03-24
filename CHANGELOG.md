@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.4
+
+- Fixed: Hostname doesn't match certificates altnames for data connection. (#166, #179, @alandoherty)
+
 ## 4.6.3
 
 - Improved: Continue trying transfer strategies even after unexpected errors. (#164)
