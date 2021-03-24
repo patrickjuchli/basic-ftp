@@ -263,8 +263,8 @@ export class Client {
             welcome = await this.connect(options.host, options.port)
         }
         if (useExplicitTLS) {
-            let secureOptions = options.secureOptions || {}
-            secureOptions.host = secureOptions.host || options.host
+            const secureOptions = options.secureOptions ?? {}
+            secureOptions.host = secureOptions.host ?? options.host
             await this.useTLS(secureOptions)
         }
         await this.login(options.user, options.password)
