@@ -49,19 +49,16 @@ export interface UploadOptions {
     localEndInclusive?: number
 }
 
+const LIST_COMMANDS_DEFAULT: readonly string[] = ["LIST -a", "LIST"]
+const LIST_COMMANDS_MLSD: readonly string[] = ["MLSD", "LIST -a", "LIST"]
+
 /**
  * High-level API to interact with an FTP server.
  */
 export class Client {
     prepareTransfer: TransferStrategy
     parseList: RawListParser
-    /**
-     * Multiple commands to retrieve a directory listing are possible. This instance
-     * will try all of them in the order presented the first time a directory listing
-     * is requested. After that, `availableListCommands` will  hold only the first
-     * entry that worked.
-     */
-    availableListCommands = ["MLSD", "LIST -a", "LIST"]
+    availableListCommands = LIST_COMMANDS_DEFAULT
     /** Low-level API to interact with FTP server. */
     readonly ftp: FTPContext
     /** Tracks progress of data transfers. */
@@ -234,10 +231,17 @@ export class Client {
      * * Additional settings for FTPS (PBSZ 0, PROT P)
      */
     async useDefaultSettings(): Promise<void> {
+        const features = await this.features()
+        // Use MLSD directory listing if possible. See https://tools.ietf.org/html/rfc3659#section-7.8:
+        // "The presence of the MLST feature indicates that both MLST and MLSD are supported."
+        const supportsMLSD = features.has("MLST")
+        this.availableListCommands = supportsMLSD ? LIST_COMMANDS_MLSD : LIST_COMMANDS_DEFAULT
         await this.send("TYPE I") // Binary mode
         await this.sendIgnoringError("STRU F") // Use file structure
         await this.sendIgnoringError("OPTS UTF8 ON") // Some servers expect UTF-8 to be enabled explicitly
-        await this.sendIgnoringError("OPTS MLST type;size;modify;unique;unix.mode;unix.owner;unix.group;unix.ownername;unix.groupname;") // Make sure MLSD listings include all we can parse
+        if (supportsMLSD) {
+            await this.sendIgnoringError("OPTS MLST type;size;modify;unique;unix.mode;unix.owner;unix.group;unix.ownername;unix.groupname;") // Make sure MLSD listings include all we can parse
+        }
         if (this.ftp.hasTLS) {
             await this.sendIgnoringError("PBSZ 0") // Set to 0 for TLS
             await this.sendIgnoringError("PROT P") // Protect channel (also for data connections)
@@ -263,9 +267,9 @@ export class Client {
             welcome = await this.connect(options.host, options.port)
         }
         if (useExplicitTLS) {
-            const secureOptions = options.secureOptions ?? {}
             // Fixes https://github.com/patrickjuchli/basic-ftp/issues/166 by making sure
             // host is set for any future data connection as well.
+            const secureOptions = options.secureOptions ?? {}
             secureOptions.host = secureOptions.host ?? options.host
             await this.useTLS(secureOptions)
         }
