@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.5
+
+- Fixed: Only use MLSD after querying support for feature. (#187)
+
 ## 4.6.4
 
 - Fixed: Hostname doesn't match certificates altnames for data connection. (#166, #179, @alandoherty)
