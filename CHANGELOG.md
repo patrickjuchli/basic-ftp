@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.6
+
+- Fixed: Log reason why transfer modes fail when testing.
+
 ## 4.6.5
 
 - Fixed: Only use MLSD after querying support for feature. (#187)
