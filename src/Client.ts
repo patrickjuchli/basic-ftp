@@ -762,25 +762,26 @@ export class Client {
      * Try all available transfer strategies and pick the first one that works. Update `client` to
      * use the working strategy for all successive transfer requests.
      *
-     * @param strategies
+     * @param transferModes
      * @returns a function that will try the provided strategies.
      */
-    protected _enterFirstCompatibleMode(strategies: TransferStrategy[]): TransferStrategy {
+    protected _enterFirstCompatibleMode(transferModes: TransferStrategy[]): TransferStrategy {
         return async (ftp: FTPContext) => {
-            ftp.log("Trying to find optimal transfer strategy...")
-            for (const strategy of strategies) {
+            ftp.log("Trying to find optimal transfer mode...")
+            for (const transferMode of transferModes) {
                 try {
-                    const res = await strategy(ftp)
-                    ftp.log("Optimal transfer strategy found.")
-                    this.prepareTransfer = strategy // eslint-disable-line require-atomic-updates
+                    const res = await transferMode(ftp)
+                    ftp.log("Optimal transfer mode found.")
+                    this.prepareTransfer = transferMode // eslint-disable-line require-atomic-updates
                     return res
                 }
                 catch(err) {
                     // Try the next candidate no matter the exact error. It's possible that a server
                     // answered incorrectly to a strategy, for example a PASV answer to an EPSV.
+                    ftp.log(`Transfer mode failed: "${err.message}", will try next.`)
                 }
             }
-            throw new Error("None of the available transfer strategies work.")
+            throw new Error("None of the available transfer modes work.")
         }
     }
 
