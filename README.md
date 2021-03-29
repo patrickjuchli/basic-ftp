@@ -123,13 +123,13 @@ Rename a file. Depending on the server you may also use this to move a file to a
 
 Remove a file.
 
-`uploadFrom(readableStream | localPath, remotePath): Promise<FTPResponse>`
+`uploadFrom(readableStream | localPath, remotePath, [options]): Promise<FTPResponse>`
 
-Upload data from a readable stream or a local file to a remote file. If such a file already exists it will be overwritten.
+Upload data from a readable stream or a local file to a remote file. If such a file already exists it will be overwritten. If a file is being uploaded, additional options offer `localStart` and `localEndInclusive` to only upload parts of it.
 
-`appendFrom(readableStream | localPath, remotePath): Promise<FTPResponse>`
+`appendFrom(readableStream | localPath, remotePath, [options]): Promise<FTPResponse>`
 
-Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't exist the FTP server should create it.
+Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't exist the FTP server should create it. If a file is being uploaded, additional options offer `localStart` and `localEndInclusive` to only upload parts of it.
 
 `downloadTo(writableStream | localPath, remotePath, startAt = 0): Promise<FTPResponse>`
 
