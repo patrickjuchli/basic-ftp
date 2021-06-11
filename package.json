@@ -38,13 +38,13 @@
   },
   "devDependencies": {
     "@types/mocha": "8.2.2",
-    "@types/node": "14.14.37",
-    "@typescript-eslint/eslint-plugin": "4.19.0",
-    "@typescript-eslint/parser": "4.19.0",
-    "eslint": "7.23.0",
-    "mocha": "8.3.2",
-    "mock-fs": "4.13.0",
+    "@types/node": "15.12.2",
+    "@typescript-eslint/eslint-plugin": "4.26.1",
+    "@typescript-eslint/parser": "4.26.1",
+    "eslint": "7.28.0",
+    "mocha": "8.4.0",
+    "mock-fs": "4.14.0",
     "rimraf": "3.0.2",
-    "typescript": "4.2.3"
+    "typescript": "4.3.2"
   }
 }
