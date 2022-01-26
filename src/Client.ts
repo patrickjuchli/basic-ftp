@@ -71,7 +71,7 @@ export class Client {
      */
     constructor(timeout = 30000) {
         this.ftp = new FTPContext(timeout)
-        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
+        this.prepareTransfer = this._enterFirstCompatibleMode()
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }
@@ -765,23 +765,11 @@ export class Client {
      * @param transferModes
      * @returns a function that will try the provided strategies.
      */
-    protected _enterFirstCompatibleMode(transferModes: TransferStrategy[]): TransferStrategy {
+    protected _enterFirstCompatibleMode(): TransferStrategy {
         return async (ftp: FTPContext) => {
-            ftp.log("Trying to find optimal transfer mode...")
-            for (const transferMode of transferModes) {
-                try {
-                    const res = await transferMode(ftp)
-                    ftp.log("Optimal transfer mode found.")
-                    this.prepareTransfer = transferMode // eslint-disable-line require-atomic-updates
-                    return res
-                }
-                catch(err) {
-                    // Try the next candidate no matter the exact error. It's possible that a server
-                    // answered incorrectly to a strategy, for example a PASV answer to an EPSV.
-                    ftp.log(`Transfer mode failed: "${err.message}", will try next.`)
-                }
-            }
-            throw new Error("None of the available transfer modes work.")
+            const features = await this.features()
+            this.prepareTransfer = features.has("EPSV") ? enterPassiveModeIPv6 : enterPassiveModeIPv4
+            return this.prepareTransfer(ftp)
         }
     }
 
