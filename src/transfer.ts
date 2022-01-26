@@ -1,6 +1,6 @@
 import { EventEmitter } from "events"
 import { describeAddress, describeTLS, ipIsPrivateV4Address } from "./netUtils"
-import { Writable, Readable } from "stream"
+import { Writable, Readable, pipeline } from "stream"
 import { TLSSocket, connect as connectTLS } from "tls"
 import { FTPContext, FTPResponse, TaskResolver } from "./FtpContext"
 import { ProgressTracker, ProgressType } from "./ProgressTracker"
@@ -232,9 +232,12 @@ export function uploadFrom(source: Readable, config: TransferConfig): Promise<FT
             onConditionOrEvent(canUpload, dataSocket, "secureConnect", () => {
                 config.ftp.log(`Uploading to ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
                 resolver.onDataStart(config.remotePath, config.type)
-                source.pipe(dataSocket).once("end", () => {
-                    dataSocket.destroy() // Explicitly close/destroy the socket to signal the end.
-                    resolver.onDataDone(task)
+                pipeline(source, dataSocket, err => {
+                    if (err) {
+                        resolver.onError(task, err)
+                    } else {
+                        resolver.onDataDone(task)
+                    }
                 })
             })
         }
@@ -252,9 +255,6 @@ export function downloadTo(destination: Writable, config: TransferConfig): Promi
     if (!config.ftp.dataSocket) {
         throw new Error("Download will be initiated but no data connection is available.")
     }
-    // It's possible that data transmission begins before the control socket
-    // receives the announcement. Start listening for data immediately.
-    config.ftp.dataSocket.pipe(destination)
     const resolver = new TransferResolver(config.ftp, config.tracker)
     return config.ftp.handle(config.command, (res, task) => {
         if (res instanceof Error) {
@@ -268,7 +268,13 @@ export function downloadTo(destination: Writable, config: TransferConfig): Promi
             }
             config.ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
             resolver.onDataStart(config.remotePath, config.type)
-            onConditionOrEvent(isWritableFinished(destination), destination, "finish", () => resolver.onDataDone(task))
+            pipeline(dataSocket, destination, err => {
+                if (err) {
+                    resolver.onError(task, err)
+                } else {
+                    resolver.onDataDone(task)
+                }
+            })
         }
         else if (res.code === 350) { // Restarting at startAt.
             config.ftp.send("RETR " + config.remotePath)
@@ -299,15 +305,4 @@ function onConditionOrEvent(condition: boolean, emitter: EventEmitter, eventName
     else {
         emitter.once(eventName, () => action())
     }
-}
-
-/**
- * Detect whether a writable stream is finished, supporting Node 8.
- * From https://github.com/nodejs/node/blob/3e2a3007107b7a100794f4e4adbde19263fc7464/lib/internal/streams/end-of-stream.js#L28-L33
- */
-function isWritableFinished(stream: any) {
-    if (stream.writableFinished) return true
-    const wState = stream._writableState
-    if (!wState || wState.errored) return false
-    return wState.finished || (wState.ended && wState.length === 0)
 }
