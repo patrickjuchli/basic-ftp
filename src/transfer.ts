@@ -232,7 +232,7 @@ export function uploadFrom(source: Readable, config: TransferConfig): Promise<FT
             onConditionOrEvent(canUpload, dataSocket, "secureConnect", () => {
                 config.ftp.log(`Uploading to ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
                 resolver.onDataStart(config.remotePath, config.type)
-                source.pipe(dataSocket).once("finish", () => {
+                source.pipe(dataSocket).once("end", () => {
                     dataSocket.destroy() // Explicitly close/destroy the socket to signal the end.
                     resolver.onDataDone(task)
                 })
