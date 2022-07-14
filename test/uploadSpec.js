@@ -1,144 +1,166 @@
 const assert = require("assert");
+const { Client } = require("../dist");
+const MockFtpServer = require("./MockFtpServer");
+const { Readable } = require("stream")
 const fs = require("fs");
-const { Client, FTPError } = require("../dist");
-const SocketMock = require("./SocketMock");
+
+const EMPTY_TEXT = ""
+const SHORT_TEXT = "Short"
+const LONG_TEXT = "s".repeat(45017) // https://github.com/patrickjuchli/basic-ftp/issues/205
+const VERY_LONG_TEXT = `Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich
+in seinem Bett zu einem ungeheueren Ungeziefer verwandelt. Er lag auf seinem
+panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen
+gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen
+Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten
+konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen
+Beine flimmerten ihm hilflos vor den Augen.`.repeat(2000)
+
+const FILENAME = "file.txt"
+const TIMEOUT = 1000
+
+async function prep(payload = SHORT_TEXT) {
+    const server = new MockFtpServer()
+    const client = new Client(TIMEOUT)
+    const readable = new Readable()
+    readable.push(payload)
+    readable.push(null)
+    await client.access({
+        port: server.ctrlAddress.port,
+        user: "test",
+        password: "test"
+    })
+    server.addHandlers({
+        "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
+        "stor": ({arg}) => arg === FILENAME ? "150 Ready to upload" : "500 Wrong filename"
+    })
+    return { server, client, readable }
+}
 
 describe("Upload", function() {
-    this.timeout(100);
 
-    let readable;
-    let client;
-    beforeEach(function() {
-        readable = fs.createReadStream("test/resources/test.txt");
-        client = new Client(5000);
-        client.prepareTransfer = () => Promise.resolve({code: 200, message: "ok"}); // Don't change
-        client.ftp.socket = new SocketMock();
-        client.ftp.dataSocket = new SocketMock();
-        //@ts-ignore
-        client.ftp.dataSocket.connect()
-    });
+    it("throws on unknown PASV command", async () => {
+        const { server, client, readable } = await prep()
+        server.addHandlers({
+            "pasv": () => "500 Command unknown"
+        })
+        return assert.rejects(() => client.uploadFrom(readable, "NAME.TXT"), {
+            name: "FTPError",
+            message: "500 Command unknown"
+        })  
+    })
 
-    afterEach(function() {
-        client.close();
-    });
+    it("throws on wrong PASV format", async () => {
+        const { server, client, readable } = await prep()
+        server.addHandlers({
+            "pasv": () => "227 Missing IP"
+        })
+        return assert.rejects(() => client.uploadFrom(readable, "NAME.TXT"), {
+            name: "Error",
+            message: "Can't parse response to 'PASV': 227 Missing IP"
+        })  
+    })
 
-    it("sends the correct command", function(done) {
-        client.ftp.socket.once("didSend", buf => {
-            assert.equal(buf.toString(), "STOR NAME.TXT\r\n");
-            done();
-        });
-        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
-    });
+    it("throws if data connection can't be opened", async () => {
+        const { server, client, readable } = await prep()
+        server.addHandlers({
+            "pasv": () => "227 Entering Passive Mode (192,168,1,100,10,229)"
+        })
+        return assert.rejects(() => client.uploadFrom(readable, "NAME.TXT"), {
+            name: "Error",
+            message: "Can't open data connection in passive mode: connect ECONNREFUSED 127.0.0.1:2789"
+        })  
+    })
 
-    it("starts uploading after receiving 'ready to upload'", function(done) {
-        let didSendReady = false;
-        client.ftp.dataSocket.once("didSend", buf => {
-            assert(didSendReady, "Didn't send ready");
-            assert.equal(buf.toString(), "123", "Wrong data sent");
-            done();
-        });
-        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
-        setTimeout(() => {
-            didSendReady = true;
-            client.ftp.socket.emit("data", "150 Ready");
-        });
-    });
+    const testPayloads = [ EMPTY_TEXT, SHORT_TEXT, LONG_TEXT, VERY_LONG_TEXT ]
+    for (const payload of testPayloads) {
+        it(`can upload ${payload.length} bytes`, async () => {
+            const { server, client, readable } = await prep(payload)
+            const ret = await client.uploadFrom(readable, FILENAME)
+            assert.deepEqual(server.uploadedData, Buffer.from(payload, "utf-8"))
+            return ret
+        })
+    }
 
-    it("waits for secureConnect if TLS is enabled", function(done) {
-        client.ftp.socket.encrypted = true; // Fake encrypted socket
-        client.ftp.dataSocket.getCipher = () => undefined; // Fake state before TLS session ready
-        let didWait = false;
-        client.ftp.dataSocket.once("didSend", buf => {
-            assert(didWait, "Didn't wait for secureConnect");
-            assert.equal(buf.toString(), "123", "Wrong data sent");
-            done();
-        });
-        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
-        setTimeout(() => {
-            client.ftp.socket.emit("data", "150 Ready");
-            setTimeout(() => {
-                client.ftp.dataSocket.emit("secureConnect");
-                didWait = true;
-            });
-        });
-    });
-
-    it("explicitly closes the data socket when all has been transmitted", function(done) {
-        client.ftp.dataSocket.on("didSend", () => {
-            // Finish event should trigger closing of data socket.
-            client.ftp.dataSocket.emit("finish");
-            setTimeout(() => {
-                assert(client.ftp.dataSocket.destroyed, "Data socket not closed.");
-                done();
-            });
-        });
-        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
-        setTimeout(() => {
-            client.ftp.socket.emit("data", "150 Ready");
-            // Don't send completion message, we don't want the TransferResolver
-            // closing the data socket but the upload procedure itself.
-        });
-    });
-
-    it("handles control confirmation before data sent completely", function() {
-        client.ftp.dataSocket.on("didSend", () => {
-            client.ftp.dataSocket.emit("finish");
-            setTimeout(() => client.ftp.socket.emit("data", "200 Done"));
-        });
-        const promise = client.uploadFrom(readable, "NAME.TXT");
-        setTimeout(() => client.ftp.socket.emit("data", "150 Ready"));
-        return promise;
-    });
-
-    it("handles data sent completely before control confirmation", function() {
-        client.ftp.dataSocket.on("didSend", () => {
-            client.ftp.dataSocket.emit("finish");
-            setTimeout(() => client.ftp.socket.emit("data", "200 Done"));
-        });
-        const promise = client.uploadFrom(readable, "NAME.TXT");
-        setTimeout(() => client.ftp.socket.emit("data", "150 Ready"));
-        return promise;
-    });
-
-    it("handles errors", function() {
-        setTimeout(() => {
-            client.ftp.socket.emit("data", "150 Ready");
-            client.ftp.socket.emit("data", "500 Error");
-        });
-        return client.uploadFrom(readable, "NAME.TXT").catch(err => {
-            assert.deepEqual(err, new FTPError({code: 500, message: "500 Error"}));
-        });
-    });
-
-    it("handles error events from the source stream", function() {
-        const nonExistingFile = fs.createReadStream("nothing.txt");
-        return client.uploadFrom(nonExistingFile, "NAME.TXT").catch(err => {
-            assert.equal(err.code, "ENOENT")
+    it(`switches correctly between sockets to track timeout during transfer`, async () => {
+        const { server, client, readable } = await prep()
+        assert.strictEqual(client.ftp.socket.timeout, 0, "before task (control)");
+        assert.strictEqual(client.ftp.dataSocket, undefined, "before task (data)");
+        server.addHandlers({
+            "pasv": () => {
+                assert.strictEqual(client.ftp.socket.timeout, TIMEOUT, "before PASV (control)");
+                return `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`
+            },
+            "stor": ({arg}) => {
+                assert.strictEqual(client.ftp.socket.timeout, TIMEOUT, "before STOR (control)");
+                assert.strictEqual(client.ftp.dataSocket.timeout, 0, "before STOR (data)");
+                return arg === FILENAME ? "150 Ready to upload" : "500 Wrong filename"
+            }
+        })
+        server.didOpenDataConn = () => {
+            assert.strictEqual(client.ftp.socket.timeout, TIMEOUT, "did open data connection (control)");
+            assert.strictEqual(client.ftp.dataSocket.timeout, 0, "did open data connection (data)");
+        }
+        server.didStartTransfer = () => {
+            assert.strictEqual(client.ftp.socket.timeout, 0, "did start transfer (control)");
+            assert.strictEqual(client.ftp.dataSocket.timeout, TIMEOUT, "did start transfer (data)");
+        }
+        server.didCloseDataConn = () => {
+            assert.strictEqual(client.ftp.socket.timeout, TIMEOUT, "did close data connection (control)");
+            assert.strictEqual(client.ftp.dataSocket.timeout, 0, "did close data connection (data)");
+        }
+        return client.uploadFrom(readable, FILENAME).then(() => {
+            assert.strictEqual(client.ftp.socket.timeout, 0, "after task (control)");
+            assert.strictEqual(client.ftp.dataSocket, undefined, "after task (data)");
         })
     })
 
-    it("uses data connection exclusively for timeout tracking during upload", function(done) {
-        client.uploadFrom(readable, "NAME.TXT").catch(() => {});
-        // Before anything: No timeout tracking at all
-        assert.equal(client.ftp.socket.timeout, 0, "before task (control)");
-        assert.equal(client.ftp.dataSocket.timeout, 0, "before task (data)");
-        setTimeout(() => {
-            // Task started, control socket tracks timeout
-            assert.equal(client.ftp.socket.timeout, 5000, "task started (control)");
-            assert.equal(client.ftp.dataSocket.timeout, 0, "task started (data)");
-            // Data transfer will start, data socket tracks timeout
-            client.ftp.socket.emit("data", "125 Sending");
-            assert.equal(client.ftp.socket.timeout, 0, "transfer start (control)");
-            assert.equal(client.ftp.dataSocket.timeout, 5000, "transfer start (data)");
-            // Data transfer is done, control socket tracks timeout
-            client.ftp.dataSocket.emit("finish");
-            assert.equal(client.ftp.socket.timeout, 5000, "transfer end (control)");
-            assert.equal(client.ftp.dataSocket.timeout, 0, "transfer end (data)");
-            // Transfer confirmed via control socket, stop tracking timeout altogether
-            client.ftp.socket.emit("data", "250 Done");
-            assert.equal(client.ftp.socket.timeout, 0, "confirmed end (control)");
-            assert.equal(client.ftp.dataSocket, undefined, "data connection");
-            done();
-        });
-    });
-});
+    it("handles early error from source stream", async () => {
+        const { client } = await prep()
+        const source = new Readable()
+        source.destroy(new Error("Closing with specific ERROR"))
+        return assert.rejects(() => client.uploadFrom(source, FILENAME), {
+            name: "Error",
+            message: "Closing with specific ERROR"
+        })
+    })
+
+    it("handles prematurely closing source stream", async () => {
+        const { client } = await prep()
+        const source = new Readable()
+        source.destroy()
+        return assert.rejects(() => client.uploadFrom(source, FILENAME), {
+            name: "Error",
+            message: "Premature close (data socket)"
+        })
+    })
+
+    it("handles late error from source stream", async () => {
+        const { server, client } = await prep()
+        const source = new Readable()
+        source._read = () => {}
+        source.push("the beginning...")
+        server.didStartTransfer = () => {
+            source.destroy(new Error("BOOM during transfer"))
+        }
+        return assert.rejects(() => client.uploadFrom(source, FILENAME), {
+            name: "Error",
+            message: "BOOM during transfer"
+        })
+    })
+
+    it("handles FTP errors during transfer", async () => {
+        const { server, client } = await prep()
+        const source = new Readable()
+        source._read = () => {}
+        source.push("the beginning...")
+        server.didStartTransfer = () => {
+            server.ctrlConn.write("500 Server reports some error during transfer")
+        }
+        return assert.rejects(() => client.uploadFrom(source, FILENAME), {
+            name: "FTPError",
+            message: "500 Server reports some error during transfer"
+        })
+    })
+
+    it("handles closed data connection during transfer")
+})
