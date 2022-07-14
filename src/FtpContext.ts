@@ -148,7 +148,7 @@ export class FTPContext {
             // Only close the current connection if the new is not an upgrade.
             const isUpgrade = socket.localPort === this._socket.localPort
             if (!isUpgrade) {
-                this._socket.destroy()
+                this._socket.end()
             }
             this._removeSocketListeners(this._socket)
         }
@@ -376,8 +376,8 @@ export class FTPContext {
      */
     protected _closeSocket(socket: Socket | undefined) {
         if (socket) {
-            socket.destroy()
             this._removeSocketListeners(socket)
+            socket.on("error", () => { /* Do nothing, just prevent late exceptions no one cares about anymore */})
         }
     }
 

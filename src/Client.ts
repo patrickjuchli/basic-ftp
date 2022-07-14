@@ -148,7 +148,6 @@ export class Client {
             else {
                 // Don't stay connected but don't replace the socket yet by using reset()
                 // so the user can inspect properties of this instance.
-                this.ftp.socket.destroy()
                 task.reject(new FTPError(res))
             }
         })
