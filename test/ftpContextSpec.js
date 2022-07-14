@@ -29,13 +29,6 @@ describe("FTPContext", function() {
         assert.equal(old.destroyed, false);
     });
 
-    it("Setting new data socket destroys current", function() {
-        const old = ftp.dataSocket;
-        ftp.dataSocket = undefined;
-        //@ts-ignore that old might be undefined, it's never undefined here.
-        assert.equal(old.destroyed, true, "Socket destroyed.");
-    });
-
     it("Relays control socket timeout event", function(done) {
         ftp.handle(undefined, res => {
             assert.deepEqual(res, new Error("Timeout (control socket)"));
