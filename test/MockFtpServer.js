@@ -14,11 +14,13 @@ module.exports = class MockFtpServer {
         this.didStartTransfer = () => {}
         this.didCloseDataConn = () => {}
         this.receivedCommands = []
+        this.connections = []
         this.uploadedData = undefined
         this.handlers = DEFAULT_HANDLERS
         this.ctrlConn = undefined
         this.ctrlServer = net.createServer(conn => {
             this.ctrlConn = conn
+            this.connections.push(conn)
             conn.allowHalfOpen = true
             conn.write(`200 Welcome${NEWLINE}`)
             conn.on("data", data => {
@@ -38,6 +40,7 @@ module.exports = class MockFtpServer {
         this.dataConn = undefined
         this.dataServer = net.createServer(conn => {
             this.dataConn = conn
+            this.connections.push(conn)
             this.didOpenDataConn()
             const bufs = []
             conn.on("data", data => {
@@ -57,6 +60,9 @@ module.exports = class MockFtpServer {
     close() {
         this.ctrlServer.close()
         this.dataServer.close()
+        for (const conn of this.connections) {
+            conn.destroy()
+        }
     }
 
     get dataAddressForPasvResponse() {

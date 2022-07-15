@@ -9,10 +9,20 @@ async function prep() {
 }
 
 describe("Connectivity", function() {
-    it("can access server", async () => {
-        const { server, client } = await prep()
-        return client.access({
-            port: server.ctrlAddress.port,
+
+    this.beforeEach(() => {
+        this.server = new MockFtpServer()
+        this.client = new Client(1000)
+    })
+
+    this.afterEach(() => {
+        this.client.close()
+        this.server.close()
+    })
+
+    it.only("can access server", async () => {
+        return this.client.access({
+            port: this.server.ctrlAddress.port,
             user: "test",
             password: "test"
         })
