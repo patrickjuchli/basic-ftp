@@ -12,7 +12,11 @@ Prefer alternative transfer protocols like HTTPS or SFTP (SSH). Use this library
 
 Node 10.0 or later is the only dependency.
 
-## Introduction
+## Installation
+
+`npm install basic-ftp`
+
+## Usage
 
 The first example will connect to an FTP server using TLS, get a directory listing, upload a file and download it as a copy. Note that the FTP protocol doesn't allow multiple requests running in parallel.
 
