@@ -36,7 +36,7 @@ const JA_YEAR  = "\u5e74"
  */
 const RE_LINE = new RegExp(
     "([bcdelfmpSs-])" // file type
-    +"(((r|-)(w|-)([xsStTL-]))((r|-)(w|-)([xsStTL-]))((r|-)(w|-)([xsStTL-])))\\+?" // permissions
+    +"(((r|-)(w|-)([xsStTL-]))((r|-)(w|-)([xsStTL-]))((r|-)(w|-)([xsStTL-]?)))\\+?" // permissions
 
     + "\\s*"                                        // separator TODO why allow it to be omitted??
 

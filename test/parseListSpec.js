@@ -317,10 +317,29 @@ describe("Directory listing", function() {
             exp: []
         },
         {
-            title: "Empty list with 'total 0'", // https://github.com/patrickjuchli/basic-ftp/issues/206
+            title: "Empty list with 'total 0' described in #206",
             list: "  \r\ntotal 0\r\n      \r\n  ",
             exp: []
         },
+        {
+            title: "Variation described in #193",
+            list: "drw-r--rw   1     root     root         0 Apr 21 19:31 Directory1",
+            exp: [
+                (f = new FileInfo("Directory1"),
+                f.size = 0,
+                f.rawModifiedAt = "Apr 21 19:31",
+                f.type = FileType.Directory,
+                f.group = "root",
+                f.user = "root",
+                f.hardLinkCount = 1,
+                f.permissions = {
+                    user: 6,
+                    group: 4,
+                    world: 6
+                },
+                f)
+            ]
+        }
     ];
     for (const test of tests) {
         it(test.title, function() {
