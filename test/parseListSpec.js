@@ -315,7 +315,12 @@ describe("Directory listing", function() {
             title: "Empty list",
             list: "  \r\n  \r\n      \r\n  ",
             exp: []
-        }
+        },
+        {
+            title: "Empty list with 'total 0'", // https://github.com/patrickjuchli/basic-ftp/issues/206
+            list: "  \r\ntotal 0\r\n      \r\n  ",
+            exp: []
+        },
     ];
     for (const test of tests) {
         it(test.title, function() {

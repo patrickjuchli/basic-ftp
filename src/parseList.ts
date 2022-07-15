@@ -23,8 +23,12 @@ function firstCompatibleParser(line: string, parsers: Parser[]) {
     return parsers.find(parser => parser.testLine(line) === true)
 }
 
-function stringIsNotBlank(str: string) {
+function isNotBlank(str: string) {
     return str.trim() !== ""
+}
+
+function isNotMeta(str: string) {
+    return !str.startsWith("total")
 }
 
 const REGEX_NEWLINE = /\r?\n/
@@ -35,7 +39,8 @@ const REGEX_NEWLINE = /\r?\n/
 export function parseList(rawList: string): FileInfo[] {
     const lines = rawList
         .split(REGEX_NEWLINE)
-        .filter(stringIsNotBlank)
+        .filter(isNotBlank)
+        .filter(isNotMeta)
     if (lines.length === 0) {
         return []
     }
