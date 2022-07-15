@@ -96,10 +96,6 @@ describe("Upload", function() {
                 return arg === FILENAME ? "150 Ready to upload" : "500 Wrong filename"
             }
         })
-        server.didOpenDataConn = () => {
-            assert.strictEqual(client.ftp.socket.timeout, TIMEOUT, "did open data connection (control)");
-            assert.strictEqual(client.ftp.dataSocket.timeout, 0, "did open data connection (data)");
-        }
         server.didStartTransfer = () => {
             assert.strictEqual(client.ftp.socket.timeout, 0, "did start transfer (control)");
             assert.strictEqual(client.ftp.dataSocket.timeout, TIMEOUT, "did start transfer (data)");
