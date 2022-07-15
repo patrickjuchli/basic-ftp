@@ -26,7 +26,7 @@ const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
 11-14-97  04:21PM                  953 MYFILE.INI`
 
-describe("Directory listing", function() {
+describe.only("Directory listing", function() {
     let f;
     const tests = [
         {
