@@ -379,6 +379,8 @@ export class FTPContext {
         if (socket) {
             this._removeSocketListeners(socket)
             socket.on("error", () => { /* Do nothing, just prevent late exceptions no one cares about anymore */})
+            socket.setTimeout(0)
+            socket.end()
         }
     }
 
