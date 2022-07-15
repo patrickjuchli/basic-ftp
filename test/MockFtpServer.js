@@ -4,7 +4,8 @@ const NEWLINE = `\r\n`
 const DEFAULT_HANDLERS = {
     user: ({arg}) => arg === "test" ? "331 Need password" : "530 Unknown user",
     pass: ({arg}) => arg === "test" ? "200 OK" : "530 Wrong password",
-    type: () => "200 OK"
+    type: () => "200 OK",
+    quit: () => "200 Bye"
 }
 
 module.exports = class MockFtpServer {
@@ -18,6 +19,7 @@ module.exports = class MockFtpServer {
         this.ctrlConn = undefined
         this.ctrlServer = net.createServer(conn => {
             this.ctrlConn = conn
+            conn.allowHalfOpen = true
             conn.write(`200 Welcome${NEWLINE}`)
             conn.on("data", data => {
                 const command = data.toString().trim()
@@ -45,7 +47,7 @@ module.exports = class MockFtpServer {
             conn.on("close", () => {
                 this.uploadedData = Buffer.concat(bufs)
                 this.didCloseDataConn()
-                this.ctrlConn.write("200 Upload done")
+                this.ctrlConn.write("200 Transfer done", cb => console.log)
             })
         })
         this.ctrlServer.listen()
