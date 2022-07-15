@@ -2,8 +2,8 @@
 
 ## UNRELEASED
 
-- Breaking change: Library requires at least Node version 10.
 - Changed: Use feature set as reported by server to determine transfer strategy.
+- Changed: Library requires at least Node version 10.
 - Fixed: Issues around incomplete upload described in #205.
 - Fixed: Prevent late internal exceptions from sockets, stop explicitly destroying sockets too early.
 
