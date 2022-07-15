@@ -3,7 +3,6 @@ const { Client } = require("../dist");
 const MockFtpServer = require("./MockFtpServer");
 const { Writable } = require("stream")
 const fs = require("fs");
-const { NodeBuilderFlags } = require("typescript");
 
 const EMPTY_TEXT = ""
 const SHORT_TEXT = "Short"
