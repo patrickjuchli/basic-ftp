@@ -61,4 +61,5 @@ export function ipIsPrivateV4Address(ip = ""): boolean {
     return octets[0] === 10                                             // 10.0.0.0 - 10.255.255.255
         || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31)    // 172.16.0.0 - 172.31.255.255
         || (octets[0] === 192 && octets[1] === 168)                    // 192.168.0.0 - 192.168.255.255
+        || ip === "127.0.0.1"
 }
