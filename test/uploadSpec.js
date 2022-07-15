@@ -38,6 +38,16 @@ async function prep(payload = SHORT_TEXT) {
 
 describe("Upload", function() {
 
+    const testPayloads = [ EMPTY_TEXT, SHORT_TEXT, LONG_TEXT, VERY_LONG_TEXT ]
+    for (const payload of testPayloads) {
+        it(`can upload ${payload.length} bytes`, async () => {
+            const { server, client, readable } = await prep(payload)
+            const ret = await client.uploadFrom(readable, FILENAME)
+            assert.deepEqual(server.uploadedData, Buffer.from(payload, "utf-8"))
+            return ret
+        })
+    }
+
     it("throws on unknown PASV command", async () => {
         const { server, client, readable } = await prep()
         server.addHandlers({
@@ -70,16 +80,6 @@ describe("Upload", function() {
             message: "Can't open data connection in passive mode: connect ECONNREFUSED 127.0.0.1:2789"
         })  
     })
-
-    const testPayloads = [ EMPTY_TEXT, SHORT_TEXT, LONG_TEXT, VERY_LONG_TEXT ]
-    for (const payload of testPayloads) {
-        it(`can upload ${payload.length} bytes`, async () => {
-            const { server, client, readable } = await prep(payload)
-            const ret = await client.uploadFrom(readable, FILENAME)
-            assert.deepEqual(server.uploadedData, Buffer.from(payload, "utf-8"))
-            return ret
-        })
-    }
 
     it(`switches correctly between sockets to track timeout during transfer`, async () => {
         const { server, client, readable } = await prep()
@@ -121,16 +121,6 @@ describe("Upload", function() {
         return assert.rejects(() => client.uploadFrom(source, FILENAME), {
             name: "Error",
             message: "Closing with specific ERROR"
-        })
-    })
-
-    it("handles prematurely closing source stream", async () => {
-        const { client } = await prep()
-        const source = new Readable()
-        source.destroy()
-        return assert.rejects(() => client.uploadFrom(source, FILENAME), {
-            name: "Error",
-            message: "Premature close (data socket)"
         })
     })
 
