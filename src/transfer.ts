@@ -80,13 +80,19 @@ export function parsePasvResponse(message: string): { host: string, port: number
 
 export function connectForPassiveTransfer(host: string, port: number, ftp: FTPContext): Promise<void> {
     return new Promise((resolve, reject) => {
+        let socket = ftp._newSocket()
         const handleConnErr = function(err: Error) {
             err.message = "Can't open data connection in passive mode: " + err.message
             reject(err)
         }
-        let socket = ftp._newSocket()
+        const handleTimeout = function() {
+            socket.destroy()
+            reject(new Error(`Timeout when trying to open data connection to ${host}:${port}`))
+        }
+        socket.setTimeout(ftp.timeout)
         socket.on("error", handleConnErr)
-        socket.connect({ port, host, family: ftp.ipFamily }, () => {
+        socket.on("timeout", handleTimeout)
+        socket.connect({ port, host, family: ftp.ipFamily}, () => {
             if (ftp.socket instanceof TLSSocket) {
                 socket = connectTLS(Object.assign({}, ftp.tlsOptions, {
                     socket,
@@ -107,6 +113,7 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
             }
             // Let the FTPContext listen to errors from now on, remove local handler.
             socket.removeListener("error", handleConnErr)
+            socket.removeListener("timeout", handleTimeout)
             ftp.dataSocket = socket
             resolve()
         })
