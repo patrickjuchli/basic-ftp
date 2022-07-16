@@ -16,7 +16,7 @@ konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen
 Beine flimmerten ihm hilflos vor den Augen.`.repeat(2000)
 
 const FILENAME = "file.txt"
-const TIMEOUT = 100
+const TIMEOUT = 1000
 
 function getReadable(payload = SHORT_TEXT) {
     const readable = new Readable()
@@ -88,8 +88,8 @@ describe("Upload", function() {
         })  
     })
 
-    it(`switches correctly between sockets to track timeout during transfer`, async () => {
-        const readable = getReadable()
+    it(`switches correctly between sockets to track timeout during transfer`, () => {
+        this.client.ftp.timeout = TIMEOUT
         assert.strictEqual(this.client.ftp.socket.timeout, 0, "before task (control)");
         assert.strictEqual(this.client.ftp.dataSocket, undefined, "before task (data)");
         this.server.addHandlers({
@@ -111,7 +111,7 @@ describe("Upload", function() {
             assert.strictEqual(this.client.ftp.socket.timeout, TIMEOUT, "did close data connection (control)");
             assert.strictEqual(this.client.ftp.dataSocket.timeout, 0, "did close data connection (data)");
         }
-        return this.client.uploadFrom(readable, FILENAME).then(() => {
+        return this.client.uploadFrom(getReadable(VERY_LONG_TEXT), FILENAME).then(() => {
             assert.strictEqual(this.client.ftp.socket.timeout, 0, "after task (control)");
             assert.strictEqual(this.client.ftp.dataSocket, undefined, "after task (data)");
         })
