@@ -89,7 +89,9 @@ describe("Upload", function() {
     })
 
     it(`switches correctly between sockets to track timeout during transfer`, () => {
-        this.client.ftp.timeout = TIMEOUT
+        const readable = new Readable()
+        readable._read = () => {}
+        readable.push(SHORT_TEXT)
         assert.strictEqual(this.client.ftp.socket.timeout, 0, "before task (control)");
         assert.strictEqual(this.client.ftp.dataSocket, undefined, "before task (data)");
         this.server.addHandlers({
@@ -106,12 +108,14 @@ describe("Upload", function() {
         this.server.didStartTransfer = () => {
             assert.strictEqual(this.client.ftp.socket.timeout, 0, "did start transfer (control)");
             assert.strictEqual(this.client.ftp.dataSocket.timeout, TIMEOUT, "did start transfer (data)");
+            readable.push(SHORT_TEXT)
+            readable.push(null)
         }
         this.server.didCloseDataConn = () => {
             assert.strictEqual(this.client.ftp.socket.timeout, TIMEOUT, "did close data connection (control)");
             assert.strictEqual(this.client.ftp.dataSocket.timeout, 0, "did close data connection (data)");
         }
-        return this.client.uploadFrom(getReadable(VERY_LONG_TEXT), FILENAME).then(() => {
+        return this.client.uploadFrom(readable, FILENAME).then(() => {
             assert.strictEqual(this.client.ftp.socket.timeout, 0, "after task (control)");
             assert.strictEqual(this.client.ftp.dataSocket, undefined, "after task (data)");
         })
