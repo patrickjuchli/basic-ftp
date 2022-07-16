@@ -1,8 +1,8 @@
 # Changelog
 
-## UNRELEASED
+## 5.0.0
 
-- Breaking change: Library requires at least Node version 10.
+- **Breaking change**: Library requires at least Node version 10.
 - Changed: Use feature set as reported by server to determine transfer strategy.
 - Changed: Test suite improvements to better reflect behaviour of an FTP server.
 - Fixed: Issues around incomplete upload described in #205.
