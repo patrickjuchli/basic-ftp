@@ -84,8 +84,7 @@ describe("Upload", function() {
             "pasv": () => "227 Entering Passive Mode (192,168,1,100,10,229)"
         })
         return assert.rejects(() => this.client.uploadFrom(getReadable(), "NAME.TXT"), {
-            name: "Error",
-            message: "Timeout when trying to open data connection to 192.168.1.100:2789"
+            name: "Error"
         })  
     })
 
