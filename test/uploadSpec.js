@@ -25,7 +25,7 @@ function getReadable(payload = SHORT_TEXT) {
     return readable
 }
 
-describe.only("Upload", function() {
+describe("Upload", function() {
 
     this.beforeEach(() => {
         this.client = new Client(TIMEOUT)
