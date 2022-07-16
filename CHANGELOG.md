@@ -2,10 +2,14 @@
 
 ## UNRELEASED
 
+- Breaking change: Library requires at least Node version 10.
 - Changed: Use feature set as reported by server to determine transfer strategy.
-- Changed: Library requires at least Node version 10.
+- Changed: Test suite improvements to better reflect behaviour of an FTP server.
 - Fixed: Issues around incomplete upload described in #205.
-- Fixed: Prevent late internal exceptions from sockets, stop explicitly destroying sockets too early.
+- Fixed: Variation of empty directory listing described in #206.
+- Fixed: List parsing for specific Unix flavor described in #193.
+- Fixed: Prevent late internal exceptions from sockets.
+- Fixed: Stop explicitly destroying sockets, too early in rare cases.
 
 ## 4.6.6
 
