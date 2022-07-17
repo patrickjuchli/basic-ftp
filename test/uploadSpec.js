@@ -85,6 +85,7 @@ describe("Upload", function() {
         })
         return assert.rejects(() => this.client.uploadFrom(getReadable(), "NAME.TXT"), {
             name: "Error"
+            // Error can be ECONNRESET or a Timeout, both report under the same Error name.
         })  
     })
 
