@@ -70,4 +70,8 @@ describe("Download to stream", function() {
     it("handles server ending data connection during transfer")
     it("relays FTP error response even if data transmitted completely")
     it("stops tracking timeout after failure")
+    it("handles destination stream closing during transfer")
+    it("can get a directory listing")
+    it("uses control host IP if suggested data connection IP using PASV is private")
+    it("can download using TLS")
 })

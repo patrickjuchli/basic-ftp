@@ -93,4 +93,7 @@ describe("Connectivity", function() {
             message: "Client is closed"
         })
     });
+
+    it("can connect using explicit TLS")
+    it("can connect using implicit TLS")
 })

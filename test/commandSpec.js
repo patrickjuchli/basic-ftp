@@ -102,5 +102,10 @@ describe("Simple commands", function() {
         })       
     })
 
-    // TODO test all other simple commands
+    it("can rename a file")
+    it("can remove a file")
+    it("can change directory")
+    it("can get the current working directory")
+    it("can handle leading whitespace in paths")
+    it("can handle trailing whitespeace in paths")
 })
