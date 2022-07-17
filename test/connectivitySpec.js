@@ -19,6 +19,8 @@ describe("Connectivity", function() {
             port: this.server.ctrlAddress.port,
             user: "test",
             password: "test"
+        }).then(result => {
+            assert.strictEqual(result.code, 200, "Welcome response")
         })
     });
 
