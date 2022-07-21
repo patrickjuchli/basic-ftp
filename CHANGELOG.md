@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.1
+
+- Fixed: Don't trust FEAT response of servers regarding EPSV. (#213)
+- Fixed: Include original error message when client reports as closed.
+
 ## 5.0.0
 
 - **Breaking change**: Library requires at least Node version 10.
