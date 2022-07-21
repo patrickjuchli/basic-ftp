@@ -90,7 +90,7 @@ describe("Connectivity", function() {
         assert.strictEqual(this.client.closed, true, "after close")
         return assert.rejects(() => this.client.send("TYPE I"), {
             name: "Error",
-            message: "Client is closed"
+            message: "Client is closed because User closed client"
         })
     });
 

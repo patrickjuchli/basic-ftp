@@ -79,9 +79,7 @@ describe("Download to a file", function() {
                 return "500 Unforseen error"
             }
         })
-        return assert.rejects(() => this.client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME), {
-            code: 500
-        }).then(() => {
+        return assert.rejects(() => this.client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME)).then(() => {
             assert.equal(fs.existsSync(NEW_LOCAL_FILENAME), false, "Empty file removed after error")
         })
     })
@@ -93,9 +91,7 @@ describe("Download to a file", function() {
                 return "500 Unforseen error"
             }
         })
-        return assert.rejects(() => this.client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME, 4), {
-            code: 500
-        }).then(() => {
+        return assert.rejects(() => this.client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME, 4)).then(() => {
             assert.equal(fs.readFileSync(EXISTING_LOCAL_FILENAME, "utf-8"), "content", "File untouched after error")
         })
     })

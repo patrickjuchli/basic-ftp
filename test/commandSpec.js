@@ -102,10 +102,26 @@ describe("Simple commands", function() {
         })       
     })
 
-    it("can rename a file")
+    it("can rename a file", () => {
+        this.server.addHandlers({
+            "rnfr": ({arg}) => arg === "old.txt" ? "350 Accepted" : "500 File not found",
+            "rnto": ({arg}) => arg === "new.txt" ? "200 Renamed" : "500 File not found",
+        })
+        return this.client.rename("old.txt", "new.txt").then(result => {
+            assert.deepEqual(result, { code: 200, message: "200 Renamed" })
+        })
+    })
+        
+    it("can handle leading whitespace in paths", () => {
+        this.server.addHandlers({
+            "pwd": () => `257 "/this/that"`
+        })
+        return this.client.protectWhitespace("  file.txt").then(result => {
+            assert.strictEqual(result, "/this/that/  file.txt")
+        })
+    })
+
     it("can remove a file")
     it("can change directory")
     it("can get the current working directory")
-    it("can handle leading whitespace in paths")
-    it("can handle trailing whitespeace in paths")
 })

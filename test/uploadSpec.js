@@ -56,25 +56,40 @@ describe("Upload", function() {
         })
     }
 
+    it("always tries EPSV first, then PASV", async () => {
+        const strategies = []
+        this.server.addHandlers({
+            "epsv": () => { 
+                strategies.push("epsv")
+                return "500 Command unknown"
+            },
+            "pasv": () => { 
+                strategies.push("pasv")
+                return "500 Command unknown"
+            }
+        })
+        return assert.rejects(() => this.client.uploadFrom(getReadable(), "NAME.TXT")).then(() => {
+            assert.deepEqual(strategies, ["epsv", "pasv"])
+        })
+    })
+
     it("throws on unknown PASV command", async () => {
-        const readable = getReadable()
         this.server.addHandlers({
             "pasv": () => "500 Command unknown"
         })
-        return assert.rejects(() => this.client.uploadFrom(readable, "NAME.TXT"), {
-            name: "FTPError",
-            message: "500 Command unknown"
+        return assert.rejects(() => this.client.uploadFrom(getReadable(), "NAME.TXT"), {
+            name: "Error",
+            message: "None of the available transfer strategies work. Last error response was 'FTPError: 500 Command unknown'."
         })  
     })
 
     it("throws on wrong PASV format", async () => {
-        const readable = getReadable()
         this.server.addHandlers({
             "pasv": () => "227 Missing IP"
         })
-        return assert.rejects(() => this.client.uploadFrom(readable, "NAME.TXT"), {
+        return assert.rejects(() => this.client.uploadFrom(getReadable(), "NAME.TXT"), {
             name: "Error",
-            message: "Can't parse response to 'PASV': 227 Missing IP"
+            message: "None of the available transfer strategies work. Last error response was 'Error: Can't parse response to 'PASV': 227 Missing IP'."
         })  
     })
 
@@ -127,7 +142,7 @@ describe("Upload", function() {
         source.destroy(new Error("Closing with specific ERROR"))
         return assert.rejects(() => this.client.uploadFrom(source, FILENAME), {
             name: "Error",
-            message: "Closing with specific ERROR"
+            message: "None of the available transfer strategies work. Last error response was 'Error: Client is closed because Closing with specific ERROR'."
         })
     })
 

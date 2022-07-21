@@ -142,7 +142,7 @@ describe("FTPContext", function() {
     it("queues an error if no task is active and assigns it to the next task", function() {
         ftp.socket.emit("error", new Error("some error"));
         return ftp.handle("TEST", (res, task) => {
-            const err = new Error("Client is closed");
+            const err = new Error("Client is closed because some error (control socket)");
             err.code = 0;
             assert.deepEqual(res, err);
             assert.notEqual(-1, res.stack.indexOf("Closing reason: Error: some error (control socket)"));

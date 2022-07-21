@@ -273,7 +273,7 @@ export class FTPContext {
             if (this._closingError) {
                 // This client has been closed. Provide an error that describes this one as being caused
                 // by `_closingError`, include stack traces for both.
-                const err = new Error("Client is closed") as NodeJS.ErrnoException // Type 'Error' is not correctly defined, doesn't have 'code'.
+                const err = new Error(`Client is closed because ${this._closingError.message}`) as NodeJS.ErrnoException // Type 'Error' is not correctly defined, doesn't have 'code'.
                 err.stack += `\nClosing reason: ${this._closingError.stack}`
                 err.code = this._closingError.code !== undefined ? this._closingError.code : "0"
                 this._passToHandler(err)

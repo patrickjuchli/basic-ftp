@@ -71,7 +71,7 @@ export class Client {
      */
     constructor(timeout = 30000) {
         this.ftp = new FTPContext(timeout)
-        this.prepareTransfer = this._enterFirstCompatibleMode()
+        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }
@@ -761,14 +761,26 @@ export class Client {
      * Try all available transfer strategies and pick the first one that works. Update `client` to
      * use the working strategy for all successive transfer requests.
      *
-     * @param transferModes
      * @returns a function that will try the provided strategies.
      */
-    protected _enterFirstCompatibleMode(): TransferStrategy {
+    protected _enterFirstCompatibleMode(strategies: TransferStrategy[]): TransferStrategy {
         return async (ftp: FTPContext) => {
-            const features = await this.features()
-            this.prepareTransfer = features.has("EPSV") ? enterPassiveModeIPv6 : enterPassiveModeIPv4
-            return this.prepareTransfer(ftp)
+            ftp.log("Trying to find optimal transfer strategy...")
+            let lastError: Error | undefined = undefined
+            for (const strategy of strategies) {
+                try {
+                    const res = await strategy(ftp)
+                    ftp.log("Optimal transfer strategy found.")
+                    this.prepareTransfer = strategy // eslint-disable-line require-atomic-updates
+                    return res
+                }
+                catch(err: any) {
+                    // Try the next candidate no matter the exact error. It's possible that a server
+                    // answered incorrectly to a strategy, for example a PASV answer to an EPSV.
+                    lastError = err
+                }
+            }
+            throw new Error(`None of the available transfer strategies work. Last error response was '${lastError}'.`)
         }
     }
 

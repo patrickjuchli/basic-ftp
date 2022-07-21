@@ -63,7 +63,8 @@ describe("Download to stream", function() {
     
     it("handles destination stream error", () => {
         return this.client.downloadTo(fs.createWriteStream("test"), "test.json").catch(err => {
-            assert.equal(err.code, "EISDIR")
+            const expected = "EISDIR: illegal operation on a directory, open 'test'"
+            assert(err.message.includes(expected), `${err.message} should include "${expected}"`)
         })
     })
 
