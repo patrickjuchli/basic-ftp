@@ -102,8 +102,10 @@ describe("Download to stream", function() {
             // Close destination stream after it received the first chunk
             writable.emit("close")
         }
-        return assert.rejects(() => this.client.downloadTo(writable, FILENAME), {
-            message: "Premature close (data socket)"
+        return assert.rejects(() => this.client.downloadTo(writable, FILENAME), err => {
+            // Error message can be "Premature close" or "Premature close (data socket)"
+            assert.match(err.message, /Premature close/)
+            return true
         })
     })
 
