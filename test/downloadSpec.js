@@ -61,17 +61,76 @@ describe("Download to stream", function() {
         })
     }
     
-    it("handles destination stream error", () => {
+    it("handles early destination stream error", () => {
         return this.client.downloadTo(fs.createWriteStream("test"), "test.json").catch(err => {
             const expected = "EISDIR: illegal operation on a directory, open 'test'"
             assert(err.message.includes(expected), `${err.message} should include "${expected}"`)
         })
     })
 
+    it("handles late destination stream error", async () => {
+        this.server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+            "retr": ({arg}) => {
+                setTimeout(() => this.server.dataConn.write("one..."))
+                return arg === FILENAME ? "150 Ready to download" : "500 Wrong filename"
+            }
+        })
+        const writable = new Writable()
+        writable._write = (chunk, enc, cb) => {
+            cb()
+            writable.destroy(new Error("local disk full"))
+        }
+        return assert.rejects(() => this.client.downloadTo(writable, FILENAME), {
+            message: "local disk full"
+        })
+    })
+
+    it("handles late destination stream closing", async () => {
+        this.server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+            "retr": ({arg}) => {
+                setTimeout(() => this.server.dataConn.write("one..."))
+                return arg === FILENAME ? "150 Ready to download" : "500 Wrong filename"
+            }
+        })
+        const writable = new Writable()
+        writable._write = (chunk, enc, cb) => {
+            cb()
+            // Close destination stream after it received the first chunk
+            writable.emit("close")
+        }
+        return assert.rejects(() => this.client.downloadTo(writable, FILENAME), {
+            message: "Premature close (data socket)"
+        })
+    })
+
+    it("handles data arriving before control announcing start", async () => {
+        const payload = SHORT_TEXT
+        this.server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+            "retr": ({arg}) => {
+                // Sending data and closing stream..
+                this.server.dataConn.write(payload)
+                this.server.dataConn.end()
+                // ..before announcing it
+                return arg === FILENAME ? "150 Ready to download" : "500 Wrong filename"
+            }
+        })
+        const chunks = []
+        const writable = new Writable()
+        writable._write = (chunk, enc, cb) => {
+            chunks.push(chunk)
+            cb()
+        }
+        await this.client.downloadTo(writable, FILENAME)
+        const actualPayload = Buffer.concat(chunks).toString("utf8")
+        assert.deepEqual(actualPayload, payload)
+    })
+
     it("handles server ending data connection during transfer")
     it("relays FTP error response even if data transmitted completely")
     it("stops tracking timeout after failure")
-    it("handles destination stream closing during transfer")
     it("can get a directory listing")
     it("uses control host IP if suggested data connection IP using PASV is private")
     it("can download using TLS")
