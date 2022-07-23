@@ -1,5 +1,6 @@
 const assert = require("assert");
 const { Client } = require("../dist");
+const { StringWriter } = require("../dist/StringWriter");
 const MockFtpServer = require("./MockFtpServer");
 const { Writable } = require("stream")
 const fs = require("fs");
@@ -49,15 +50,9 @@ describe("Download to stream", function() {
     for (const payload of testPayloads) {
         it(`can download ${payload.length} bytes`, async () => {
             this.payload = payload
-            const chunks = []
-            const writable = new Writable()
-            writable._write = (chunk, enc, cb) => { 
-                chunks.push(chunk) 
-                cb()
-            }
-            await this.client.downloadTo(writable, FILENAME)
-            const actualPayload = Buffer.concat(chunks).toString("utf8")
-            assert.deepEqual(actualPayload, payload)
+            const buf = new StringWriter()
+            await this.client.downloadTo(buf, FILENAME)
+            assert.deepEqual(buf.getText("utf-8"), payload)
         })
     }
     
@@ -121,15 +116,9 @@ describe("Download to stream", function() {
                 return arg === FILENAME ? "150 Ready to download" : "500 Wrong filename"
             }
         })
-        const chunks = []
-        const writable = new Writable()
-        writable._write = (chunk, enc, cb) => {
-            chunks.push(chunk)
-            cb()
-        }
-        await this.client.downloadTo(writable, FILENAME)
-        const actualPayload = Buffer.concat(chunks).toString("utf8")
-        assert.deepEqual(actualPayload, payload)
+        const buf = new StringWriter()
+        await this.client.downloadTo(buf, FILENAME)
+        assert.deepEqual(buf.getText("utf-8"), payload)
     })
 
     it("handles server ending data connection during transfer")
