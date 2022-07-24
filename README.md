@@ -218,11 +218,7 @@ In addition to unit tests and linting, the source code is written in Typescript 
 
 ## Extending the library
 
-### Custom strategies
-
-`get/set client.prepareTransfer`
-
-Provide a function that initializes a data connection. FTP uses a dedicated socket connection for each file upload, download and directory listing. This library supports two strategies: Passive Mode over IPv4 (PASV) and IPv6 (EPSV). Active Mode is not supported but could be added using this extension point. The signature of the function is `(ftp: FTPContext) => Promise<FTPResponse>` and its job is to set `ftp.dataSocket`.
+### Client
 
 `get/set client.parseList`
 
