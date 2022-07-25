@@ -121,7 +121,6 @@ describe("Download to stream", function() {
         assert.deepEqual(buf.getText("utf-8"), payload)
     })
 
-    it("handles server ending data connection during transfer")
     it("relays FTP error response even if data transmitted completely")
     it("stops tracking timeout after failure")
     it("can get a directory listing")
