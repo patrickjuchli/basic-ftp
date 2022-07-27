@@ -121,7 +121,17 @@ describe("Download to stream", function() {
         assert.deepEqual(buf.getText("utf-8"), payload)
     })
 
-    it("relays FTP error response even if data transmitted completely")
+    it("relays FTP error response even if data transmitted completely", async () => {
+        this.payload = SHORT_TEXT
+        this.server.didCloseDataConn = () => this.server.writeCtrl("500 Error")
+        const buf = new StringWriter()
+        return assert.rejects(() => this.client.downloadTo(buf, FILENAME), {
+            message: "500 Error"
+        }).then(() => {
+            assert.deepEqual(buf.getText("utf-8"), this.payload)
+        })
+    })
+
     it("stops tracking timeout after failure")
     it("can get a directory listing")
     it("uses control host IP if suggested data connection IP using PASV is private")
