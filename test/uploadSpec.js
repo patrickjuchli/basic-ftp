@@ -164,7 +164,7 @@ describe("Upload", function() {
         source._read = () => {}
         source.push("the beginning...")
         this.server.didStartTransfer = () => {
-            this.server.ctrlConn.write("500 Server reports some error during transfer")
+            this.server.writeCtrl("500 Server reports some error during transfer")
         }
         return assert.rejects(() => this.client.uploadFrom(source, FILENAME), {
             name: "FTPError",

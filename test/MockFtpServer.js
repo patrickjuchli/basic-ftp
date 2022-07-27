@@ -50,11 +50,15 @@ module.exports = class MockFtpServer {
             conn.on("close", () => {
                 this.uploadedData = Buffer.concat(bufs)
                 this.didCloseDataConn()
-                this.ctrlConn.write("200 Transfer done", cb => console.log)
+                this.writeCtrl("200 Transfer done")
             })
         })
         this.ctrlServer.listen()
         this.dataServer.listen()
+    }
+
+    writeCtrl(payload) {
+        this.ctrlConn.write(`${payload}${NEWLINE}`)
     }
 
     close() {
