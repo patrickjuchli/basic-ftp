@@ -132,6 +132,14 @@ describe("Download to stream", function() {
         })
     })
 
+    it("ignores error thrown on data socket after transfer completed successfully", async () => {
+        let dataSocket
+        this.server.didOpenDataConn = () => dataSocket = this.client.ftp.dataSocket
+        const buf = new StringWriter()
+        await this.client.downloadTo(buf, FILENAME)
+        dataSocket.destroy(new Error("Late error no one cares about"))
+    })
+
     it("stops tracking timeout after failure")
     it("can get a directory listing")
     it("uses control host IP if suggested data connection IP using PASV is private")
