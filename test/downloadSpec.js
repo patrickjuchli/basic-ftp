@@ -134,10 +134,17 @@ describe("Download to stream", function() {
 
     it("ignores error thrown on data socket after transfer completed successfully", async () => {
         let dataSocket
-        this.server.didOpenDataConn = () => dataSocket = this.client.ftp.dataSocket
+        this.server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+            "retr": ({arg}) => {
+                dataSocket = this.client.ftp.dataSocket
+                this.server.dataConn.end("some data")
+                return arg === FILENAME ? "150 Ready to download" : "500 Wrong filename"
+            }
+        })
         const buf = new StringWriter()
         await this.client.downloadTo(buf, FILENAME)
-        dataSocket.destroy(new Error("Late error no one cares about"))
+        dataSocket.destroy(new Error("Error that should be ignored because task has completed successfully"))
     })
 
     it("stops tracking timeout after failure")
