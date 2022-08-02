@@ -14,6 +14,12 @@ describe("Connectivity", function() {
         this.server.close()
     })
 
+    it("throws error when sending before connecting", () => {
+        return assert.rejects(() => this.client.send("hi"), {
+            message: "Socket is closed (control socket)"
+        })
+    })
+
     it("can access a server", () => {
         return this.client.access({
             port: this.server.ctrlAddress.port,
