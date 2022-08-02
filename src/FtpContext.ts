@@ -105,7 +105,7 @@ export class FTPContext {
         }
         this._closingError = err
         this.send("QUIT") // Don't wait for an answer
-        // Before giving the user's task a chance to react, make sure we won't be bothered with any inputs.
+        // Close the sockets but don't fully reset this context to preserve `this._closingError`.
         this._closeSocket(this._socket)
         this._closeSocket(this._dataSocket)
         // Give the user's task a chance to react, maybe cleanup resources.
