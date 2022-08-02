@@ -142,16 +142,16 @@ export class FTPContext {
     set socket(socket: Socket | TLSSocket) {
         // No data socket should be open in any case where the control socket is set or upgraded.
         this.dataSocket = undefined
+        // This being a reset, reset any other state apart from the socket.
         this.tlsOptions = {}
-        // This being a soft reset, remove any remaining partial response.
         this._partialResponse = ""
         if (this._socket) {
-            // Only close the current connection if the new is not an upgrade.
-            const isUpgrade = socket.localPort === this._socket.localPort
-            if (!isUpgrade) {
-                this._socket.end()
+            const newSocketUpgradesExisting = socket.localPort === this._socket.localPort
+            if (newSocketUpgradesExisting) {
+                this._removeSocketListeners(this.socket)
+            } else {
+                this._closeSocket(this.socket)
             }
-            this._removeSocketListeners(this._socket)
         }
         if (socket) {
             // Setting a completely new control socket is in essence something like a reset. That's
