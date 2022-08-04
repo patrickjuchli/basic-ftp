@@ -135,11 +135,11 @@ Upload data from a readable stream or a local file to a remote file. If such a f
 
 `appendFrom(readableStream | localPath, remotePath, [options]): Promise<FTPResponse>`
 
-Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't exist the FTP server should create it. If a file is being uploaded, additional options offer `localStart` and `localEndInclusive` to only upload parts of it.
+Upload data from a readable stream or a local file by appending it to an existing file. If the file doesn't exist the FTP server should create it. If a file is being uploaded, additional options offer `localStart` and `localEndInclusive` to only upload parts of it. For example: To resume a failed upload, request the size of the remote, partially uploaded file using `size()` and use it as `localStart`.
 
 `downloadTo(writableStream | localPath, remotePath, startAt = 0): Promise<FTPResponse>`
 
-Download a remote file and pipe its data to a writable stream or to a local file. You can optionally define at which position of the remote file you'd like to start downloading. If the destination you provide is a file, the offset will be applied to it as well. For example: To resume a failed download, you'd request the size of the local, partially downloaded file and use that as `startAt`.
+Download a remote file and pipe its data to a writable stream or to a local file. You can optionally define at which position of the remote file you'd like to start downloading. If the destination you provide is a file, the offset will be applied to it as well. For example: To resume a failed download, request the size of the local, partially downloaded file and use that as `startAt`.
 
 ---
 
