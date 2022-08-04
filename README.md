@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/basic-ftp.svg)](https://www.npmjs.com/package/basic-ftp)
 [![npm downloads](https://img.shields.io/npm/dm/basic-ftp)](https://www.npmjs.com/package/basic-ftp)
 
-This is an FTP client for Node.js. It supports FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories.
+This is an FTP client library for Node.js. It supports FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories.
 
 ## Advisory
 
@@ -91,7 +91,7 @@ Get access to an FTP server. This method will connect to a server, optionally se
 
 `features(): Promise<Map<string, string>>`
 
-Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details.
+Get a description of supported features. This will return a Map where keys correspond to FTP commands and values contain further details. If the FTP server doesn't support this request you'll still get an empty Map instead of an error response.
 
 `send(command): Promise<FTPResponse>`
 
@@ -139,7 +139,7 @@ Upload data from a readable stream or a local file by appending it to an existin
 
 `downloadTo(writableStream | localPath, remotePath, startAt = 0): Promise<FTPResponse>`
 
-Download a remote file and pipe its data to a writable stream or to a local file. You can optionally define at which position of the remote file you'd like to start downloading. If the destination you provide is a file, the offset will be applied to it as well. For example: To resume a failed download, you'd request the size of the local, partially downloaded file and use that as the offset.
+Download a remote file and pipe its data to a writable stream or to a local file. You can optionally define at which position of the remote file you'd like to start downloading. If the destination you provide is a file, the offset will be applied to it as well. For example: To resume a failed download, you'd request the size of the local, partially downloaded file and use that as `startAt`.
 
 ---
 
