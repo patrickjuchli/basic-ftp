@@ -245,7 +245,6 @@ export class FTPContext {
      */
     handle(command: string | undefined, responseHandler: ResponseHandler): Promise<any> {
         if (this._task) {
-            // The user or client instance called `handle()` while a task is still running.
             const err = new Error("User launched a task while another one is still running. Forgot to use 'await' or '.then()'?")
             err.stack += `\nRunning task launched at: ${this._task.stack}`
             this.closeWithError(err)
@@ -253,22 +252,20 @@ export class FTPContext {
             // because the context closed already. That way, users will receive an exception where
             // they called this method by mistake.
         }
-        return new Promise((resolvePromise, rejectPromise) => {
-            const stack = new Error().stack || "Unknown call stack"
-            const resolver: TaskResolver = {
-                resolve: (arg) => {
-                    this._stopTrackingTask()
-                    resolvePromise(arg)
-                },
-                reject: err => {
-                    this._stopTrackingTask()
-                    rejectPromise(err)
-                }
-            }
+        return new Promise((resolveTask, rejectTask) => {
             this._task = {
-                stack,
-                resolver,
-                responseHandler
+                stack: new Error().stack || "Unknown call stack",
+                responseHandler,
+                resolver: {
+                    resolve: arg => {
+                        this._stopTrackingTask()
+                        resolveTask(arg)
+                    },
+                    reject: err => {
+                        this._stopTrackingTask()
+                        rejectTask(err)
+                    }
+                }
             }
             if (this._closingError) {
                 // This client has been closed. Provide an error that describes this one as being caused
