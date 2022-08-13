@@ -62,11 +62,11 @@ module.exports = class MockFtpServer {
     }
 
     close() {
-        this.ctrlServer.close()
-        this.dataServer.close()
         for (const conn of this.connections) {
             conn.destroy()
         }
+        this.ctrlServer.close()
+        this.dataServer.close()
     }
 
     get dataAddressForPasvResponse() {
