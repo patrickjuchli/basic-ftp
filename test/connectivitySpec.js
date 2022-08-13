@@ -40,9 +40,7 @@ describe("Connectivity", function() {
 
     it("throws if connection failed", () => {
         return assert.rejects(() => this.client.access({
-            port: 111,
-            user: "test",
-            password: "test"
+            port: 111
         }), {
             name: "Error",
             code: "ECONNREFUSED"
