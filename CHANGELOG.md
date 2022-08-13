@@ -1,5 +1,10 @@
 # Changelog
 
+## UNRELEASED
+
+- Fixed: Use existing code path to close control socket when replacing it.
+- Fixed: Destroy sockets explicitly on timeouts only.
+
 ## 5.0.1
 
 - Fixed: Don't trust FEAT response of servers regarding EPSV. (#213)
