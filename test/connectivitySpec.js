@@ -6,7 +6,7 @@ describe("Connectivity", function() {
 
     this.beforeEach(() => {
         this.server = new MockFtpServer()
-        this.client = new Client(1000)
+        this.client = new Client(50)
     })
 
     this.afterEach(() => {
@@ -29,6 +29,14 @@ describe("Connectivity", function() {
             assert.strictEqual(result.code, 200, "Welcome response")
         })
     });
+
+    it("throws on timeout when accessing a server", () => {
+        return assert.rejects(() => this.client.access({
+            host: "192.168.0.123"
+        }), {
+            message: "Timeout (control socket)"
+        })
+    })
 
     it("throws if connection failed", () => {
         return assert.rejects(() => this.client.access({
