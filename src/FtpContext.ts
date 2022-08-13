@@ -365,7 +365,10 @@ export class FTPContext {
                 this.closeWithError(new Error(`Socket closed due to transmission error (${identifier})`))
             }
         })
-        socket.once("timeout", () => this.closeWithError(new Error(`Timeout (${identifier})`)))
+        socket.once("timeout", () => {
+            socket.destroy()
+            this.closeWithError(new Error(`Timeout (${identifier})`))
+        })
     }
 
     /**
