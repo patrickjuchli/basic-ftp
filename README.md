@@ -7,7 +7,7 @@ This is an FTP client library for Node.js. It supports FTPS over TLS, Passive Mo
 
 ## Advisory
 
-Prefer alternative transfer protocols like HTTPS or SFTP (SSH). FTP is a an old protocol that has a number of security and reliability issues. Use this library when you have no choice and need to use FTP. Try to use FTPS (FTP over TLS) whenever possible, FTP alone does not provide any security.
+Prefer alternative transfer protocols like HTTPS or SFTP (SSH). FTP is a an old protocol with some reliability issues. Use this library when you have no choice and need to use FTP. Try to use FTPS (FTP over TLS) whenever possible, FTP alone does not provide any security.
 
 ## Dependencies
 
@@ -19,7 +19,7 @@ Node 10.0 or later is the only dependency.
 
 ## Usage
 
-The first example will connect to an FTP server using TLS, get a directory listing, upload a file and download it as a copy. Note that the FTP protocol doesn't allow multiple requests running in parallel.
+The first example will connect to an FTP server using TLS (FTPS), get a directory listing, upload a file and download it as a copy. Note that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
 const ftp = require("basic-ftp") 
