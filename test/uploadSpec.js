@@ -172,21 +172,6 @@ describe("Upload", function() {
         })
     })
 
-    // it("handles server closing data connection during transfer", () => {
-    //     const source = new Readable()
-    //     source._read = () => {}
-    //     source.push("the beginning...")
-    //     this.server.didStartTransfer = () => {
-    //         this.server.dataConn.destroy()
-    //         source.push("...more")
-    //         source.push(null)
-    //     }
-    //     return assert.rejects(() => this.client.uploadFrom(source, FILENAME), {
-    //         name: "Error",
-    //         message: "read ECONNRESET (data socket)"
-    //     })
-    // })
-
     it("can upload with localStart/localEndInclusive")
     it("can append")
     it("can append with localStart/localEndInclusive")
