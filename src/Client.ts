@@ -272,8 +272,9 @@ export class Client {
             secureOptions.host = secureOptions.host ?? options.host
             await this.useTLS(secureOptions)
         }
-        await this.login(options.user, options.password)
+        // Set default settings before login in case there are non-ascii characters in user or password
         await this.useDefaultSettings()
+        await this.login(options.user, options.password)
         return welcome
     }
 
