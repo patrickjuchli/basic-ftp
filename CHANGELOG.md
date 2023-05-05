@@ -4,6 +4,7 @@
 
 - Fixed: Improve closing sequence for control socket. (#224, #228)
 - Fixed: Avoid deprecation error. (#221)
+- Fixed: Set default settings before login in case there are non-ascii characters in user or password. (#229, @lgpseu)
 
 ## 5.0.2
 

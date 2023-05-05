@@ -85,11 +85,12 @@ describe("Connectivity", function() {
             password: "test"
         }).then(() => {
             assert.deepEqual(this.server.receivedCommands, [
+                "OPTS UTF8 ON",
                 "USER test",
                 "FEAT",
                 "TYPE I",
                 "STRU F",
-                "OPTS UTF8 ON"
+                "OPTS UTF8 ON",
             ])
         })
     });

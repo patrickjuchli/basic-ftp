@@ -237,7 +237,7 @@ export class Client {
         this.availableListCommands = supportsMLSD ? LIST_COMMANDS_MLSD : LIST_COMMANDS_DEFAULT
         await this.send("TYPE I") // Binary mode
         await this.sendIgnoringError("STRU F") // Use file structure
-        await this.sendIgnoringError("OPTS UTF8 ON") // Some servers expect UTF-8 to be enabled explicitly
+        await this.sendIgnoringError("OPTS UTF8 ON") // Some servers expect UTF-8 to be enabled explicitly and setting before login might not have worked.
         if (supportsMLSD) {
             await this.sendIgnoringError("OPTS MLST type;size;modify;unique;unix.mode;unix.owner;unix.group;unix.ownername;unix.groupname;") // Make sure MLSD listings include all we can parse
         }
@@ -272,7 +272,8 @@ export class Client {
             secureOptions.host = secureOptions.host ?? options.host
             await this.useTLS(secureOptions)
         }
-        // Set utf8 on before login in case there are non-ascii characters in user or password
+        // Set UTF-8 on before login in case there are non-ascii characters in user or password.
+        // Note that this might not work before login depending on server.
         await this.sendIgnoringError("OPTS UTF8 ON")
         await this.login(options.user, options.password)
         await this.useDefaultSettings()
