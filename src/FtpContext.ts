@@ -40,7 +40,9 @@ export class FTPError extends Error {
     }
 }
 
-function doNothing() {}
+function doNothing() {
+    /** Do nothing */
+}
 
 /**
  * FTPContext holds the control and data sockets of an FTP connection and provides a
