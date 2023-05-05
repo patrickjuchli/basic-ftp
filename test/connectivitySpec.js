@@ -20,6 +20,10 @@ describe("Connectivity", function() {
         })
     })
 
+    it("handles closing uninitialized socket", () => {
+        this.client.close()
+    })
+
     it("can access a server", () => {
         return this.client.access({
             port: this.server.ctrlAddress.port,

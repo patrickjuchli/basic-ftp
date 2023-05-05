@@ -40,6 +40,8 @@ export class FTPError extends Error {
     }
 }
 
+function doNothing() {}
+
 /**
  * FTPContext holds the control and data sockets of an FTP connection and provides a
  * simplified way to interact with an FTP server, handle responses, errors and timeouts.
@@ -104,9 +106,8 @@ export class FTPContext {
             return
         }
         this._closingError = err
-        this.send("QUIT") // Don't wait for an answer
         // Close the sockets but don't fully reset this context to preserve `this._closingError`.
-        this._closeSocket(this._socket)
+        this._closeControlSocket()
         this._closeSocket(this._dataSocket)
         // Give the user's task a chance to react, maybe cleanup resources.
         this._passToHandler(err)
@@ -150,7 +151,7 @@ export class FTPContext {
             if (newSocketUpgradesExisting) {
                 this._removeSocketListeners(this.socket)
             } else {
-                this._closeSocket(this.socket)
+                this._closeControlSocket()
             }
         }
         if (socket) {
@@ -372,13 +373,23 @@ export class FTPContext {
     }
 
     /**
-     * Close a socket.
+     * Close the control socket. Sends QUIT, then FIN, and ignores any response or error.
+     */
+    protected _closeControlSocket() {
+        this._removeSocketListeners(this._socket)
+        this._socket.on("error", doNothing)
+        this.send("QUIT")
+        this._closeSocket(this._socket)
+    }
+
+    /**
+     * Close a socket. Sends FIN and ignores any error.
      * @protected
      */
     protected _closeSocket(socket: Socket | undefined) {
         if (socket) {
             this._removeSocketListeners(socket)
-            socket.on("error", () => { /* Do nothing, just prevent late exceptions no one cares about anymore */})
+            socket.on("error", doNothing)
             socket.on("timeout", () => socket.destroy())
             socket.setTimeout(this.timeout)
             socket.end()
