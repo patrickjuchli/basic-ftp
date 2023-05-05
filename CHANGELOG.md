@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.3
+
+- Fixed: Improve closing sequence for control socket. (#224, #228)
+- Fixed: Avoid deprecation error. (#221)
+
 ## 5.0.2
 
 - Fixed: Use existing code path to close control socket when replacing it.

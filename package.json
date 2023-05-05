@@ -1,6 +1,6 @@
 {
   "name": "basic-ftp",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "FTP client for Node.js, supports FTPS over TLS, IPv6, Async/Await, and Typescript.",
   "main": "dist/index",
   "types": "dist/index",
