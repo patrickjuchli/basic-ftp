@@ -377,7 +377,10 @@ export class Client {
      */
     async remove(path: string, ignoreErrorCodes = false): Promise<FTPResponse> {
         const validPath = await this.protectWhitespace(path)
-        return this.send(`DELE ${validPath}`, ignoreErrorCodes)
+        if (ignoreErrorCodes) {
+            return this.sendIgnoringError(`DELE ${validPath}`)
+        }
+        return this.send(`DELE ${validPath}`)
     }
 
     /**
