@@ -272,6 +272,8 @@ export class Client {
             secureOptions.host = secureOptions.host ?? options.host
             await this.useTLS(secureOptions)
         }
+        // Set utf8 on before login in case there are non-ascii characters in user or password
+        await this.sendIgnoringError("OPTS UTF8 ON")
         await this.login(options.user, options.password)
         await this.useDefaultSettings()
         return welcome
