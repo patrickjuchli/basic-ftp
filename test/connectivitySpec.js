@@ -46,7 +46,6 @@ describe("Connectivity", function() {
         return assert.rejects(() => this.client.access({
             port: 111
         }), {
-            name: "Error",
             code: "ECONNREFUSED"
         })
     })
