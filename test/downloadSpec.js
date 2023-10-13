@@ -146,6 +146,22 @@ describe("Download to stream", function() {
         await this.client.downloadTo(buf, FILENAME)
         dataSocket.destroy(new Error("Error that should be ignored because task has completed successfully"))
     })
+    it("handles early data socket closure", async () => {
+        this.server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+            "retr": ({arg})  => {
+                //close data connection such that client receives ECONNRESET
+                this.server.dataConn.resetAndDestroy()
+
+                return `550 ${arg}: No such file or directory.`
+            }
+        })
+        
+        const buf = new StringWriter()
+        await this.client.downloadTo(buf, FILENAME)
+        //control socket should still be open
+        assert(this.client.ftp.socket?.writable)
+    })
 
     it("stops tracking timeout after failure")
     it("can get a directory listing")
