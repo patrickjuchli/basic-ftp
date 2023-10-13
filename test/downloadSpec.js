@@ -158,7 +158,7 @@ describe("Download to stream", function() {
         })
         
         const buf = new StringWriter()
-        await this.client.downloadTo(buf, FILENAME)
+        await this.client.downloadTo(buf, FILENAME).catch(err => {})
         //control socket should still be open
         assert(this.client.ftp.socket?.writable)
     })

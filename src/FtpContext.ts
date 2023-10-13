@@ -1,7 +1,7 @@
 import { Socket } from "net"
 import { ConnectionOptions as TLSConnectionOptions, TLSSocket } from "tls"
-import { parseControlResponse } from "./parseControlResponse"
 import { StringEncoding } from "./StringEncoding"
+import { parseControlResponse } from "./parseControlResponse"
 
 interface Task {
     /** Handles a response for a task. */
@@ -361,16 +361,30 @@ export class FTPContext {
     protected _setupDefaultErrorHandlers(socket: Socket, identifier: string) {
         socket.once("error", error => {
             error.message += ` (${identifier})`
-            this.closeWithError(error)
+            if(identifier == "control socket") {
+                this.closeWithError(error)
+            } else {
+                //only close data socket, not the control socket as well
+                this._closeSocket(socket)
+            }
         })
         socket.once("close", hadError => {
             if (hadError) {
-                this.closeWithError(new Error(`Socket closed due to transmission error (${identifier})`))
+                if(identifier == "control socket") {
+                    this.closeWithError(new Error(`Socket closed due to transmission error (${identifier})`))
+                } else {
+                    //only close data socket, not the control socket as well
+                    this._closeSocket(socket)
+                }
             }
         })
         socket.once("timeout", () => {
             socket.destroy()
-            this.closeWithError(new Error(`Timeout (${identifier})`))
+            if(identifier == "control socket") {
+                this.closeWithError(new Error(`Timeout (${identifier})`)) 
+            } else {
+                this._closeSocket(socket)
+            }
         })
     }
 
