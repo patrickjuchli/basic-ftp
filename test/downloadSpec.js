@@ -4,6 +4,7 @@ const { StringWriter } = require("../dist/StringWriter");
 const MockFtpServer = require("./MockFtpServer");
 const { Writable } = require("stream")
 const fs = require("fs");
+const { Socket } = require("net");
 
 const FILENAME = "file.txt"
 const TIMEOUT = 1000
@@ -151,7 +152,7 @@ describe("Download to stream", function() {
             "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
             "retr": ({arg})  => {
                 //close data connection such that client receives ECONNRESET
-                this.server.dataConn.resetAndDestroy()
+                this.server.dataConn.resetAndDestroy?.()
 
                 return `550 ${arg}: No such file or directory.`
             }
