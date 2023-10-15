@@ -366,6 +366,7 @@ export class FTPContext {
             } else {
                 //only close data socket, not the control socket as well
                 this._closeSocket(socket)
+                this._passToHandler(error)
             }
         })
         socket.once("close", hadError => {
@@ -375,6 +376,7 @@ export class FTPContext {
                 } else {
                     //only close data socket, not the control socket as well
                     this._closeSocket(socket)
+                    this._passToHandler(new Error(`Socket closed due to transmission error (${identifier})`))
                 }
             }
         })
@@ -384,6 +386,7 @@ export class FTPContext {
                 this.closeWithError(new Error(`Timeout (${identifier})`)) 
             } else {
                 this._closeSocket(socket)
+                this._passToHandler(new Error(`Timeout (${identifier})`))
             }
         })
     }
