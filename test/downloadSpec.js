@@ -148,11 +148,17 @@ describe("Download to stream", function() {
         dataSocket.destroy(new Error("Error that should be ignored because task has completed successfully"))
     })
     it("handles early data socket closure", async () => {
+        /**
+         * type of this.client
+         * @type {Client}
+         */
+        this.client;
+
         this.server.addHandlers({
             "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
             "retr": ({arg})  => {
                 //close data connection such that client receives ECONNRESET
-                this.server.dataConn.resetAndDestroy?.()
+                this.server.dataConn.resetAndDestroy()
 
                 return `550 ${arg}: No such file or directory.`
             }
