@@ -607,7 +607,11 @@ export class Client {
             await this.clearWorkingDir()
             if (remoteDirPath !== "/") {
                 await this.cdup()
-                await this.removeEmptyDir(remoteDirPath)
+                if (remoteDirPath.startsWith("/")) {
+                    await this.removeEmptyDir(remoteDirPath)
+                } else {
+                    await this.removeEmptyDir(remoteDirPath.replace(/.*\//,''))
+                }
             }
         })
     }
