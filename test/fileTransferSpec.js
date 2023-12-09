@@ -2,7 +2,6 @@ const assert = require("assert");
 const { Client } = require("../dist");
 const MockFtpServer = require("./MockFtpServer");
 const fs = require("fs");
-const mock = require("mock-fs")
 
 const SHORT_TEXT = "This is a short text to download"
 const REMOTE_FILENAME = "file.txt"
@@ -14,9 +13,8 @@ describe("Download to a file", function() {
 
     let startAt = 0
     this.beforeEach(() => {
-        mock({
-            [EXISTING_LOCAL_FILENAME]: "content"
-        })
+        fs.writeFileSync(EXISTING_LOCAL_FILENAME, "content");
+
         this.payload = SHORT_TEXT
         this.client = new Client(TIMEOUT)
         this.server = new MockFtpServer()
@@ -42,7 +40,8 @@ describe("Download to a file", function() {
     })
 
     this.afterEach(() => {
-        mock.restore()
+        try { fs.unlinkSync(NEW_LOCAL_FILENAME) } catch {}
+        try { fs.unlinkSync(EXISTING_LOCAL_FILENAME) } catch {}
         this.client.close()
         this.server.close()
     })
