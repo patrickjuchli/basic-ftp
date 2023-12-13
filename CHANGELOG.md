@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.0.4
+
+- Fixed: Handle relative paths in Client.removeDir()
+
 ## 5.0.3
 
 - Fixed: Improve closing sequence for control socket. (#224, #228)
