@@ -16,5 +16,8 @@ Use `client.ftp.verbose = true` to log every communication detail. Copy-paste th
 **Which version of Node.js are you using?**
 e.g. Node 1.11.0
 
+**Which version of basic-ftp are you using?**
+e.g. 5.0.4
+
 **Additional context**
 Add any other context about the problem here. What FTP server are you using? What environment are you running in?
