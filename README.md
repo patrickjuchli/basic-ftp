@@ -25,7 +25,7 @@ The first example will connect to an FTP server using TLS (FTPS), get a director
 ```js
 const { Client } = require("basic-ftp") 
 // ESM: import { Client } from "basic-ftp"
-s
+
 example()
 
 async function example() {
