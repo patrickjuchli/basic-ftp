@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/basic-ftp)](https://www.npmjs.com/package/basic-ftp)
 [![Node.js CI](https://github.com/patrickjuchli/basic-ftp/actions/workflows/nodejs.yml/badge.svg)](https://github.com/patrickjuchli/basic-ftp/actions/workflows/nodejs.yml)
 
-This is an FTP client library for Node.js. It supports FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories.
+This is an FTP client library for Node.js. It supports FTPS over TLS, Passive Mode over IPv6, has a Promise-based API, and offers methods to operate on whole directories. Active Mode is not supported.
 
 ## Advisory
 
