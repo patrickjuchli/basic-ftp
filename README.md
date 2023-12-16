@@ -23,13 +23,13 @@ Node 10.0 or later is the only dependency.
 The first example will connect to an FTP server using TLS (FTPS), get a directory listing, upload a file and download it as a copy. Note that the FTP protocol doesn't allow multiple requests running in parallel.
 
 ```js
-const ftp = require("basic-ftp") 
-// ESM: import * as ftp from "basic-ftp"
-
+const { Client } = require("basic-ftp") 
+// ESM: import { Client } from "basic-ftp"
+s
 example()
 
 async function example() {
-    const client = new ftp.Client()
+    const client = new Client()
     client.ftp.verbose = true
     try {
         await client.access({
