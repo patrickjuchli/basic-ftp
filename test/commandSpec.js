@@ -112,12 +112,21 @@ describe("Simple commands", function() {
         })
     })
         
-    it("can handle leading whitespace in paths", () => {
+    it("can handle leading whitespace in a filename", () => {
         this.server.addHandlers({
             "pwd": () => `257 "/this/that"`
         })
         return this.client.protectWhitespace("  file.txt").then(result => {
             assert.strictEqual(result, "/this/that/  file.txt")
+        })
+    })
+
+    it("can handle leading whitespace in relative path", () => {
+        this.server.addHandlers({
+            "pwd": () => `257 "/this/that"`
+        })
+        return this.client.protectWhitespace(" a/b").then(result => {
+            assert.strictEqual(result, "/this/that/ a/b")
         })
     })
 
