@@ -58,7 +58,7 @@ const LIST_COMMANDS_MLSD: readonly string[] = ["MLSD", "LIST -a", "LIST"]
 export class Client {
     prepareTransfer: TransferStrategy
     parseList: RawListParser
-    availableListCommands = LIST_COMMANDS_DEFAULT
+    availableListCommands = LIST_COMMANDS_DEFAULT.slice()
     /** Low-level API to interact with FTP server. */
     readonly ftp: FTPContext
     /** Tracks progress of data transfers. */
@@ -234,7 +234,7 @@ export class Client {
         // Use MLSD directory listing if possible. See https://tools.ietf.org/html/rfc3659#section-7.8:
         // "The presence of the MLST feature indicates that both MLST and MLSD are supported."
         const supportsMLSD = features.has("MLST")
-        this.availableListCommands = supportsMLSD ? LIST_COMMANDS_MLSD : LIST_COMMANDS_DEFAULT
+        this.availableListCommands = supportsMLSD ? LIST_COMMANDS_MLSD.slice() : LIST_COMMANDS_DEFAULT.slice()
         await this.send("TYPE I") // Binary mode
         await this.sendIgnoringError("STRU F") // Use file structure
         await this.sendIgnoringError("OPTS UTF8 ON") // Some servers expect UTF-8 to be enabled explicitly and setting before login might not have worked.
