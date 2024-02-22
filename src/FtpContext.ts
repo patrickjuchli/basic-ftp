@@ -392,7 +392,6 @@ export class FTPContext {
         if (socket) {
             this._removeSocketListeners(socket)
             socket.on("error", doNothing)
-            socket.end()
             socket.destroy()
         }
     }
