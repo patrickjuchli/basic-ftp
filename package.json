@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "prepublishOnly": "npm run clean && npm run lint && tsc && mocha",
+    "prepare": "tsc",
     "test": "npm run prepublishOnly",
     "clean": "rm -rf dist",
     "lint": "eslint \"./src/**/*.ts\"",
