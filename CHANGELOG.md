@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 5.0.5
+
+- Fixed: Memory leak described in #250 by @everhardt, @martijnimhoff
+
 ## 5.0.4
 
 - Fixed: Handle relative paths in Client.removeDir()
