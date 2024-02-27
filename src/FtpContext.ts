@@ -385,7 +385,7 @@ export class FTPContext {
     }
 
     /**
-     * Close a socket. Sends FIN and ignores any error.
+     * Close a socket, ignores any error.
      * @protected
      */
     protected _closeSocket(socket: Socket | undefined) {
