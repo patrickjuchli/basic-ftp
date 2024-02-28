@@ -4,6 +4,7 @@ const { StringWriter } = require("../dist/StringWriter");
 const MockFtpServer = require("./MockFtpServer");
 const { Writable } = require("stream")
 const fs = require("fs");
+const { Socket } = require("net");
 
 const FILENAME = "file.txt"
 const TIMEOUT = 1000
@@ -145,6 +146,28 @@ describe("Download to stream", function() {
         const buf = new StringWriter()
         await this.client.downloadTo(buf, FILENAME)
         dataSocket.destroy(new Error("Error that should be ignored because task has completed successfully"))
+    })
+    it("handles early data socket closure", async () => {
+        /**
+         * type of this.client
+         * @type {Client}
+         */
+        this.client;
+
+        this.server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+            "retr": ({arg})  => {
+                //close data connection such that client receives ECONNRESET
+                this.server.dataConn.resetAndDestroy()
+
+                return `550 ${arg}: No such file or directory.`
+            }
+        })
+        
+        const buf = new StringWriter()
+        await this.client.downloadTo(buf, FILENAME).catch(err => {})
+        //control socket should still be open
+        assert(this.client.ftp.socket?.writable)
     })
 
     it("stops tracking timeout after failure")
