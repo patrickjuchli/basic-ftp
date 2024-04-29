@@ -39,6 +39,15 @@ module.exports = class MockFtpServer {
         })
         this.dataConn = undefined
         this.dataServer = net.createServer(conn => {
+            if(!conn.resetAndDestroy) {
+                conn.resetAndDestroy = () => {
+                    conn._handle.reset(() => {
+                        this.conn.emit("close")
+                    })
+                    conn._handle.onread = () =>{};
+                    conn._handle = null;
+                }
+            }
             this.dataConn = conn
             this.connections.push(conn)
             this.didOpenDataConn()
