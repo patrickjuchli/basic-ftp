@@ -377,7 +377,7 @@ export class Client {
      */
     async fileExists(path: string): Promise<FTPResponse> {
         const validPath = await this.protectWhitespace(path)
-        return this.sendIgnoringError(`SIZE ${validPath}`);
+        return !!this.sendIgnoringError(`SIZE ${validPath}`);
     }
 
     /**
