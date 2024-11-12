@@ -69,9 +69,9 @@ export class Client {
      *
      * @param timeout  Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
      */
-    constructor(timeout = 30000) {
+    constructor(timeout = 30000, alwaysUseControlHost = false) {
         this.ftp = new FTPContext(timeout)
-        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
+        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4(alwaysUseControlHost)])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }

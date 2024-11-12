@@ -45,22 +45,25 @@ export function parseEpsvResponse(message: string): number {
 /**
  * Prepare a data socket using passive mode over IPv4.
  */
-export async function enterPassiveModeIPv4(ftp: FTPContext): Promise<FTPResponse> {
-    const res = await ftp.request("PASV")
-    const target = parsePasvResponse(res.message)
-    if (!target) {
-        throw new Error("Can't parse PASV response: " + res.message)
+export function enterPassiveModeIPv4(alwaysUseControlHost: boolean): (ftp: FTPContext) => Promise<FTPResponse> {
+    return async (ftp: FTPContext) => {
+        const res = await ftp.request("PASV")
+        const target = parsePasvResponse(res.message)
+        if (!target) {
+            throw new Error("Can't parse PASV response: " + res.message)
+        }
+        // If the host in the PASV response has a local address while the control connection hasn't,
+        // we assume a NAT issue and use the IP of the control connection as the target for the data connection.
+        // We can't always perform this replacement because it's possible (although unlikely) that the FTP server
+        // indeed uses a different host for data connections. Use 'alwaysUseControlHost' flag if you want to use the
+        // remote address even if both are local.
+        const controlHost = ftp.socket.remoteAddress
+        if (controlHost && ((ipIsPrivateV4Address(target.host) && !ipIsPrivateV4Address(controlHost)) || alwaysUseControlHost)) {
+            target.host = controlHost
+        }
+        await connectForPassiveTransfer(target.host, target.port, ftp)
+        return res
     }
-    // If the host in the PASV response has a local address while the control connection hasn't,
-    // we assume a NAT issue and use the IP of the control connection as the target for the data connection.
-    // We can't always perform this replacement because it's possible (although unlikely) that the FTP server
-    // indeed uses a different host for data connections.
-    const controlHost = ftp.socket.remoteAddress
-    if (ipIsPrivateV4Address(target.host) && controlHost && !ipIsPrivateV4Address(controlHost)) {
-        target.host = controlHost
-    }
-    await connectForPassiveTransfer(target.host, target.port, ftp)
-    return res
 }
 
 /**
