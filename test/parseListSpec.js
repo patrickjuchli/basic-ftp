@@ -26,6 +26,11 @@ const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
 11-14-97  04:21PM                  953 MYFILE.INI`
 
+const listMLSDWithPerm = `
+type=file;size=24;modify=20250628164658.025;perm=rw; awesome.txt
+type=file;size=9;modify=20250628164657.973;perm=rw; fake.txt
+type=file;size=1091;modify=20250628164658.013;perm=rw; LICENSE`
+
 describe("Directory listing", function() {
     let f;
     const tests = [
@@ -231,6 +236,30 @@ describe("Directory listing", function() {
                 f),
                 (f = new FileInfo("target"),
                 f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "MLSD with perm fact (perm fact ignored)",
+            list: listMLSDWithPerm,
+            exp: [
+                (f = new FileInfo("awesome.txt"),
+                f.type = FileType.File,
+                f.size = 24,
+                f.rawModifiedAt = "2025-06-28T16:46:58.025Z",
+                f.modifiedAt = new Date("2025-06-28T16:46:58.025Z"),
+                f),
+                (f = new FileInfo("fake.txt"),
+                f.type = FileType.File,
+                f.size = 9,
+                f.rawModifiedAt = "2025-06-28T16:46:57.973Z",
+                f.modifiedAt = new Date("2025-06-28T16:46:57.973Z"),
+                f),
+                (f = new FileInfo("LICENSE"),
+                f.type = FileType.File,
+                f.size = 1091,
+                f.rawModifiedAt = "2025-06-28T16:46:58.013Z",
+                f.modifiedAt = new Date("2025-06-28T16:46:58.013Z"),
                 f)
             ]
         },
