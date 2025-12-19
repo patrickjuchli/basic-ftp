@@ -780,7 +780,7 @@ export class Client {
                 try {
                     const res = await strategy(ftp)
                     ftp.log("Optimal transfer strategy found.")
-                    this.prepareTransfer = strategy // eslint-disable-line require-atomic-updates
+                    this.prepareTransfer = strategy
                     return res
                 }
                 catch(err: any) {
@@ -843,7 +843,7 @@ async function ensureLocalDirectory(path: string) {
     try {
         await fsStat(path)
     }
-    catch(err) {
+    catch {
         await fsMkDir(path, { recursive: true })
     }
 }
@@ -852,7 +852,7 @@ async function ignoreError<T>(func: () => Promise<T | undefined>) {
     try {
         return await func()
     }
-    catch(err) {
+    catch {
         // Ignore
         return undefined
     }
