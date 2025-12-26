@@ -2,7 +2,7 @@
 
 ## 5.1.0
 
-- Added: Force the use of the control host IP for all transfer connections requested by PASV. (#259)
+- Added: Add the option to prevent the use of separate transfer host IPs when using PASV. (#259)
 
 ## 5.0.5
 
