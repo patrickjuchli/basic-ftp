@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.1.0
+
+- Added: Force the use of the control host IP for all transfer connections requested by PASV. (#259)
 
 ## 5.0.5
 
