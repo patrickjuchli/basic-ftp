@@ -20,6 +20,7 @@
         "ecmaVersion": 2018
     },
     "rules": {
+        "@typescript-eslint/no-require-imports": "off",
         "semi": "off",
         "@typescript-eslint/semi": ["error", "never"],
         "@typescript-eslint/explicit-function-return-type": "off",

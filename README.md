@@ -65,9 +65,11 @@ client.ftp.verbose = true
 
 ## Client API
 
-`new Client(timeout = 30000)`
+`new Client(timeout, options)`
 
-Create a client instance. Configure it with a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds.
+Create a client instance. Configure it with a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds. Options are: 
+
+- `ignoreTransferHostIP (boolean)`, use this to use the control host IP also for transfers. This can fix local NAT issues and provide better security to prevent bounce attacks. Default is *false* for backwards-compatibility reasons where FTP does allow different IPs for control and transfer hosts. Note that for modern servers, this client will use EPSV instead of PASV to request a transfer connection which uses the control host IP by default anyway.
 
 `close()`
 

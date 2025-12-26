@@ -64,6 +64,25 @@ export async function enterPassiveModeIPv4(ftp: FTPContext): Promise<FTPResponse
 }
 
 /**
+ * Prepare a data socket using passive mode over IPv4. Ignore the IP provided by the PASV response,
+ * and use the control host IP. This is the same behaviour as with the more modern variant EPSV. Use
+ * this to fix issues around NAT or provide more security by preventing FTP bounce attacks. 
+ */
+export async function enterPassiveModeIPv4_forceControlHostIP(ftp: FTPContext): Promise<FTPResponse> {
+    const res = await ftp.request("PASV")
+    const target = parsePasvResponse(res.message)
+    if (!target) {
+        throw new Error("Can't parse PASV response: " + res.message)
+    }
+    const controlHost = ftp.socket.remoteAddress
+    if (controlHost === undefined) {
+        throw new Error("Control socket is disconnected, can't get remote address.")
+    }
+    await connectForPassiveTransfer(controlHost, target.port, ftp)
+    return res
+}
+
+/**
  * Parse a PASV response.
  */
 export function parsePasvResponse(message: string): { host: string, port: number } {

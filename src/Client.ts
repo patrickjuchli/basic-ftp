@@ -10,7 +10,7 @@ import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
 import { parseMLSxDate } from "./parseListMLSD"
 import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
-import { uploadFrom, downloadTo, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand } from "./transfer"
+import { uploadFrom, downloadTo, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand, enterPassiveModeIPv4_forceControlHostIP } from "./transfer"
 import { isMultiline, positiveCompletion } from "./parseControlResponse"
 
 // Use promisify to keep the library compatible with Node 8.
@@ -49,6 +49,13 @@ export interface UploadOptions {
     localEndInclusive?: number
 }
 
+export interface ClientOptions {
+    ignoreTransferHostIP: boolean
+}
+
+const defaultClientOptions: ClientOptions = {
+    ignoreTransferHostIP: false
+}
 const LIST_COMMANDS_DEFAULT = () => ["LIST -a", "LIST"]
 const LIST_COMMANDS_MLSD = () => ["MLSD", "LIST -a", "LIST"]
 
@@ -69,9 +76,12 @@ export class Client {
      *
      * @param timeout  Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
      */
-    constructor(timeout = 30000) {
+    constructor(timeout = 30000, options: ClientOptions = defaultClientOptions) {
         this.ftp = new FTPContext(timeout)
-        this.prepareTransfer = this._enterFirstCompatibleMode([enterPassiveModeIPv6, enterPassiveModeIPv4])
+        this.prepareTransfer = this._enterFirstCompatibleMode([
+            enterPassiveModeIPv6, 
+            options.ignoreTransferHostIP ? enterPassiveModeIPv4_forceControlHostIP : enterPassiveModeIPv4
+        ])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }
