@@ -69,7 +69,7 @@ client.ftp.verbose = true
 
 Create a client instance. Configure it with a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds. Options are: 
 
-- `ignoreTransferHostIP (boolean)`, use this to use the control host IP also for transfers. This can fix local NAT issues and provide better security to prevent bounce attacks. Default is *false* for backwards-compatibility reasons where FTP does allow different IPs for control and transfer hosts. Note that for modern servers, this client will use EPSV instead of PASV to request a transfer connection which uses the control host IP by default anyway.
+- `allowSeparateTransferHostIP (boolean)`, the FTP spec makes it possible for a server to tell the client to use a different IP address for file transfers than for the initial control connection. Today, this feature is very rarely used. Still, the default for this is set to `true` for backwards-compatibility reasons. If you experience any issues with NAT traversal in local networks or want to provide more security and prevent FTP bounce attacks, set this to `false`.
 
 `close()`
 
