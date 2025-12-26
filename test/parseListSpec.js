@@ -26,6 +26,15 @@ const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
 11-14-97  04:21PM                  953 MYFILE.INI`
 
+const listMLSDWithPerm = `
+type=file;size=24;modify=20250628164658.025;perm=rw; awesome.txt
+type=file;size=9;modify=20250628164657.973;perm=rw; fake.txt
+type=file;size=1091;modify=20250628164658.013;perm=rw; LICENSE`
+
+const listEPLFComprehensive = `
++i8388621.29609,m824255902,/,	lib
++i640ecfac.1400000014a761,s1057,m1751129904,up644,r      LICENSE.txt`
+
 describe("Directory listing", function() {
     let f;
     const tests = [
@@ -235,6 +244,30 @@ describe("Directory listing", function() {
             ]
         },
         {
+            title: "MLSD with perm fact (perm fact ignored)",
+            list: listMLSDWithPerm,
+            exp: [
+                (f = new FileInfo("awesome.txt"),
+                f.type = FileType.File,
+                f.size = 24,
+                f.rawModifiedAt = "2025-06-28T16:46:58.025Z",
+                f.modifiedAt = new Date("2025-06-28T16:46:58.025Z"),
+                f),
+                (f = new FileInfo("fake.txt"),
+                f.type = FileType.File,
+                f.size = 9,
+                f.rawModifiedAt = "2025-06-28T16:46:57.973Z",
+                f.modifiedAt = new Date("2025-06-28T16:46:57.973Z"),
+                f),
+                (f = new FileInfo("LICENSE"),
+                f.type = FileType.File,
+                f.size = 1091,
+                f.rawModifiedAt = "2025-06-28T16:46:58.013Z",
+                f.modifiedAt = new Date("2025-06-28T16:46:58.013Z"),
+                f)
+            ]
+        },
+        {
             title: "Regular Unix list",
             list: listUnix,
             exp: [
@@ -299,6 +332,62 @@ describe("Directory listing", function() {
                 f.rawModifiedAt = "11-14-97 04:21PM",
                 f.type = FileType.File,
                 f),
+            ]
+        },
+        {
+            title: "EPLF format - directory",
+            list: `+i8388621.29609,m824255902,/,	bin`,
+            exp: [
+                (f = new FileInfo("bin"),
+                f.type = FileType.Directory,
+                f.rawModifiedAt = "1996-02-13T23:58:22.000Z",
+                f.modifiedAt = new Date("1996-02-13T23:58:22.000Z"),
+                f)
+            ]
+        },
+        {
+            title: "EPLF format - file with size",
+            list: `+i8388621.44468,m824255902,r,s10376,	ls-lR.Z`,
+            exp: [
+                (f = new FileInfo("ls-lR.Z"),
+                f.type = FileType.File,
+                f.size = 10376,
+                f.rawModifiedAt = "1996-02-13T23:58:22.000Z",
+                f.modifiedAt = new Date("1996-02-13T23:58:22.000Z"),
+                f)
+            ]
+        },
+        {
+            title: "EPLF format - file without size",
+            list: `+i8388621.29609,m824255902,r,	file.txt`,
+            exp: [
+                (f = new FileInfo("file.txt"),
+                f.type = FileType.File,
+                f.rawModifiedAt = "1996-02-13T23:58:22.000Z",
+                f.modifiedAt = new Date("1996-02-13T23:58:22.000Z"),
+                f)
+            ]
+        },
+        {
+            title: "EPLF format - comprehensive test (all variants)",
+            list: listEPLFComprehensive,
+            exp: [
+                (f = new FileInfo("lib"),
+                f.type = FileType.Directory,
+                f.rawModifiedAt = "1996-02-13T23:58:22.000Z",
+                f.modifiedAt = new Date("1996-02-13T23:58:22.000Z"),
+                f),
+                (f = new FileInfo("LICENSE.txt"),
+                f.type = FileType.File,
+                f.size = 1057,
+                f.rawModifiedAt = "2025-06-28T16:58:24.000Z",
+                f.modifiedAt = new Date("2025-06-28T16:58:24.000Z"),
+                f.permissions = {
+                    user: 6,
+                    group: 4,
+                    world: 4
+                },
+                f)
             ]
         },
         {
