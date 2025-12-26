@@ -50,11 +50,11 @@ export interface UploadOptions {
 }
 
 export interface ClientOptions {
-    allowSeparateTransferHostIP: boolean
+    allowSeparateTransferHost: boolean
 }
 
 const defaultClientOptions: ClientOptions = {
-    allowSeparateTransferHostIP: true
+    allowSeparateTransferHost: true
 }
 const LIST_COMMANDS_DEFAULT = () => ["LIST -a", "LIST"]
 const LIST_COMMANDS_MLSD = () => ["MLSD", "LIST -a", "LIST"]
@@ -80,7 +80,7 @@ export class Client {
         this.ftp = new FTPContext(timeout)
         this.prepareTransfer = this._enterFirstCompatibleMode([
             enterPassiveModeIPv6, 
-            options.allowSeparateTransferHostIP ? enterPassiveModeIPv4 : enterPassiveModeIPv4_forceControlHostIP
+            options.allowSeparateTransferHost ? enterPassiveModeIPv4 : enterPassiveModeIPv4_forceControlHostIP
         ])
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
