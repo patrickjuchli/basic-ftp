@@ -7,10 +7,11 @@ on:
     branches: [master]
 
 jobs:
-  permissions:
-    contents: read
-    pull-requests: write
   build:
+    permissions:
+      contents: read
+      pull-requests: write
+      
     runs-on: ubuntu-latest
 
     strategy:
