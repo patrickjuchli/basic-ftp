@@ -383,6 +383,14 @@ export class Client {
     }
 
     /**
+     * Check a file if it exists or not
+     */
+    async fileExists(path: string): Promise<FTPResponse> {
+        const validPath = await this.protectWhitespace(path)
+        return !!this.sendIgnoringError(`SIZE ${validPath}`);
+    }
+
+    /**
      * Remove a file from the current working directory.
      *
      * You can ignore FTP error return codes which won't throw an exception if e.g.
