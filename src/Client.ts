@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink } from "fs"
-import { join } from "path"
+import { basename, join } from "path"
 import { Readable, Writable } from "stream"
 import { connect as connectTLS, ConnectionOptions as TLSConnectionOptions } from "tls"
 import { promisify } from "util"
@@ -704,6 +704,12 @@ export class Client {
     protected async _downloadFromWorkingDir(localDirPath: string): Promise<void> {
         await ensureLocalDirectory(localDirPath)
         for (const file of await this.list()) {
+            const hasInvalidName = !file.name || basename(file.name) !== file.name
+            if (hasInvalidName) {
+                const safeName = JSON.stringify(file.name)
+                this.ftp.log(`Invalid filename from server listing, will skip file. (${safeName})`)
+                continue
+            }
             const localPath = join(localDirPath, file.name)
             if (file.isDirectory) {
                 await this.cd(file.name)
