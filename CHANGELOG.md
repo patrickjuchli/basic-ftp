@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.0
+
+- Changed: Skip files with invalid name in downloadToDir.
+
 ## 5.1.0
 
 - Added: Add the option to prevent the use of separate transfer host IPs when using PASV. (#259)
