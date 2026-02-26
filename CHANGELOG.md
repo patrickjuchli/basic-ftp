@@ -2,7 +2,7 @@
 
 ## 5.2.0
 
-- Changed: Skip files with invalid name in downloadToDir.
+- Changed: Skip files with invalid name in downloadToDir. Fixes security vulnerability CVE-2026-27699, see https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-5rq4-664w-9x2c.
 
 ## 5.1.0
 
