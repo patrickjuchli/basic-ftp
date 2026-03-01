@@ -562,16 +562,24 @@ export class Client {
      *
      * @param [path]  Path to remote file or directory.
      */
-    async list(path = ""): Promise<FileInfo[]> {
+    async list(path = "", command?: "MLSD" | "LIST"): Promise<FileInfo[]> {
         const validPath = await this.protectWhitespace(path)
         let lastError: any
-        for (const candidate of this.availableListCommands) {
-            const command = validPath === "" ? candidate : `${candidate} ${validPath}`
+
+        // If a specific command is provided, use only that command.
+        const listCommands = command
+            ? [command === "MLSD" ? "MLSD" : "LIST"]
+            : this.availableListCommands
+
+        for (const candidate of listCommands) {
+            const cmd = validPath === "" ? candidate : `${candidate} ${validPath}`
             await this.prepareTransfer(this.ftp)
             try {
-                const parsedList = await this._requestListWithCommand(command)
-                // Use successful candidate for all subsequent requests.
-                this.availableListCommands = [ candidate ]
+                const parsedList = await this._requestListWithCommand(cmd)
+                // Use successful candidate for all subsequent requests if not using explicit command.
+                if (!command) {
+                    this.availableListCommands = [candidate]
+                }
                 return parsedList
             }
             catch (err) {
