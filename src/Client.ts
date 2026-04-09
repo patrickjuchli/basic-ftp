@@ -760,10 +760,6 @@ export class Client {
      * a given path to fix that issue for most cases.
      */
     async protectWhitespace(path: string): Promise<string> {
-        // Reject CRLF injection attempts
-        if (/[\r\n\0]/.test(path)) {
-            throw new Error("Invalid path: Contains control characters");
-        }
         if (!path.startsWith(" ")) {
             return path
         }

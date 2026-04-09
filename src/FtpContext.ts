@@ -221,6 +221,10 @@ export class FTPContext {
      * Send an FTP command without waiting for or handling the result.
      */
     send(command: string) {
+        // Reject control character injection attempts.
+        if (/[\r\n\0]/.test(command)) {
+            throw new Error(`Invalid command: Contains control characters. (${command})`);
+        }
         const containsPassword = command.startsWith("PASS")
         const message = containsPassword ? "> PASS ###" : `> ${command}`
         this.log(message)
