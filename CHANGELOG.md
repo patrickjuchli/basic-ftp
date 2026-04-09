@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.2
+
+- Fixed: Improve control character rejection, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-6v7q-wjvx-w8wg.
+
 ## 5.2.1
 
 - Fixed: Reject control character injection attempts using paths. See https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-chqc-8p9q-pq6q.
