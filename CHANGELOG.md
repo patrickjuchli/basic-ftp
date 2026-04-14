@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.3.0
+
+- Changed: Introduced an upper bound for directory listing download, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-rp42-5vxx-qpwr.
+- Added: Option to increase the upper bound for directory listing in Client constructor.
+
 ## 5.2.2
 
 - Fixed: Improve control character rejection, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-6v7q-wjvx-w8wg.
