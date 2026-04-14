@@ -1,17 +1,17 @@
-import { createReadStream, createWriteStream, mkdir, readdir, stat, open, close, unlink } from "fs"
+import { close, createReadStream, createWriteStream, mkdir, open, readdir, stat, unlink } from "fs"
 import { basename, join } from "path"
 import { Readable, Writable } from "stream"
 import { connect as connectTLS, ConnectionOptions as TLSConnectionOptions } from "tls"
 import { promisify } from "util"
 import { FileInfo } from "./FileInfo"
 import { FTPContext, FTPError, FTPResponse } from "./FtpContext"
+import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
+import { isMultiline, positiveCompletion } from "./parseControlResponse"
 import { parseList as parseListAutoDetect } from "./parseList"
+import { parseMLSxDate } from "./parseListMLSD"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
 import { StringWriter } from "./StringWriter"
-import { parseMLSxDate } from "./parseListMLSD"
-import { describeAddress, describeTLS, upgradeSocket } from "./netUtils"
-import { uploadFrom, downloadTo, enterPassiveModeIPv6, enterPassiveModeIPv4, UploadCommand, enterPassiveModeIPv4_forceControlHostIP } from "./transfer"
-import { isMultiline, positiveCompletion } from "./parseControlResponse"
+import { downloadTo, enterPassiveModeIPv4, enterPassiveModeIPv4_forceControlHostIP, enterPassiveModeIPv6, UploadCommand, uploadFrom } from "./transfer"
 
 // Use promisify to keep the library compatible with Node 8.
 const fsReadDir = promisify(readdir)
@@ -50,11 +50,15 @@ export interface UploadOptions {
 }
 
 export interface ClientOptions {
+    /** Allow the FTP server to use a different host for transfers. */
     allowSeparateTransferHost: boolean
+    /** The upper bound for directory listings. */
+    maxListingBytes: number
 }
 
 const defaultClientOptions: ClientOptions = {
-    allowSeparateTransferHost: true
+    allowSeparateTransferHost: true,
+    maxListingBytes: 20 * 1024 * 1024
 }
 const LIST_COMMANDS_DEFAULT = () => ["LIST -a", "LIST"]
 const LIST_COMMANDS_MLSD = () => ["MLSD", "LIST -a", "LIST"]
@@ -70,18 +74,21 @@ export class Client {
     readonly ftp: FTPContext
     /** Tracks progress of data transfers. */
     protected _progressTracker: ProgressTracker
+    protected options: ClientOptions
 
     /**
      * Instantiate an FTP client.
      *
      * @param timeout  Timeout in milliseconds, use 0 for no timeout. Optional, default is 30 seconds.
      */
-    constructor(timeout = 30000, options: ClientOptions = defaultClientOptions) {
+    constructor(timeout = 30000, userOptions: Partial<ClientOptions> = defaultClientOptions) {
+        const options: ClientOptions = { ...defaultClientOptions, ...userOptions }
         this.ftp = new FTPContext(timeout)
         this.prepareTransfer = this._enterFirstCompatibleMode([
             enterPassiveModeIPv6, 
             options.allowSeparateTransferHost ? enterPassiveModeIPv4 : enterPassiveModeIPv4_forceControlHostIP
         ])
+        this.options = options
         this.parseList = parseListAutoDetect
         this._progressTracker = new ProgressTracker()
     }
@@ -589,7 +596,7 @@ export class Client {
      * @protected
      */
     protected async _requestListWithCommand(command: string): Promise<FileInfo[]> {
-        const buffer = new StringWriter()
+        const buffer = new StringWriter(this.options.maxListingBytes)
         await downloadTo(buffer, {
             ftp: this.ftp,
             tracker: this._progressTracker,
