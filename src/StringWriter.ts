@@ -16,7 +16,7 @@ export class StringWriter extends Writable {
             return
         }        
         if (this.byteLength + chunk.byteLength > this.maxByteLength) {
-            callback(new Error(`StringWriter: Out of bounds. (maxByteLength=${this.maxByteLength})`))
+            callback(new Error(`StringWriter: Maximum bytes exceeded, maxByteLength=${this.maxByteLength}.`))
             return
         }
         this.byteLength += chunk.byteLength
