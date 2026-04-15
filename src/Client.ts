@@ -52,13 +52,16 @@ export interface UploadOptions {
 export interface ClientOptions {
     /** Allow the FTP server to use a different host for transfers. */
     allowSeparateTransferHost: boolean
-    /** The upper bound for directory listings. */
+    /** 
+     * The upper bound for directory listings, a security measure to avoid unbounded memory consumption.
+     * You typically don't have to set this, the library picks a reasonable default.
+     */
     maxListingBytes: number
 }
 
 const defaultClientOptions: ClientOptions = {
     allowSeparateTransferHost: true,
-    maxListingBytes: 20 * 1024 * 1024
+    maxListingBytes: 40 * 1024 * 1024
 }
 const LIST_COMMANDS_DEFAULT = () => ["LIST -a", "LIST"]
 const LIST_COMMANDS_MLSD = () => ["MLSD", "LIST -a", "LIST"]
