@@ -2,8 +2,8 @@
 
 ## 5.3.0
 
-- Changed: Introduced an upper bound for directory listing download, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-rp42-5vxx-qpwr.
-- Added: Option to increase the upper bound for directory listing in Client constructor.
+- Changed: Introduced an upper bound for total bytes of directory listing, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-rp42-5vxx-qpwr.
+- Added: Option to increase the upper bound for total bytes of directory listing in Client constructor.
 
 ## 5.2.2
 
