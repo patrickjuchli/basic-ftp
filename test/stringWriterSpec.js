@@ -20,7 +20,7 @@ describe("StringWriter", function() {
     it("fails if out of bounds", function(done) {
         const w = new StringWriter(10)
         w.once("error", (err) => {
-            assert.match(err.message, /out of bounds/i)
+            assert.match(err.message, /Maximum bytes exceeded/i)
             done()
         })
         w.write(Buffer.from("hello"))
