@@ -16,6 +16,7 @@
     "lint-fix": "eslint --fix \"./src/**/*.ts\"",
     "dev": "npm run clean && tsc --watch",
     "tdd": "mocha --watch",
+    "prepare": "tsc",
     "buildOnly": "tsc"
   },
   "repository": {
