@@ -44,6 +44,9 @@ function doNothing() {
     /** Do nothing */
 }
 
+// Limit the accepted size of the control response.
+const maxControlResponseLength = 2 ** 16
+
 /**
  * FTPContext holds the control and data sockets of an FTP connection and provides a
  * simplified way to interact with an FTP server, handle responses, errors and timeouts.
@@ -327,7 +330,11 @@ export class FTPContext {
      */
     protected _onControlSocketData(chunk: string) {
         this.log(`< ${chunk}`)
-        // This chunk might complete an earlier partial response.
+        // This chunk might complete an earlier partial response. Protect against unbounded response attack.
+        if (this._partialResponse.length + chunk.length > maxControlResponseLength) {
+            this.closeWithError(new Error("FTP control response exceeded maximum allowed size"))
+            return
+        }
         const completeResponse = this._partialResponse + chunk
         const parsed = parseControlResponse(completeResponse)
         // Remember any incomplete remainder.

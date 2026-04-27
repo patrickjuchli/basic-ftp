@@ -1,6 +1,6 @@
 {
   "name": "basic-ftp",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "description": "FTP client for Node.js, supports FTPS over TLS, IPv6, Async/Await, and Typescript.",
   "main": "dist/index",
   "types": "dist/index",
@@ -42,11 +42,11 @@
     "@eslint/js": "10.0.1",
     "@types/mocha": "10.0.10",
     "@types/node": "25.6.0",
-    "@typescript-eslint/eslint-plugin": "8.58.2",
-    "@typescript-eslint/parser": "8.58.2",
-    "eslint": "10.2.0",
+    "@typescript-eslint/eslint-plugin": "8.59.1",
+    "@typescript-eslint/parser": "8.59.1",
+    "eslint": "10.2.1",
     "globals": "17.5.0",
     "mocha": "11.7.5",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   }
 }

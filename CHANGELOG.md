@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.3.1
+
+- Fixed: Protect against unbounded control response, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-rpmf-866q-6p89.
+
 ## 5.3.0
 
 - Changed: Introduced an upper bound for total bytes of directory listing, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-rp42-5vxx-qpwr.
