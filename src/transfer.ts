@@ -64,9 +64,11 @@ export async function enterPassiveModeIPv4(ftp: FTPContext): Promise<FTPResponse
 }
 
 /**
- * Prepare a data socket using passive mode over IPv4. Ignore the IP provided by the PASV response,
- * and use the control host IP. This is the same behaviour as with the more modern variant EPSV. Use
- * this to fix issues around NAT or provide more security by preventing FTP bounce attacks. 
+ * Prepare a data socket using passive mode over IPv4. 
+ * 
+ * Will throw an error if the IP provided by the PASV response doesn't match the one of the control connection.
+ * The error will contain detailed information. This is done to provide more security by preventing FTP bounce
+ * attacks.
  */
 export async function enterPassiveModeIPv4_forceControlHostIP(ftp: FTPContext): Promise<FTPResponse> {
     const res = await ftp.request("PASV")
@@ -78,7 +80,13 @@ export async function enterPassiveModeIPv4_forceControlHostIP(ftp: FTPContext): 
     if (controlHost === undefined) {
         throw new Error("Control socket is disconnected, can't get remote address.")
     }
-    await connectForPassiveTransfer(controlHost, target.port, ftp)
+    // Strip IPv4-mapped IPv6 prefix (e.g. "::ffff:1.2.3.4" → "1.2.3.4") so the
+    // comparison works regardless of whether the OS uses a dual-stack socket.
+    const normalizedControlHost = controlHost.replace(/^::ffff:/i, "")
+    if (normalizedControlHost !== target.host) {
+        throw new Error(`PASV returned another host (${target.host}) for data transfer that you have connected to (${controlHost}). Even though the FTP protocol allows this, basic-ftp disables this feature by default for security reasons. If you do need this feature, instantiate the Client with the optional paramter "allowSeparateTransferHost: true". See the README documentation for more information.`)
+    }
+    await connectForPassiveTransfer(normalizedControlHost, target.port, ftp)
     return res
 }
 

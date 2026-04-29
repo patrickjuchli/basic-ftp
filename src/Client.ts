@@ -60,7 +60,8 @@ export interface ClientOptions {
 }
 
 const defaultClientOptions: ClientOptions = {
-    allowSeparateTransferHost: true,
+    /** For security reasons this library should not allow separate transfer hosts by default. */
+    allowSeparateTransferHost: false,
     maxListingBytes: 40 * 1024 * 1024
 }
 const LIST_COMMANDS_DEFAULT = () => ["LIST -a", "LIST"]
