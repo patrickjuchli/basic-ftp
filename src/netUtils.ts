@@ -47,6 +47,13 @@ export function upgradeSocket(socket: Socket, options: ConnectionOptions): Promi
 }
 
 /**
+ * Returns true if an IP address is a loopback address.
+ */
+export function isLoopback(ip: string): boolean {
+    return ip === "::1" || ip.startsWith("127.")
+}
+
+/**
  * Returns true if an IP is a private address according to https://tools.ietf.org/html/rfc1918#section-3.
  * This will handle IPv4-mapped IPv6 addresses correctly but return false for all other IPv6 addresses.
  *

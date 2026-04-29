@@ -1,10 +1,10 @@
 import { EventEmitter } from "events"
-import { describeAddress, describeTLS, ipIsPrivateV4Address } from "./netUtils"
-import { Writable, Readable, pipeline } from "stream"
+import { Readable, Writable, pipeline } from "stream"
 import { TLSSocket, connect as connectTLS } from "tls"
 import { FTPContext, FTPResponse, TaskResolver } from "./FtpContext"
 import { ProgressTracker, ProgressType } from "./ProgressTracker"
-import { positiveIntermediate, positiveCompletion } from "./parseControlResponse"
+import { describeAddress, describeTLS, ipIsPrivateV4Address, isLoopback } from "./netUtils"
+import { positiveCompletion, positiveIntermediate } from "./parseControlResponse"
 
 export type UploadCommand = "STOR" | "APPE"
 
@@ -83,7 +83,9 @@ export async function enterPassiveModeIPv4_forceControlHostIP(ftp: FTPContext): 
     // Strip IPv4-mapped IPv6 prefix (e.g. "::ffff:1.2.3.4" → "1.2.3.4") so the
     // comparison works regardless of whether the OS uses a dual-stack socket.
     const normalizedControlHost = controlHost.replace(/^::ffff:/i, "")
-    if (normalizedControlHost !== target.host) {
+    const hostsAreCompatible = normalizedControlHost === target.host
+        || (isLoopback(normalizedControlHost) && isLoopback(target.host))
+    if (!hostsAreCompatible) {
         throw new Error(`PASV returned another host (${target.host}) for data transfer that you have connected to (${controlHost}). Even though the FTP protocol allows this, basic-ftp disables this feature by default for security reasons. If you do need this feature, instantiate the Client with the optional paramter "allowSeparateTransferHost: true". See the README documentation for more information.`)
     }
     await connectForPassiveTransfer(normalizedControlHost, target.port, ftp)
