@@ -130,7 +130,7 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
                     // security: If a completely new session would be negotiated, a hacker
                     // could guess the port and connect to the new data connection before we do
                     // by just starting his/her own TLS session.
-                    session: ftp.socket.getSession()
+                    session: ftp.tlsSessionStore ?? ftp.socket.getSession()
                 }))
                 // It's the responsibility of the transfer task to wait until the
                 // TLS socket issued the event 'secureConnect'. We can't do this
