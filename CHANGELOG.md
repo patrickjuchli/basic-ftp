@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.0.0
+
+- **Breaking change**: This library does not allow separate transfer hosts by default anymore. This provides security by default against FTP bounce attacks. This FTP feature is used very rarely, there is a good chance you don't actually have to change anything in your code. You can allow separate transfer hosts by using `allowSeparateTransferHost: true` when instantiating a `Client`. (Thanks, @Jvr2022)
+
 ## 5.3.1
 
 - Fixed: Protect against unbounded control response, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-rpmf-866q-6p89.
