@@ -132,6 +132,10 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
                     // by just starting his/her own TLS session.
                     session: ftp.tlsSessionStore ?? ftp.socket.getSession()
                 }))
+                // When the server issues a new session ticket after this data connection's
+                // TLS handshake (TLS 1.3 single-use tickets), capture it so the next data
+                // connection can present a fresh ticket and resume successfully.
+                socket.on("session", session => { ftp.tlsSessionStore = session })
                 // It's the responsibility of the transfer task to wait until the
                 // TLS socket issued the event 'secureConnect'. We can't do this
                 // here because some servers will start upgrading after the
