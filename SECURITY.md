@@ -1,5 +1,3 @@
 # Security Policy
 
-## Reporting a Vulnerability
-
-Open a draft at https://github.com/patrickjuchli/basic-ftp/security/advisories to report a vulnerability.
+To report a vulnerability open a draft at https://github.com/patrickjuchli/basic-ftp/security/advisories. Thanks!
