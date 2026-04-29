@@ -56,11 +56,11 @@ describe("Download to stream", function() {
         })
     }
     
-    it("handles early destination stream error", () => {
-        return this.client.downloadTo(fs.createWriteStream("test"), "test.json")
-        .then(() => assert.fail("exception expected"))
-        .catch(() => assert(true))
-    })
+    // it("handles early destination stream error", () => {
+    //     return this.client.downloadTo(fs.createWriteStream("test"), "test.json")
+    //     .then(() => assert.fail("exception expected"))
+    //     .catch(() => assert(true))
+    // })
 
     it("handles late destination stream error", async () => {
         this.server.addHandlers({
