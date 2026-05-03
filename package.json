@@ -16,7 +16,8 @@
     "lint-fix": "eslint --fix \"./src/**/*.ts\"",
     "dev": "npm run clean && tsc --watch",
     "tdd": "mocha --watch",
-    "buildOnly": "tsc"
+    "buildOnly": "tsc",
+    "test:integration": "npm run buildOnly && mocha 'test/integration/**Spec.js'"
   },
   "repository": {
     "type": "git",
@@ -47,6 +48,7 @@
     "eslint": "10.3.0",
     "globals": "17.6.0",
     "mocha": "11.7.5",
+    "testcontainers": "^11.14.0",
     "typescript": "6.0.3"
   }
 }

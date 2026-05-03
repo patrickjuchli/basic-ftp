@@ -1,0 +1,23 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+      - run: npm ci
+      - run: npm run test:integration
+        env:
+          # Ryuk (testcontainers cleanup container) can be flaky on GitHub runners
+          TESTCONTAINERS_RYUK_DISABLED: "true"
