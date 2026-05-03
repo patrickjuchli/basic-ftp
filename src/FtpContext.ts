@@ -61,6 +61,8 @@ export class FTPContext {
     ipFamily: number | undefined = undefined
     /** Options for TLS connections. */
     tlsOptions: TLSConnectionOptions = {}
+    /** Most recent TLS session from the control connection, used to resume the session on data connections. */
+    tlsSessionStore: Buffer | undefined = undefined
     /** Current task to be resolved or rejected. */
     protected _task: Task | undefined
     /** A multiline response might be received as multiple chunks. */
@@ -150,6 +152,7 @@ export class FTPContext {
         this.dataSocket = undefined
         // This being a reset, reset any other state apart from the socket.
         this.tlsOptions = {}
+        this.tlsSessionStore = undefined
         this._partialResponse = ""
         if (this._socket) {
             const newSocketUpgradesExisting = socket.localPort === this._socket.localPort
@@ -175,6 +178,9 @@ export class FTPContext {
             // Control being closed without error by server is treated as an error.
             socket.on("close", hadError => { if (!hadError) this.closeWithError(new Error("Server closed connection unexpectedly.")) })
             this._setupDefaultErrorHandlers(socket, "control socket")
+            if (socket instanceof TLSSocket) {
+                socket.on("session", session => { this.tlsSessionStore = session })
+            }
         }
         this._socket = socket
     }
