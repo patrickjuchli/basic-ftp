@@ -6,7 +6,7 @@
 
 ## 6.0.0
 
-- **Breaking change**: This library does not allow separate transfer hosts by default anymore. This provides security by default against FTP bounce attacks. This FTP feature is used very rarely, there is a good chance you don't actually have to change anything in your code. You can allow separate transfer hosts by using `allowSeparateTransferHost: true` when instantiating a `Client`. (Thanks, @Jvr2022)
+- **Breaking change**: This library no longer allows separate transfer hosts by default. This feature is used very rarely by FTP servers anyway and it is highly likely that you don't actually have to change anything in your code. Preventing it by default protects users from FTP bounce attacks. You can still allow separate transfer hosts by using `allowSeparateTransferHost: true` when instantiating a `Client`. (Thanks, @Jvr2022)
 
 ## 5.3.1
 
