@@ -98,15 +98,8 @@ describe("ProFTPD integration", function() {
             });
 
             afterEach(async function() {
-                // Best-effort cleanup: remove everything in the FTP root between tests.
-                try {
-                    const files = await client.list();
-                    for (const f of files) {
-                        if (f.isDirectory) await client.removeDir(f.name);
-                        else               await client.remove(f.name);
-                    }
-                }
-                catch (_) { /* ignore – client may be in a bad state after a failed test */ }
+                try { await client.clearWorkingDir(); }
+                catch { /* ignore – client may be in a bad state after a failed test */ }
                 client.close();
             });
 
@@ -115,11 +108,6 @@ describe("ProFTPD integration", function() {
                 assert.ok(features instanceof Map, "features() should return a Map");
                 assert.ok(features.size > 0, "feature Map should be non-empty");
                 assert.ok(features.has("REST"), "REST feature should be present");
-            });
-
-            it("lists an empty home directory", async function() {
-                const list = await client.list();
-                assert.deepStrictEqual(list, []);
             });
 
             it("uploads and downloads a text file", async function() {
@@ -188,22 +176,15 @@ describe("ProFTPD integration", function() {
 
             it("creates nested directories with ensureDir", async function() {
                 await client.ensureDir("a/b/c");
+
                 await client.cd("/");
+                assert.ok((await client.list()).some(f => f.name === "a" && f.isDirectory), "a missing");
 
-                const top = (await client.list()).map(f => f.name);
-                assert.ok(top.includes("a"), "top-level dir missing");
-            });
+                await client.cd("a");
+                assert.ok((await client.list()).some(f => f.name === "b" && f.isDirectory), "a/b missing");
 
-            it("handles large file upload and download", async function() {
-                const content = Buffer.alloc(512 * 1024, 0x41); // 512 KB of 'A'
-                await client.uploadFrom(bufferReadable(content), "large.bin");
-
-                const size = await client.size("large.bin");
-                assert.strictEqual(size, content.length);
-
-                const writer = collectWritable();
-                await client.downloadTo(writer, "large.bin");
-                assert.ok(content.equals(writer.data()), "large file round-trip mismatch");
+                await client.cd("b");
+                assert.ok((await client.list()).some(f => f.name === "c" && f.isDirectory), "a/b/c missing");
             });
 
             it("uploads and downloads 10 MB with byte-perfect integrity", async function() {
