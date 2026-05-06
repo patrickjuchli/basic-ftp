@@ -110,9 +110,11 @@ describe("ProFTPD integration", function() {
                 client.close();
             });
 
-            it("connects and reports server features", async function() {
-                const response = await client.send("FEAT");
-                assert.ok(response.code >= 200 && response.code < 300);
+            it("parses server features into a Map", async function() {
+                const features = await client.features();
+                assert.ok(features instanceof Map, "features() should return a Map");
+                assert.ok(features.size > 0, "feature Map should be non-empty");
+                assert.ok(features.has("REST"), "REST feature should be present");
             });
 
             it("lists an empty home directory", async function() {
