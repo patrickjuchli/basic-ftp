@@ -2,6 +2,8 @@
 
 const assert = require("assert");
 const path = require("path");
+const os = require("os");
+const { promises: fs } = require("fs");
 const { Readable, Writable } = require("stream");
 const { GenericContainer, Wait } = require("testcontainers");
 const { Client } = require("../../dist");
@@ -205,6 +207,60 @@ describe("ProFTPD integration", function() {
 
                 assert.strictEqual(downloaded.length, SIZE, "downloaded length mismatch");
                 assert.ok(content.equals(downloaded), "content mismatch – data corrupted in transit");
+            });
+
+            it("throws when downloading a non-existent file", async function() {
+                await assert.rejects(
+                    () => client.downloadTo(collectWritable(), "no-such-file.txt")
+                );
+            });
+
+            it("reports progress during upload", async function() {
+                const reports = [];
+                client.trackProgress(info => reports.push(info));
+                try {
+                    await client.uploadFrom(bufferReadable(Buffer.alloc(64 * 1024, 0x42)), "progress-test.bin");
+                }
+                finally {
+                    client.trackProgress();
+                }
+                assert.ok(reports.length > 0, "no progress events fired");
+                assert.ok(reports.every(r => r.type === "upload"), "unexpected progress type");
+                assert.ok(reports[reports.length - 1].bytes > 0, "reported zero bytes");
+            });
+
+            it("returns last modification time of a file", async function() {
+                const before = new Date(Date.now() - 5_000);
+                await client.uploadFrom(bufferReadable("mdtm test"), "mdtm.txt");
+                const mod = await client.lastMod("mdtm.txt");
+                assert.ok(mod instanceof Date, "lastMod() should return a Date");
+                assert.ok(mod >= before, "modification time is before upload");
+            });
+
+            it("recursively uploads and downloads a directory tree", async function() {
+                const localUp = await fs.mkdtemp(path.join(os.tmpdir(), "basic-ftp-up-"));
+                const localDown = await fs.mkdtemp(path.join(os.tmpdir(), "basic-ftp-dl-"));
+                try {
+                    await fs.mkdir(path.join(localUp, "sub"));
+                    await fs.writeFile(path.join(localUp, "root.txt"), "root content");
+                    await fs.writeFile(path.join(localUp, "sub", "nested.txt"), "nested content");
+
+                    await client.uploadFromDir(localUp, "treedir");
+                    await client.downloadToDir(localDown, "treedir");
+
+                    assert.strictEqual(
+                        await fs.readFile(path.join(localDown, "root.txt"), "utf8"),
+                        "root content"
+                    );
+                    assert.strictEqual(
+                        await fs.readFile(path.join(localDown, "sub", "nested.txt"), "utf8"),
+                        "nested content"
+                    );
+                }
+                finally {
+                    await fs.rm(localUp,   { recursive: true, force: true });
+                    await fs.rm(localDown, { recursive: true, force: true });
+                }
             });
         });
     }
