@@ -268,6 +268,61 @@ describe("ProFTPD integration", function() {
                     await fs.rm(localDown, { recursive: true, force: true });
                 }
             });
+
+            it("appends to an existing file", async function() {
+                await client.uploadFrom(bufferReadable("Hello, "), "append.txt");
+                await client.appendFrom(bufferReadable("World!"), "append.txt");
+
+                const writer = collectWritable();
+                await client.downloadTo(writer, "append.txt");
+                assert.strictEqual(writer.data().toString("utf8"), "Hello, World!");
+            });
+
+            it("resumes a download from a byte offset", async function() {
+                const content = "ABCDEFGHIJ"; // 10 bytes
+                await client.uploadFrom(bufferReadable(content), "resume.txt");
+
+                const writer = collectWritable();
+                await client.downloadTo(writer, "resume.txt", 4);
+                assert.strictEqual(writer.data().toString("utf8"), "EFGHIJ");
+            });
+
+            it("uploads and downloads using local file paths", async function() {
+                const localFile = path.join(os.tmpdir(), "basic-ftp-path-test.txt");
+                const localDl   = path.join(os.tmpdir(), "basic-ftp-path-dl.txt");
+                try {
+                    await fs.writeFile(localFile, "path-based transfer");
+                    await client.uploadFrom(localFile, "pathtest.txt");
+
+                    await client.downloadTo(localDl, "pathtest.txt");
+                    assert.strictEqual(await fs.readFile(localDl, "utf8"), "path-based transfer");
+                }
+                finally {
+                    await fs.rm(localFile, { force: true });
+                    await fs.rm(localDl,   { force: true });
+                }
+            });
+
+            it("pwd returns the current working directory", async function() {
+                await client.cd("/");
+                const root = await client.pwd();
+                assert.strictEqual(root, "/");
+
+                await client.ensureDir("pwdtest");
+                const sub = await client.pwd();
+                assert.ok(sub.endsWith("pwdtest"), `expected path ending in 'pwdtest', got '${sub}'`);
+            });
+
+            it("removeEmptyDir removes an empty directory and throws on a non-empty one", async function() {
+                await client.ensureDir("emptydir");
+                await client.cd("/");
+                await assert.doesNotReject(() => client.removeEmptyDir("emptydir"));
+
+                await client.ensureDir("nonempty");
+                await client.cd("/");
+                await client.uploadFrom(bufferReadable("x"), "nonempty/file.txt");
+                await assert.rejects(() => client.removeEmptyDir("nonempty"));
+            });
         });
     }
 
