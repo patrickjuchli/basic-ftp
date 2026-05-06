@@ -176,6 +176,12 @@ describe("ProFTPD integration", function() {
                 assert.ok(!list.some(f => f.name === "deleteme.txt"), "file still present after remove");
             });
 
+            it("ensureDir is idempotent", async function() {
+                await client.ensureDir("idempotent");
+                await client.cd("/");
+                await assert.doesNotReject(() => client.ensureDir("idempotent"));
+            });
+
             it("creates nested directories with ensureDir", async function() {
                 await client.ensureDir("a/b/c");
 
