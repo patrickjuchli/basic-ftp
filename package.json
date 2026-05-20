@@ -8,16 +8,16 @@
     "dist/**/*"
   ],
   "scripts": {
-    "prepublishOnly": "npm run clean && npm run lint && tsc && mocha",
+    "prepublishOnly": "npm run clean && npm run lint && tsc && node --test 'test/*Spec.js'",
     "prepare": "tsc",
     "test": "npm run prepublishOnly",
     "clean": "rm -rf dist",
     "lint": "eslint \"./src/**/*.ts\"",
     "lint-fix": "eslint --fix \"./src/**/*.ts\"",
     "dev": "npm run clean && tsc --watch",
-    "tdd": "mocha --watch",
+    "tdd": "node --test --watch 'test/*Spec.js'",
     "buildOnly": "tsc",
-    "test:integration": "npm run buildOnly && mocha 'test/integration/**Spec.js'"
+    "test:integration": "npm run buildOnly && node --test 'test/integration/**Spec.js'"
   },
   "repository": {
     "type": "git",
@@ -41,13 +41,11 @@
   "devDependencies": {
     "@eslint/eslintrc": "3.3.5",
     "@eslint/js": "10.0.1",
-    "@types/mocha": "10.0.10",
     "@types/node": "25.9.1",
     "@typescript-eslint/eslint-plugin": "8.59.4",
     "@typescript-eslint/parser": "8.59.4",
     "eslint": "10.4.0",
     "globals": "17.6.0",
-    "mocha": "11.7.5",
     "testcontainers": "11.14.0",
     "typescript": "6.0.3"
   }

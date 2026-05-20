@@ -1,3 +1,4 @@
+const { describe, it } = require("node:test");
 const assert = require("assert");
 const { parseList } = require("../dist/parseList");
 const { FileInfo, FileType } = require("../dist");

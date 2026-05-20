@@ -1,3 +1,4 @@
+const { describe, it, beforeEach, afterEach } = require("node:test");
 const assert = require("assert");
 const { Client } = require("../dist");
 const MockFtpServer = require("./MockFtpServer");
@@ -9,21 +10,23 @@ const NEW_LOCAL_FILENAME = "file.txt"
 const EXISTING_LOCAL_FILENAME = "existing.txt"
 const TIMEOUT = 1000
 
-describe("Download to a file", function() {
+describe("Download to a file", () => {
 
     let startAt = 0
-    this.beforeEach(() => {
+    let payload, client, server;
+
+    beforeEach(() => {
         fs.writeFileSync(EXISTING_LOCAL_FILENAME, "content");
 
-        this.payload = SHORT_TEXT
-        this.client = new Client(TIMEOUT)
-        this.server = new MockFtpServer()
-        this.server.addHandlers({
-            "pasv": () => `227 Entering Passive Mode (${this.server.dataAddressForPasvResponse})`,
+        payload = SHORT_TEXT
+        client = new Client(TIMEOUT)
+        server = new MockFtpServer()
+        server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
             "retr": ({arg}) => {
                 setTimeout(() => {
-                    this.server.dataConn.write(this.payload.substring(startAt))
-                    this.server.dataConn.end()
+                    server.dataConn.write(payload.substring(startAt))
+                    server.dataConn.end()
                 })
                 return arg === REMOTE_FILENAME ? "150 Ready to download" : "500 Wrong filename"
             },
@@ -32,65 +35,65 @@ describe("Download to a file", function() {
                 return "350 Restarting"
             }
         })
-        return this.client.access({
-            port: this.server.ctrlAddress.port,
+        return client.access({
+            port: server.ctrlAddress.port,
             user: "test",
             password: "test"
         })
     })
 
-    this.afterEach(() => {
+    afterEach(() => {
         try { fs.unlinkSync(NEW_LOCAL_FILENAME) } catch {}
         try { fs.unlinkSync(EXISTING_LOCAL_FILENAME) } catch {}
-        this.client.close()
-        this.server.close()
+        client.close()
+        server.close()
     })
 
     it("can download to a new, not yet existing file", async () => {
-        await this.client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME)
+        await client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME)
         const content = fs.readFileSync(NEW_LOCAL_FILENAME, "utf-8")
         assert.equal(content, SHORT_TEXT)
     })
 
     it("truncates existing file with startAt=0", async () => {
-        await this.client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME)
+        await client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME)
         const content = fs.readFileSync(EXISTING_LOCAL_FILENAME, "utf-8")
         assert.equal(content, SHORT_TEXT)
     })
 
     it("appends to existing file with start>0", async () => {
-        const startAt = 4
-        await this.client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME, startAt)
+        const s = 4
+        await client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME, s)
         const content = fs.readFileSync(EXISTING_LOCAL_FILENAME, "utf-8")
-        assert.equal(content, "cont" + SHORT_TEXT.substring(startAt))
+        assert.equal(content, "cont" + SHORT_TEXT.substring(s))
     })
 
     it("raises an error if appending to non-existing file", async () => {
-        return assert.rejects(() => this.client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME, 666), {
+        return assert.rejects(() => client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME, 666), {
             code: "ENOENT"
         })
     })
 
     it("removes a file on error and if not appending", async () => {
-        this.server.addHandlers({
+        server.addHandlers({
             "pasv": () => {
                 assert.equal(fs.existsSync(NEW_LOCAL_FILENAME), true, "File created right after method call")
                 return "500 Unforseen error"
             }
         })
-        return assert.rejects(() => this.client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME)).then(() => {
+        return assert.rejects(() => client.downloadTo(NEW_LOCAL_FILENAME, REMOTE_FILENAME)).then(() => {
             assert.equal(fs.existsSync(NEW_LOCAL_FILENAME), false, "Empty file removed after error")
         })
     })
 
     it("does not remove a file on error if appending", async () => {
-        this.server.addHandlers({
+        server.addHandlers({
             "pasv": () => {
                 assert.equal(fs.existsSync(EXISTING_LOCAL_FILENAME), true, "File exists")
                 return "500 Unforseen error"
             }
         })
-        return assert.rejects(() => this.client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME, 4)).then(() => {
+        return assert.rejects(() => client.downloadTo(EXISTING_LOCAL_FILENAME, REMOTE_FILENAME, 4)).then(() => {
             assert.equal(fs.readFileSync(EXISTING_LOCAL_FILENAME, "utf-8"), "content", "File untouched after error")
         })
     })

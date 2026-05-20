@@ -1,17 +1,17 @@
+const { describe, it, beforeEach } = require("node:test");
 const assert = require("assert");
 const { ProgressTracker } = require("../dist/ProgressTracker");
 const SocketMock = require("./SocketMock");
 
-describe("ProgressTracker", function() {
-    this.timeout(100);
+describe("ProgressTracker", { timeout: 100 }, () => {
     let tracker = new ProgressTracker()
     let socket;
-    beforeEach(function() {
+    beforeEach(() => {
         socket = new SocketMock();
         tracker = new ProgressTracker();
     });
 
-    it("calls update directly on start", function(done) {
+    it("calls update directly on start", () => new Promise(resolve => {
         tracker.reportTo(info => {
             assert.deepEqual(info, {
                 bytes: 0,
@@ -19,13 +19,13 @@ describe("ProgressTracker", function() {
                 name: "name",
                 type: "type"
             }, "Initial values");
-            done();
+            resolve();
         });
         tracker.start(socket, "name", "type");
         tracker.stop();
-    });
+    }));
 
-    it("can stop without update on more time", function() {
+    it("can stop without update on more time", () => {
         tracker.start(socket, "", "");
         tracker.reportTo(() => {
             assert.fail("This update should not be called.");
@@ -33,7 +33,7 @@ describe("ProgressTracker", function() {
         tracker.stop();
     });
 
-    it("can call update one more time on stop", function(done) {
+    it("can call update one more time on stop", () => new Promise(resolve => {
         tracker.start(socket, "name", "type");
         tracker.reportTo(info => {
             assert.deepEqual(info, {
@@ -42,12 +42,12 @@ describe("ProgressTracker", function() {
                 name: "name",
                 type: "type"
             }, "Final values");
-            done();
+            resolve();
         });
         tracker.updateAndStop();
-    });
+    }));
 
-    it("reports correct values at stop after no intermediate updates", function(done) {
+    it("reports correct values at stop after no intermediate updates", () => new Promise(resolve => {
         tracker.start(socket, "name", "type");
         tracker.reportTo(info => {
             assert.deepEqual(info, {
@@ -56,19 +56,18 @@ describe("ProgressTracker", function() {
                 name: "name",
                 type: "type"
             }, "Final values");
-            done();
+            resolve();
         });
         socket.bytesWritten = 2;
         socket.bytesRead = 3;
         tracker.updateAndStop();
-    });
+    }));
 
-    it("does progress reports at an interval", function(done) {
+    it("does progress reports at an interval", () => new Promise(resolve => {
         tracker.intervalMs = 0;
         tracker.start(socket, "name", "type");
         let count = 0;
         tracker.reportTo(info => {
-
             assert.deepEqual(info, {
                 name: "name",
                 type: "type",
@@ -79,12 +78,12 @@ describe("ProgressTracker", function() {
             if (++count === 3) {
                 tracker.reportTo();
                 tracker.stop();
-                done();
+                resolve();
             }
         });
-    });
+    }));
 
-    it("counts overall count over multiple start/stop blocks", function(done) {
+    it("counts overall count over multiple start/stop blocks", () => new Promise(resolve => {
         socket.bytesWritten = 1;
         tracker.start(socket, "name", "type");
         tracker.stop();
@@ -92,12 +91,12 @@ describe("ProgressTracker", function() {
         tracker.start(socket, "name", "type");
         tracker.reportTo(info => {
             assert.deepEqual(info.bytesOverall, 2);
-            done();
+            resolve();
         });
         tracker.updateAndStop();
-    });
+    }));
 
-    it("can stop within the callback", function() {
+    it("can stop within the callback", () => {
         let firstTime = true;
         tracker.reportTo(() => {
             // Will be called on start
