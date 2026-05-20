@@ -8,16 +8,16 @@
     "dist/**/*"
   ],
   "scripts": {
-    "prepublishOnly": "npm run clean && npm run lint && tsc && node --test 'test/*Spec.js'",
+    "prepublishOnly": "npm run clean && npm run lint && tsc && node --test test/*Spec.js",
     "prepare": "tsc",
     "test": "npm run prepublishOnly",
     "clean": "rm -rf dist",
     "lint": "eslint \"./src/**/*.ts\"",
     "lint-fix": "eslint --fix \"./src/**/*.ts\"",
     "dev": "npm run clean && tsc --watch",
-    "tdd": "node --test --watch 'test/*Spec.js'",
+    "tdd": "node --test --watch test/*Spec.js",
     "buildOnly": "tsc",
-    "test:integration": "npm run buildOnly && node --test 'test/integration/**Spec.js'"
+    "test:integration": "npm run buildOnly && node --test test/integration/*Spec.js"
   },
   "repository": {
     "type": "git",
