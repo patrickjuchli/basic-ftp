@@ -42,13 +42,13 @@
     "@eslint/eslintrc": "3.3.5",
     "@eslint/js": "10.0.1",
     "@types/mocha": "10.0.10",
-    "@types/node": "25.6.0",
-    "@typescript-eslint/eslint-plugin": "8.59.1",
-    "@typescript-eslint/parser": "8.59.1",
-    "eslint": "10.3.0",
+    "@types/node": "25.9.1",
+    "@typescript-eslint/eslint-plugin": "8.59.4",
+    "@typescript-eslint/parser": "8.59.4",
+    "eslint": "10.4.0",
     "globals": "17.6.0",
     "mocha": "11.7.5",
-    "testcontainers": "^11.14.0",
+    "testcontainers": "11.14.0",
     "typescript": "6.0.3"
   }
 }
