@@ -1,6 +1,5 @@
 import { defineConfig } from "eslint/config";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,14 +26,6 @@ export default defineConfig([{
     },
 
     languageOptions: {
-        globals: {
-            ...globals.commonjs,
-            ...globals.node,
-            ...globals.mocha,
-            Atomics: "readonly",
-            SharedArrayBuffer: "readonly",
-        },
-
         parser: tsParser,
         ecmaVersion: 2018,
         sourceType: "commonjs",
