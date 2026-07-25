@@ -91,12 +91,12 @@ describe("Implicit TLS", () => {
     // remembered on `tlsOptions`; otherwise data connections resume under a
     // different identity and servers report the session as not resumed.
     it("remembers the control host on tlsOptions so data connections can resume the session", async () => {
-        await client.connectImplicitTLS("127.0.0.1", server.address.port, { rejectUnauthorized: false });
+        await client.connectImplicitTLS("127.0.0.1", server.address.port, { ca: CERT, rejectUnauthorized: true });
         assert.strictEqual(client.ftp.tlsOptions.host, "127.0.0.1");
     });
 
     it("does not overwrite a host explicitly provided in secureOptions", async () => {
-        await client.connectImplicitTLS("127.0.0.1", server.address.port, { rejectUnauthorized: false, host: "localhost" });
+        await client.connectImplicitTLS("127.0.0.1", server.address.port, { ca: CERT, rejectUnauthorized: true, host: "localhost" });
         assert.strictEqual(client.ftp.tlsOptions.host, "localhost");
     });
 });

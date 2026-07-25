@@ -186,7 +186,7 @@ describe("Implicit TLS data-connection session reuse", () => {
             user: "test",
             password: "test",
             secure: "implicit",
-            secureOptions: { rejectUnauthorized: false }
+            secureOptions: { ca: CERT, rejectUnauthorized: true }
         });
 
         await assert.doesNotReject(
