@@ -143,6 +143,15 @@ export class Client {
      */
     connectImplicitTLS(host = "localhost", port = 21, tlsOptions: TLSConnectionOptions = {}): Promise<FTPResponse> {
         this.ftp.reset()
+        // Remember the host identity so future data connections can resume this TLS
+        // session. Since Node.js v24.17.0 (CVE-2026-48934) a reusable TLS session is
+        // bound to the host it was authenticated for, and resumption is refused when
+        // the resuming connection's identity (servername ?? host ?? socket._host)
+        // differs. Data connections connect to the PASV/EPSV target, so without an
+        // explicit host they'd resume under a different (or missing) identity and the
+        // server would report the session as not resumed. This mirrors what `access`
+        // already does for explicit TLS, see https://github.com/patrickjuchli/basic-ftp/issues/166.
+        tlsOptions.host = tlsOptions.host ?? host
         this.ftp.socket = connectTLS(
             port,
             host,
