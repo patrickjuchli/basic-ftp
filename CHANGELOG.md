@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 6.0.2
 
 - Fixed: Implicit FTPS transfers against servers requiring TLS session reuse failed with "425 ... TLS session of data connection not resumed" on Node.js with the CVE-2026-48934 fix (22.23.0+, 24.17.0+, 26.3.1+).
 
