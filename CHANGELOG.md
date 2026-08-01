@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 6.1.0
 
 - Changed: Uploading from a local path now throws if the file changes while it's being read, instead of reporting the incomplete upload as successful.
 
