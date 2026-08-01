@@ -175,7 +175,91 @@ describe("Upload", () => {
         })
     })
 
-    it.todo("can upload with localStart/localEndInclusive")
+    // RFC 959 lists "125" and "150" as alternative preliminary replies to STOR, so only one of
+    // them should arrive. Guard against it anyway: starting the transfer for each preliminary
+    // reply pipes the source into the data connection multiple times, which corrupts the remote
+    // file without reporting an error.
+    const repeatedPreliminaries = [
+        ["125 Data connection already open", "150 Ready to upload"],
+        ["150 Ready to upload", "150 Ready to upload"]
+    ]
+    for (const replies of repeatedPreliminaries) {
+        // Timeout so that a regression fails the test instead of stalling the whole run:
+        // transferring twice leaves the source and the data connection in a state where
+        // neither the transfer nor the control response ever completes.
+        it(`transfers only once when the server sends "${replies.join(`", "`)}"`, { timeout: TIMEOUT * 5 }, async () => {
+            server.addHandlers({
+                "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
+                "stor": () => replies.join("\r\n")
+            })
+            await client.uploadFrom(getReadable(LONG_TEXT), FILENAME)
+            assert.deepEqual(server.uploadedData, Buffer.from(LONG_TEXT, "utf-8"))
+        })
+    }
+
+    describe("from a local file", () => {
+
+        const LOCAL_FILENAME = "upload-source.txt"
+        // Position-sensitive content so that range uploads can't pass by accident.
+        const LOCAL_CONTENT = "0123456789abcdefghij".repeat(2000)
+
+        beforeEach(() => {
+            fs.writeFileSync(LOCAL_FILENAME, LOCAL_CONTENT)
+        })
+
+        afterEach(() => {
+            try { fs.unlinkSync(LOCAL_FILENAME) } catch { /* Already gone */ }
+        })
+
+        it("can upload a local file", async () => {
+            await client.uploadFrom(LOCAL_FILENAME, FILENAME)
+            assert.deepEqual(server.uploadedData, Buffer.from(LOCAL_CONTENT, "utf-8"))
+        })
+
+        it("can upload with localStart/localEndInclusive", async () => {
+            await client.uploadFrom(LOCAL_FILENAME, FILENAME, { localStart: 10, localEndInclusive: 19 })
+            assert.deepEqual(server.uploadedData, Buffer.from("abcdefghij", "utf-8"))
+        })
+
+        it("can upload with localEndInclusive beyond the end of the file", async () => {
+            await client.uploadFrom(LOCAL_FILENAME, FILENAME, { localStart: 10, localEndInclusive: LOCAL_CONTENT.length + 1000 })
+            assert.deepEqual(server.uploadedData, Buffer.from(LOCAL_CONTENT.slice(10), "utf-8"))
+        })
+
+        // Reading a local file that is modified during the transfer ends early or late. The
+        // server can't detect this and confirms the transfer, so the client has to compare
+        // what it read with what it expected to read.
+        it("throws if the local file shrinks while being uploaded", async () => {
+            const prepareTransfer = client.prepareTransfer
+            client.prepareTransfer = ftp => {
+                fs.truncateSync(LOCAL_FILENAME, 10)
+                return prepareTransfer(ftp)
+            }
+            return assert.rejects(() => client.uploadFrom(LOCAL_FILENAME, FILENAME), {
+                name: "Error",
+                message: `Local file "${LOCAL_FILENAME}" changed while it was being uploaded to "${FILENAME}": expected to send ${LOCAL_CONTENT.length} bytes but sent 10. The remote file is incomplete.`
+            })
+        })
+
+        it("throws if the local file grows while being uploaded", async () => {
+            const prepareTransfer = client.prepareTransfer
+            client.prepareTransfer = ftp => {
+                fs.appendFileSync(LOCAL_FILENAME, "more")
+                return prepareTransfer(ftp)
+            }
+            return assert.rejects(() => client.uploadFrom(LOCAL_FILENAME, FILENAME), {
+                name: "Error",
+                message: `Local file "${LOCAL_FILENAME}" changed while it was being uploaded to "${FILENAME}": expected to send ${LOCAL_CONTENT.length} bytes but sent ${LOCAL_CONTENT.length + 4}. The remote file is incomplete.`
+            })
+        })
+
+        it("can upload an empty local file", async () => {
+            fs.writeFileSync(LOCAL_FILENAME, "")
+            await client.uploadFrom(LOCAL_FILENAME, FILENAME)
+            assert.deepEqual(server.uploadedData, Buffer.alloc(0))
+        })
+    })
+
     it.todo("can append")
     it.todo("can append with localStart/localEndInclusive")
     it.todo("can upload using TLS")

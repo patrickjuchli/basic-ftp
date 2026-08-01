@@ -1,4 +1,4 @@
-import { close, createReadStream, createWriteStream, mkdir, open, readdir, stat, unlink } from "fs"
+import { close, createReadStream, createWriteStream, fstat, mkdir, open, readdir, stat, unlink } from "fs"
 import { basename, join } from "path"
 import { Readable, Writable } from "stream"
 import { connect as connectTLS, ConnectionOptions as TLSConnectionOptions } from "tls"
@@ -17,6 +17,7 @@ import { downloadTo, enterPassiveModeIPv4, enterPassiveModeIPv4_forceControlHost
 const fsReadDir = promisify(readdir)
 const fsMkDir = promisify(mkdir)
 const fsStat = promisify(stat)
+const fsFStat = promisify(fstat)
 const fsOpen = promisify(open)
 const fsClose = promisify(close)
 const fsUnlink = promisify(unlink)
@@ -472,7 +473,16 @@ export class Client {
             autoClose: false
         })
         try {
-            return await this._uploadFromStream(source, remotePath, command)
+            const expectedBytes = await expectedBytesFromLocalFile(fd, options)
+            const response = await this._uploadFromStream(source, remotePath, command)
+            // A local file that is modified while it is being read results in an incomplete
+            // upload. Neither the FTP server nor the data connection can detect this, the
+            // transfer just ends early and is reported as successful. Compare what we read
+            // with what we expected to read to turn this into an error instead.
+            if (expectedBytes !== undefined && source.bytesRead !== expectedBytes) {
+                throw new Error(`Local file "${localPath}" changed while it was being uploaded to "${remotePath}": expected to send ${expectedBytes} bytes but sent ${source.bytesRead}. The remote file is incomplete.`)
+            }
+            return response
         }
         finally {
             await ignoreError(() => fsClose(fd))
@@ -882,6 +892,24 @@ async function ensureLocalDirectory(path: string) {
     catch {
         await fsMkDir(path, { recursive: true })
     }
+}
+
+/**
+ * Return how many bytes an upload should read from an open local file, taking the optional
+ * range described by `options` into account. Returns `undefined` if the size can't be known
+ * upfront, for example because the source is a pipe or another non-regular file.
+ */
+async function expectedBytesFromLocalFile(fd: number, options: UploadOptions): Promise<number | undefined> {
+    const stats = await fsFStat(fd)
+    if (!stats.isFile()) {
+        return undefined
+    }
+    const start = options.localStart ?? 0
+    // `localEndInclusive` beyond the end of the file just means "read until the end".
+    const endExclusive = options.localEndInclusive !== undefined
+        ? Math.min(options.localEndInclusive + 1, stats.size)
+        : stats.size
+    return Math.max(0, endExclusive - start)
 }
 
 async function ignoreError<T>(func: () => Promise<T | undefined>) {

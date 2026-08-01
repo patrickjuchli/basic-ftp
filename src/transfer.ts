@@ -256,11 +256,21 @@ export interface TransferConfig {
 export function uploadFrom(source: Readable, config: TransferConfig): Promise<FTPResponse> {
     const resolver = new TransferResolver(config.ftp, config.tracker)
     const fullCommand = `${config.command} ${config.remotePath}`
+    // This handler runs for every reply that arrives while the task is active. RFC 959 lists
+    // "125" and "150" as alternatives, so a well-behaved server sends exactly one of them, but
+    // nothing here enforces that. Let only the first one start the transfer: piping the source
+    // into the data connection a second time writes parts of it twice and would silently
+    // corrupt the remote file.
+    let transferStarted = false
     return config.ftp.handle(fullCommand, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
         else if (res.code === 150 || res.code === 125) { // Ready to upload
+            if (transferStarted) {
+                return
+            }
+            transferStarted = true
             const dataSocket = config.ftp.dataSocket
             if (!dataSocket) {
                 resolver.onError(task, new Error("Upload should begin but no data connection is available."))
@@ -296,11 +306,17 @@ export function downloadTo(destination: Writable, config: TransferConfig): Promi
         throw new Error("Download will be initiated but no data connection is available.")
     }
     const resolver = new TransferResolver(config.ftp, config.tracker)
+    // See the comment in uploadFrom(): only the first preliminary reply may start the transfer.
+    let transferStarted = false
     return config.ftp.handle(config.command, (res, task) => {
         if (res instanceof Error) {
             resolver.onError(task, res)
         }
         else if (res.code === 150 || res.code === 125) { // Ready to download
+            if (transferStarted) {
+                return
+            }
+            transferStarted = true
             const dataSocket = config.ftp.dataSocket
             if (!dataSocket) {
                 resolver.onError(task, new Error("Download should begin but no data connection is available."))

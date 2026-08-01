@@ -59,6 +59,26 @@ describe("Download to stream", () => {
         })
     }
 
+    // RFC 959 lists "125" and "150" as alternative preliminary replies to RETR, so only one of
+    // them should arrive. Guard against it anyway: starting the transfer for each preliminary
+    // reply pipes the data connection into the destination multiple times, which corrupts the
+    // result without reporting an error.
+    it("transfers only once when the server sends repeated preliminary replies", async () => {
+        server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
+            "retr": () => {
+                setTimeout(() => {
+                    server.dataConn.write(MEDIUM_TEXT)
+                    server.dataConn.end()
+                })
+                return "125 Data connection already open\r\n150 Ready to download"
+            }
+        })
+        const buf = new StringWriter()
+        await client.downloadTo(buf, FILENAME)
+        assert.deepEqual(buf.getText("utf-8"), MEDIUM_TEXT)
+    })
+
     it("handles late destination stream error", async () => {
         server.addHandlers({
             "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
