@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.0
+
+- Changed: Timeout tracking during data transfers now only applies to the server, not a slow local source or destination.
+
 ## 6.1.0
 
 - Changed: Uploading from a local path now throws if the file changes while it's being read, instead of reporting the incomplete upload as successful.
