@@ -269,16 +269,27 @@ export class FTPContext {
             // they called this method by mistake.
         }
         return new Promise((resolveTask, rejectTask) => {
+            // A task can only be settled once. A handler can still hold on to its resolver after
+            // that, for example because a stream reports an error late. By then the next task
+            // might be running already and stopping to track it would leave it without a response.
+            let settled = false
+            const stopTrackingOnce = () => {
+                if (settled) {
+                    return
+                }
+                settled = true
+                this._stopTrackingTask()
+            }
             this._task = {
                 stack: new Error().stack || "Unknown call stack",
                 responseHandler,
                 resolver: {
                     resolve: arg => {
-                        this._stopTrackingTask()
+                        stopTrackingOnce()
                         resolveTask(arg)
                     },
                     reject: err => {
-                        this._stopTrackingTask()
+                        stopTrackingOnce()
                         rejectTask(err)
                     }
                 }

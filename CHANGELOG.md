@@ -3,6 +3,7 @@
 ## 6.2.0
 
 - Changed: Timeout tracking during data transfers now only applies to the server, not a slow local source or destination.
+- Fixed: A failed transfer could report its failure twice and cancel an unrelated command issued afterwards, leaving it without a response.
 
 ## 6.1.0
 

@@ -174,6 +174,7 @@ class TransferResolver {
 
     protected response: FTPResponse | undefined = undefined
     protected dataTransferDone = false
+    protected taskSettled = false
     protected readonly watchdog = new TransferWatchdog()
 
     /**
@@ -209,6 +210,9 @@ class TransferResolver {
      * The data connection has finished the transfer.
      */
     onDataDone(task: TaskResolver) {
+        if (this.taskSettled) {
+            return
+        }
         this.watchdog.stop()
         this.progress.updateAndStop()
         // Hand-over timeout tracking back to the control connection. It's possible that
@@ -232,6 +236,14 @@ class TransferResolver {
      * An error has been reported and the task should be rejected.
      */
     onError(task: TaskResolver, err: Error) {
+        // A transfer can report a problem more than once, e.g. when the server sends an error
+        // response and the stream of the data connection reports the resulting shutdown as an
+        // error as well. Only the first one decides the outcome, acting on a later one would
+        // interfere with whatever the client is doing by then.
+        if (this.taskSettled) {
+            return
+        }
+        this.taskSettled = true
         this.watchdog.stop()
         this.progress.updateAndStop()
         this.ftp.socket.setTimeout(this.ftp.timeout)
@@ -253,6 +265,7 @@ class TransferResolver {
         // To resolve, we need both control and data connection to report that the transfer is done.
         const canResolve = this.dataTransferDone && this.response !== undefined
         if (canResolve) {
+            this.taskSettled = true
             this.ftp.dataSocket = undefined
             task.resolve(this.response)
         }

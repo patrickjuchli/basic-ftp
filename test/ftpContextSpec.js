@@ -150,6 +150,25 @@ describe("FTPContext", { timeout: 100 }, () => {
         });
     });
 
+    // A handler can hold on to its resolver and use it after its task has been settled, e.g. when
+    // a stream reports an error late. The next task must not lose its response because of that.
+    it("Settling a task again doesn't affect the task after it", () => {
+        let staleResolver
+        const first = ftp.handle("FIRST", (res, task) => {
+            staleResolver = task
+            task.resolve(res)
+        })
+        ftp.socket.emit("data", "200 First done");
+        return first.then(() => {
+            const second = ftp.handle("SECOND", (res, task) => task.resolve(res))
+            staleResolver.reject(new Error("Late error of the first task"))
+            ftp.socket.emit("data", "200 Second done");
+            return second
+        }).then(res => {
+            assert.equal(res.message, "200 Second done")
+        })
+    });
+
     it("timeout of control socket is initially 0", () => {
         const c = new FTPContext(10000);
         c.socket = new SocketMock();
