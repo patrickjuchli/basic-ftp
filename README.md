@@ -67,7 +67,11 @@ client.ftp.verbose = true
 
 `new Client(timeout, options)`
 
-Create a client instance. Configure it with a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds. Options are: 
+Create a client instance. Configure it with a timeout in milliseconds that will be used for any connection made. Use 0 to disable timeouts, default is 30 seconds.
+
+The timeout applies to the server: a transfer fails if the server stops making progress for that long. It doesn't limit how long your own streams may take. A download piped into a slow destination, or an upload fed by a slow source, can hold up a transfer for as long as it needs to without running into a timeout. If you want to limit that as well, do it in your own code.
+
+Options are: 
 
 - `allowSeparateTransferHost (boolean)`, the FTP spec makes it possible for a server to tell the client to use a different IP address for file transfers than for the initial control connection. This is a potential vector for FTP bounce attacks, so by default this is set to `false` and the library will throw an error if a server tries to redirect transfers to a different host. Set this to `true` only if you are connecting to a server that legitimately requires it.
 

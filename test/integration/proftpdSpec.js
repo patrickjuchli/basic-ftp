@@ -212,6 +212,39 @@ describe("ProFTPD integration", () => {
                 assert.ok(content.equals(downloaded), "content mismatch – data corrupted in transit");
             });
 
+            // A destination that is slow to accept data must not be mistaken for a stalled
+            // server. Runs over TLS too, where the data socket is a wrapper around the socket
+            // that actually applies the backpressure.
+            it("doesn't time out while a slow destination is holding up the transfer", async () => {
+                const content = Buffer.alloc(4 * 1024 * 1024, 0x41);
+                await client.uploadFrom(bufferReadable(content), "slow-destination.bin");
+
+                client.ftp.timeout = 500;
+                let received = 0;
+                let blocking = false;
+                let bytesReadWhileBlocked = 0;
+                const destination = new Writable({
+                    highWaterMark: 1,
+                    write(chunk, _enc, cb) {
+                        received += chunk.length;
+                        if (blocking) {
+                            cb();
+                            return;
+                        }
+                        blocking = true;
+                        setTimeout(() => {
+                            bytesReadWhileBlocked = client.ftp.dataSocket.bytesRead;
+                            cb();
+                        }, 5 * client.ftp.timeout);
+                    }
+                });
+                await client.downloadTo(destination, "slow-destination.bin");
+
+                assert.strictEqual(received, content.length, "received all data");
+                assert.ok(bytesReadWhileBlocked < content.length,
+                    `transfer was really held up, read ${bytesReadWhileBlocked} of ${content.length} bytes while blocked`);
+            });
+
             it("throws when downloading a non-existent file", async () => {
                 await assert.rejects(
                     () => client.downloadTo(collectWritable(), "no-such-file.txt")

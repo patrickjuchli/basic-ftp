@@ -18,6 +18,8 @@ Beine flimmerten ihm hilflos vor den Augen.`.repeat(2000)
 
 const FILENAME = "file.txt"
 const TIMEOUT = 1000
+// Used where a test has to wait for a timeout to happen, or to not happen.
+const SHORT_TIMEOUT = 100
 
 function getReadable(p = SHORT_TEXT) {
     const readable = new Readable()
@@ -97,7 +99,7 @@ describe("Upload", () => {
     })
 
     it("throws if data connection can't be opened", () => {
-        client.ftp.timeout = 100
+        client.ftp.timeout = SHORT_TIMEOUT
         server.addHandlers({
             "pasv": () => "227 Entering Passive Mode (192,168,1,100,10,229)"
         })
@@ -107,7 +109,10 @@ describe("Upload", () => {
         })
     })
 
-    it(`switches correctly between sockets to track timeout during transfer`, () => {
+    // The control connection tracks its timeout only while it's the one we're waiting for. The
+    // data connection never gets an inactivity timeout of its own: it would also fire while a
+    // slow local stream is holding up the transfer. TransferWatchdog watches it instead.
+    it(`stops tracking timeouts on both sockets during transfer`, () => {
         const readable = new Readable()
         readable._read = () => {}
         readable.push(SHORT_TEXT)
@@ -126,7 +131,7 @@ describe("Upload", () => {
         })
         server.didStartTransfer = () => {
             assert.strictEqual(client.ftp.socket.timeout, 0, "did start transfer (control)");
-            assert.strictEqual(client.ftp.dataSocket.timeout, TIMEOUT, "did start transfer (data)");
+            assert.strictEqual(client.ftp.dataSocket.timeout, 0, "did start transfer (data)");
             readable.push(SHORT_TEXT)
             readable.push(null)
         }
@@ -137,6 +142,30 @@ describe("Upload", () => {
         return client.uploadFrom(readable, FILENAME).then(() => {
             assert.strictEqual(client.ftp.socket.timeout, 0, "after task (control)");
             assert.strictEqual(client.ftp.dataSocket, undefined, "after task (data)");
+        })
+    })
+
+    // A source that is slow to provide data is not a broken connection.
+    it("doesn't time out while a slow source is holding up the transfer", async () => {
+        client.ftp.timeout = SHORT_TIMEOUT
+        const source = new Readable()
+        source._read = () => {}
+        source.push("the beginning...")
+        setTimeout(() => {
+            source.push("...and the end")
+            source.push(null)
+        }, 5 * SHORT_TIMEOUT)
+        await client.uploadFrom(source, FILENAME)
+        assert.deepEqual(server.uploadedData, Buffer.from("the beginning......and the end", "utf-8"))
+    })
+
+    it("times out if the server stops accepting data", async () => {
+        client.ftp.timeout = SHORT_TIMEOUT
+        // Enough data that it can't all disappear into the buffers of a server that isn't reading.
+        const source = getReadable("s".repeat(16 * 1000 * 1000))
+        server.didStartTransfer = () => server.dataConn.pause()
+        return assert.rejects(() => client.uploadFrom(source, FILENAME), {
+            message: "Timeout (data socket)"
         })
     })
 

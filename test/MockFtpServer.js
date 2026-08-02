@@ -8,6 +8,15 @@ const DEFAULT_HANDLERS = {
     quit: () => "200 Bye"
 }
 
+/**
+ * A client that goes away mid-conversation is a normal thing for a server to see, and several
+ * tests provoke exactly that. Without this, writing to such a connection throws EPIPE/ECONNRESET
+ * as an uncaught exception and fails whichever test happens to be running.
+ */
+function ignoreErrors(conn) {
+    conn.on("error", () => {})
+}
+
 module.exports = class MockFtpServer {
     constructor() {
         this.didOpenDataConn = () => {}
@@ -22,6 +31,7 @@ module.exports = class MockFtpServer {
             this.ctrlConn = conn
             this.connections.push(conn)
             conn.allowHalfOpen = true
+            ignoreErrors(conn)
             conn.write(`200 Welcome${NEWLINE}`)
             conn.on("data", data => {
                 const command = data.toString().trim()
@@ -41,6 +51,7 @@ module.exports = class MockFtpServer {
         this.dataServer = net.createServer(conn => {
             this.dataConn = conn
             this.connections.push(conn)
+            ignoreErrors(conn)
             this.didOpenDataConn()
             const bufs = []
             conn.on("data", data => {
@@ -58,6 +69,9 @@ module.exports = class MockFtpServer {
     }
 
     writeCtrl(payload) {
+        if (!this.ctrlConn || this.ctrlConn.destroyed) {
+            return
+        }
         this.ctrlConn.write(`${payload}${NEWLINE}`)
     }
 

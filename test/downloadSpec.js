@@ -8,6 +8,8 @@ const fs = require("fs");
 
 const FILENAME = "file.txt"
 const TIMEOUT = 1000
+// Used where a test has to wait for a timeout to happen, or to not happen.
+const SHORT_TIMEOUT = 100
 const EMPTY_TEXT = ""
 const SHORT_TEXT = "Short"
 const MEDIUM_TEXT = "s".repeat(45017) // https://github.com/patrickjuchli/basic-ftp/issues/205
@@ -77,6 +79,50 @@ describe("Download to stream", () => {
         const buf = new StringWriter()
         await client.downloadTo(buf, FILENAME)
         assert.deepEqual(buf.getText("utf-8"), MEDIUM_TEXT)
+    })
+
+    // A destination that is slow to accept data is not a broken connection. Timing out on it
+    // aborts a healthy transfer and truncates whatever the destination received so far.
+    it("doesn't time out while a slow destination is holding up the transfer", async () => {
+        payload = "s".repeat(1000 * 1000)
+        client.ftp.timeout = SHORT_TIMEOUT
+        let received = 0
+        let blocking = false
+        let bytesReadWhileBlocked = 0
+        const destination = new Writable({
+            highWaterMark: 1,
+            write(chunk, enc, cb) {
+                received += chunk.length
+                if (blocking) {
+                    cb()
+                    return
+                }
+                blocking = true
+                setTimeout(() => {
+                    bytesReadWhileBlocked = client.ftp.dataSocket.bytesRead
+                    cb()
+                }, 5 * SHORT_TIMEOUT)
+            }
+        })
+        await client.downloadTo(destination, FILENAME)
+        assert.strictEqual(received, payload.length, "received all data")
+        assert.ok(bytesReadWhileBlocked < payload.length,
+            `transfer was really held up, read ${bytesReadWhileBlocked} of ${payload.length} bytes while blocked`)
+    })
+
+    it("times out if the server stops sending", async () => {
+        client.ftp.timeout = SHORT_TIMEOUT
+        server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
+            // Send something, then go silent without ever closing the data connection.
+            "retr": () => {
+                setTimeout(() => server.dataConn.write("the beginning..."))
+                return "150 Ready to download"
+            }
+        })
+        return assert.rejects(() => client.downloadTo(new StringWriter(), FILENAME), {
+            message: "Timeout (data socket)"
+        })
     })
 
     it("handles late destination stream error", async () => {
@@ -161,7 +207,32 @@ describe("Download to stream", () => {
         dataSocket.destroy(new Error("Error that should be ignored because task has completed successfully"))
     })
 
-    it.todo("stops tracking timeout after failure")
+    it("stops tracking timeout after failure", async () => {
+        client.ftp.timeout = SHORT_TIMEOUT
+        server.addHandlers({
+            "pasv": () => `227 Entering Passive Mode (${server.dataAddressForPasvResponse})`,
+            // Fail while the data connection is transferring.
+            "retr": () => {
+                setTimeout(() => {
+                    server.dataConn.write("the beginning...")
+                    server.writeCtrl("500 Something went wrong")
+                })
+                return "150 Ready to download"
+            },
+            "noop": () => "200 OK"
+        })
+        await assert.rejects(() => client.downloadTo(new StringWriter(), FILENAME), {
+            message: "500 Something went wrong"
+        })
+        assert.strictEqual(client.ftp.socket.timeout, 0, "control socket stopped tracking")
+        // Nothing may be left watching the failed transfer: it would report a timeout later on,
+        // taking down whatever the client is doing by then.
+        await client.access({ port: server.ctrlAddress.port, user: "test", password: "test" })
+        await new Promise(resolve => setTimeout(resolve, 3 * SHORT_TIMEOUT))
+        assert.strictEqual(client.closed, false, "client still connected after being idle")
+        await client.send("NOOP")
+    })
+
     it.todo("can get a directory listing")
     it.todo("uses control host IP if suggested data connection IP using PASV is private")
     it.todo("can download using TLS")

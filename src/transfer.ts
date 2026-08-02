@@ -1,8 +1,10 @@
 import { EventEmitter } from "events"
+import { Socket } from "net"
 import { Readable, Writable, pipeline } from "stream"
 import { TLSSocket, connect as connectTLS } from "tls"
 import { FTPContext, FTPResponse, TaskResolver } from "./FtpContext"
 import { ProgressTracker, ProgressType } from "./ProgressTracker"
+import { TransferWatchdog } from "./TransferWatchdog"
 import { describeAddress, describeTLS, ipIsPrivateV4Address, isLoopback } from "./netUtils"
 import { positiveCompletion, positiveIntermediate } from "./parseControlResponse"
 
@@ -109,7 +111,8 @@ export function parsePasvResponse(message: string): { host: string, port: number
 
 export function connectForPassiveTransfer(host: string, port: number, ftp: FTPContext): Promise<void> {
     return new Promise((resolve, reject) => {
-        let socket = ftp._newSocket()
+        const rawSocket = ftp._newSocket()
+        let socket: Socket | TLSSocket = rawSocket
         const handleConnErr = function(err: Error) {
             err.message = "Can't open data connection in passive mode: " + err.message
             reject(err)
@@ -123,8 +126,8 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
         socket.on("timeout", handleTimeout)
         socket.connect({ port, host, family: ftp.ipFamily}, () => {
             if (ftp.socket instanceof TLSSocket) {
-                socket = connectTLS(Object.assign({}, ftp.tlsOptions, {
-                    socket,
+                const tlsSocket = connectTLS(Object.assign({}, ftp.tlsOptions, {
+                    socket: rawSocket,
                     // Reuse the TLS session negotiated earlier when the control connection
                     // was upgraded. Servers expect this because it provides additional
                     // security: If a completely new session would be negotiated, a hacker
@@ -135,7 +138,8 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
                 // When the server issues a new session ticket after this data connection's
                 // TLS handshake (TLS 1.3 single-use tickets), capture it so the next data
                 // connection can present a fresh ticket and resume successfully.
-                socket.on("session", session => { ftp.tlsSessionStore = session })
+                tlsSocket.on("session", session => { ftp.tlsSessionStore = session })
+                socket = tlsSocket
                 // It's the responsibility of the transfer task to wait until the
                 // TLS socket issued the event 'secureConnect'. We can't do this
                 // here because some servers will start upgrading after the
@@ -144,6 +148,11 @@ export function connectForPassiveTransfer(host: string, port: number, ftp: FTPCo
                 // is ready. But for upload this has to be taken into account,
                 // see the details in the upload() function below.
             }
+            // Disable the timeout that was guarding the connection attempt. This has to happen on
+            // the socket it was set on: when using TLS, `socket` is by now a wrapper around that
+            // socket, and a timeout left running underneath would destroy the data connection
+            // during a transfer that is idle for a legitimate reason.
+            rawSocket.setTimeout(0)
             // Let the FTPContext listen to errors from now on, remove local handler.
             socket.removeListener("error", handleConnErr)
             socket.removeListener("timeout", handleTimeout)
@@ -165,6 +174,7 @@ class TransferResolver {
 
     protected response: FTPResponse | undefined = undefined
     protected dataTransferDone = false
+    protected readonly watchdog = new TransferWatchdog()
 
     /**
      * Instantiate a TransferResolver
@@ -178,7 +188,7 @@ class TransferResolver {
      * @param type - Type of transfer, usually "upload" or "download".
      */
     onDataStart(name: string, type: ProgressType) {
-        // Let the data socket be in charge of tracking timeouts during transfer.
+        // Let the data connection be in charge of tracking timeouts during transfer.
         // The control socket sits idle during this time anyway and might provoke
         // a timeout unnecessarily. The control connection will take care
         // of timeouts again once data transfer is complete or failed.
@@ -186,7 +196,12 @@ class TransferResolver {
             throw new Error("Data transfer should start but there is no data connection.")
         }
         this.ftp.socket.setTimeout(0)
-        this.ftp.dataSocket.setTimeout(this.ftp.timeout)
+        // An inactivity timeout on the data socket would also fire while a slow local source or
+        // destination is holding up an otherwise healthy transfer. Watch the transfer instead.
+        this.ftp.dataSocket.setTimeout(0)
+        this.watchdog.start(this.ftp.dataSocket, type === "upload" ? "upload" : "download", this.ftp.timeout, () => {
+            this.ftp.closeWithError(new Error("Timeout (data socket)"))
+        })
         this.progress.start(this.ftp.dataSocket, name, type)
     }
 
@@ -194,15 +209,13 @@ class TransferResolver {
      * The data connection has finished the transfer.
      */
     onDataDone(task: TaskResolver) {
+        this.watchdog.stop()
         this.progress.updateAndStop()
         // Hand-over timeout tracking back to the control connection. It's possible that
         // we don't receive the response over the control connection that the transfer is
         // done. In this case, we want to correctly associate the resulting timeout with
         // the control connection.
         this.ftp.socket.setTimeout(this.ftp.timeout)
-        if (this.ftp.dataSocket) {
-            this.ftp.dataSocket.setTimeout(0)
-        }
         this.dataTransferDone = true
         this.tryResolve(task)
     }
@@ -219,6 +232,7 @@ class TransferResolver {
      * An error has been reported and the task should be rejected.
      */
     onError(task: TaskResolver, err: Error) {
+        this.watchdog.stop()
         this.progress.updateAndStop()
         this.ftp.socket.setTimeout(this.ftp.timeout)
         this.ftp.dataSocket = undefined
@@ -324,6 +338,10 @@ export function downloadTo(destination: Writable, config: TransferConfig): Promi
             }
             config.ftp.log(`Downloading from ${describeAddress(dataSocket)} (${describeTLS(dataSocket)})`)
             resolver.onDataStart(config.remotePath, config.type)
+            // Keep piping the data connection: TransferWatchdog recognizes a destination that
+            // can't keep up by the socket being paused, and only piping does that. Consuming the
+            // socket in another way, e.g. by iterating over it, makes the watchdog report a
+            // transfer as stalled while it's in fact waiting for us.
             pipeline(dataSocket, destination, err => {
                 if (err) {
                     resolver.onError(task, err)
