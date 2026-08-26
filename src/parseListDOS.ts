@@ -5,10 +5,15 @@ import { FileInfo, FileType } from "./FileInfo"
  * under the Apache 2.0 license. It has been simplified and rewritten to better fit the Javascript language.
  *
  * https://github.com/apache/commons-net/blob/master/src/main/java/org/apache/commons/net/ftp/parser/NTFTPEntryParser.java
+ *
+ * Keep this expression anchored: without it a line that can't be parsed is retried at every position,
+ * and as the expression starts with `\S+` each attempt is itself linear in the length of the line. A
+ * single long line without whitespace would cost O(n²), which a server could use to block the event loop.
  */
 
 const RE_LINE = new RegExp(
-    "(\\S+)\\s+(\\S+)\\s+"          // MM-dd-yy whitespace hh:mma|kk:mm swallow trailing spaces
+    "^\\s*"                         // anchor, `testLine` below is even stricter about this
+    + "(\\S+)\\s+(\\S+)\\s+"        // MM-dd-yy whitespace hh:mma|kk:mm swallow trailing spaces
     + "(?:(<DIR>)|([0-9]+))\\s+"    // <DIR> or ddddd swallow trailing spaces
     + "(\\S.*)"                     // First non-space followed by rest of line (name)
 )

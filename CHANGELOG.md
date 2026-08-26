@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.1
+
+- Fixed: Protect against excessive CPU use when parsing a directory listing, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-c475-qrg2-pj4r.
+
 ## 6.2.0
 
 - Changed: Timeout tracking during data transfers now only applies to the server, not a slow local source or destination.

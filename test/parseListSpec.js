@@ -23,6 +23,9 @@ drwxr-xr-x    2 1001     1001         4096 Feb 25 19:03 .
 dr-xr-xr-x    3 1001     1001         4096 Feb 25 18:55 ..
 -rw-------    1 1001     1001          487 Feb 25 19:03 package.json`
 
+const listUnixWithInode = `
+ 1234567    4 -rw-r--r--   1 patrick  staff    487 Feb 25 19:03 package.json`
+
 const listDOS = `
 12-05-96  05:03PM       <DIR>          myDir
 11-14-97  04:21PM                  953 MYFILE.INI`
@@ -287,6 +290,217 @@ describe("Directory listing", function() {
             ]
         },
         {
+            title: "Unix list with inode and block count in front of an entry",
+            list: listUnixWithInode,
+            exp: [
+                (f = new FileInfo("package.json"),
+                f.group = "staff",
+                f.size = 487,
+                f.user = "patrick",
+                f.permissions = {
+                    user: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Write,
+                    group: FileInfo.UnixPermission.Read,
+                    world: FileInfo.UnixPermission.Read
+                },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Feb 25 19:03",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with spaces in group name",
+            list: `-rw-r--r-- 1 patrick staff group 487 Feb 25 19:03 package.json`,
+            exp: [
+                (f = new FileInfo("package.json"),
+                f.group = "staff group",
+                f.size = 487,
+                f.user = "patrick",
+                f.permissions = {
+                    user: FileInfo.UnixPermission.Read + FileInfo.UnixPermission.Write,
+                    group: FileInfo.UnixPermission.Read,
+                    world: FileInfo.UnixPermission.Read
+                },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Feb 25 19:03",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with a block count in front of an entry (ls -s)",
+            list: `4 -rw-r--r--   1 patrick  staff   1057 Dec 11 14:35 f.txt`,
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "staff",
+                f.size = 1057,
+                f.user = "patrick",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Dec 11 14:35",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with spaces in owner name",
+            list: `-rw-r--r--   1 Domain Users  staff 12345 Feb 12 12:12 f.txt`,
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "staff",
+                f.size = 12345,
+                f.user = "Domain Users",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Feb 12 12:12",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            // The number of words per name is capped, see the note on backtracking in the parser.
+            title: "Unix list with the maximum number of words in a group name",
+            list: `-rw-r--r--   1 owner g1 g2 g3 g4 g5 g6 g7 g8 12345 Feb 12 12:12 f.txt`,
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "g1 g2 g3 g4 g5 g6 g7 g8",
+                f.size = 12345,
+                f.user = "owner",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Feb 12 12:12",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with a device using 'n, m' instead of a size",
+            list: `crw-rw----   1 root     sys    10, 0 Jan 12  2005 kmem`,
+            exp: [
+                (f = new FileInfo("kmem"),
+                f.group = "sys",
+                f.size = 10,
+                f.user = "root",
+                f.permissions = { user: 6, group: 6, world: 0 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Jan 12 2005",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with a Japanese date",
+            list: `-rw-r--r--   1 user     group  12345 1月 12日 2005年 f.txt`,
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "group",
+                f.size = 12345,
+                f.user = "user",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "1月 12日 2005年",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with a symbolic link",
+            list: `lrwxrwxrwx   1 neeme    neeme     23 Mar  2 18:06 macros -> /home/neeme/macros`,
+            exp: [
+                (f = new FileInfo("macros"),
+                f.group = "neeme",
+                f.size = 23,
+                f.user = "neeme",
+                f.link = "/home/neeme/macros",
+                f.permissions = { user: 7, group: 7, world: 7 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Mar  2 18:06",
+                f.type = FileType.SymbolicLink,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with a numeric date",
+            list: `-rw-r--r--   1 user     group  12345 2004-02-12 12:12 f.txt`,
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "group",
+                f.size = 12345,
+                f.user = "user",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "2004-02-12 12:12",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with the day in front of the month",
+            list: `-rw-r--r--   1 user     group  12345 12 Feb 12:12 f.txt`,
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "group",
+                f.size = 12345,
+                f.user = "user",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "12 Feb 12:12",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            title: "Unix list without a separator before the link count",
+            list: `drwxr-xr-x2  user     group   4096 Feb  8 09:11 dir`,
+            exp: [
+                (f = new FileInfo("dir"),
+                f.group = "group",
+                f.size = 4096,
+                f.user = "user",
+                f.permissions = { user: 7, group: 5, world: 5 },
+                f.hardLinkCount = 2,
+                f.rawModifiedAt = "Feb  8 09:11",
+                f.type = FileType.Directory,
+                f)
+            ]
+        },
+        {
+            title: "Unix list with a negative user ID",
+            list: `drwxrwx---   2 -1       60      4096 Sep 13  2006 shared`,
+            exp: [
+                (f = new FileInfo("shared"),
+                f.group = "60",
+                f.size = 4096,
+                f.user = "-1",
+                f.permissions = { user: 7, group: 7, world: 0 },
+                f.hardLinkCount = 2,
+                f.rawModifiedAt = "Sep 13 2006",
+                f.type = FileType.Directory,
+                f)
+            ]
+        },
+        {
+            title: "Unix list separated by tabs",
+            list: "-rw-r--r--\t1\tuser\tgroup\t12345\tFeb 12\t12:12\tf.txt",
+            exp: [
+                (f = new FileInfo("f.txt"),
+                f.group = "group",
+                f.size = 12345,
+                f.user = "user",
+                f.permissions = { user: 6, group: 4, world: 4 },
+                f.hardLinkCount = 1,
+                f.rawModifiedAt = "Feb 12 12:12",
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
+            // Anything but an inode or block count in front of an entry, see the parser.
+            title: "Unix list with an unparsable prefix in front of an entry",
+            list: `junk -rw-r--r--   1 patrick  staff   1057 Dec 11 14:35 f.txt`,
+            exp: undefined
+        },
+        {
             title: "Regular DOS list",
             list: listDOS,
             exp: [
@@ -372,3 +586,32 @@ describe("MLSx Date", function() {
         })
     }
 })
+
+/**
+ * A listing comes from a remote server, parsing it must not let that server block the event loop.
+ * The listings below took minutes to parse before the parser expressions were bounded and anchored.
+ */
+describe("Directory listing DoS resistance", function() {
+    const maxDuration = 1000;
+
+    function measure(list) {
+        const start = Date.now();
+        const files = parseList(list);
+        return { files, duration: Date.now() - start };
+    }
+
+    it("handles a long Unix line that can't be parsed", function() {
+        // Ends on a valid line because that's the one deciding which parser is used for the whole list.
+        const list = "-rw-r--r-- 1 " + "a ".repeat(64 * 1024) + "!\r\n" + listUnixIssue61.trim();
+        const { files, duration } = measure(list);
+        assert.deepEqual(files.map(file => file.name), ["package.json"]);
+        assert.ok(duration < maxDuration, `Parsing took ${duration}ms, expected less than ${maxDuration}ms`);
+    });
+
+    it("handles a long DOS line without whitespace", function() {
+        const list = "x".repeat(256 * 1024) + "\r\n" + listDOS.trim();
+        const { files, duration } = measure(list);
+        assert.deepEqual(files.map(file => file.name), ["myDir", "MYFILE.INI"]);
+        assert.ok(duration < maxDuration, `Parsing took ${duration}ms, expected less than ${maxDuration}ms`);
+    });
+});

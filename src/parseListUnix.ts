@@ -33,9 +33,15 @@ const JA_YEAR  = "\u5e74"
  *    Note: local listings on MacOSX also use '@'
  *    this is not allowed for here as does not appear to be shown by FTP servers
  *    {@code @}   file has extended attributes
+ *
+ * Keep this expression anchored and both name quantifiers bounded: spaces are allowed in the owner and
+ * group name, so an unbounded pair of them makes a line that can't be parsed cost O(n²) in its length,
+ * which a server could use to block the event loop.
  */
 const RE_LINE = new RegExp(
-    "([bcdelfmpSs-])" // file type
+    "^[\\s\\d]*"                                    // anchor, skipping an inode/block count as reported by `ls -i` or `ls -s`
+
+    + "([bcdelfmpSs-])" // file type
     +"(((r|-)(w|-)([xsStTL-]))((r|-)(w|-)([xsStTL-]))((r|-)(w|-)([xsStTL-]?)))\\+?" // permissions
 
     + "\\s*"                                        // separator TODO why allow it to be omitted??
@@ -44,8 +50,8 @@ const RE_LINE = new RegExp(
 
     + "\\s+"                                        // separator
 
-    + "(?:(\\S+(?:\\s\\S+)*?)\\s+)?"                // owner name (optional spaces)
-    + "(?:(\\S+(?:\\s\\S+)*)\\s+)?"                 // group name (optional spaces)
+    + "(?:(\\S+(?:\\s\\S+){0,7}?)\\s+)?"            // owner name (bounded, may contain spaces)
+    + "(?:(\\S+(?:\\s\\S+){0,7})\\s+)?"             // group name (bounded, may contain spaces)
     + "(\\d+(?:,\\s*\\d+)?)"                        // size or n,m
 
     + "\\s+"                                        // separator
