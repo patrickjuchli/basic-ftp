@@ -37,7 +37,8 @@ export class TransferWatchdog {
 
     /**
      * Start watching a transfer. Calls `onStall` if the server hasn't made progress for
-     * `timeout` milliseconds. A timeout of 0 disables the watchdog.
+     * `timeout` milliseconds, or for twice that if we made it wait ourselves before that.
+     * A timeout of 0 disables the watchdog.
      */
     start(socket: Socket, direction: TransferDirection, timeout: number, onStall: () => void) {
         this.stop()
@@ -47,19 +48,29 @@ export class TransferWatchdog {
         const intervalMs = Math.max(1, Math.min(Math.floor(timeout / minChecksPerTimeout), maxCheckIntervalMs))
         let lastBytes = countBytes(socket)
         let idleMs = 0
+        let graceMs = 0
         this.timer = setInterval(() => {
             const bytes = countBytes(socket)
             const madeProgress = bytes !== lastBytes
             lastBytes = bytes
-            if (madeProgress || !isWaitingForServer(socket, direction)) {
+            if (!isWaitingForServer(socket, direction)) {
+                // We're the ones holding up the transfer. The server won't continue the moment
+                // we're ready again: our backpressure closed the receive window and it only
+                // learns that it reopened with its next probe, so grant that on top of timeout.
                 idleMs = 0
+                graceMs = timeout
+                return
+            }
+            if (madeProgress) {
+                idleMs = 0
+                graceMs = 0
                 return
             }
             // Count checks instead of measuring elapsed time: a blocked event loop delays our
             // checks just as much as it delays reading from the socket, and that's not something
             // the server should be blamed for.
             idleMs += intervalMs
-            if (idleMs >= timeout) {
+            if (idleMs >= timeout + graceMs) {
                 this.stop()
                 onStall()
             }

@@ -3,6 +3,7 @@
 ## 6.2.1
 
 - Fixed: Protect against excessive CPU use when parsing a directory listing, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-c475-qrg2-pj4r.
+- Fixed: A transfer could time out right after a slow local source or destination stopped holding it up, before the server had a chance to continue.
 
 ## 6.2.0
 

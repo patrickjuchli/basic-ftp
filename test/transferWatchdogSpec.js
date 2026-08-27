@@ -96,6 +96,31 @@ describe("TransferWatchdog", () => {
         assert.ok(checks >= 4, `stall was based on ${checks} check(s)`)
     })
 
+    // Our own backpressure closes the receive window. The server only learns that it reopened
+    // with its next probe, which it spaces out further the longer it has been waiting, so it can
+    // stay silent well past the timeout through no fault of its own.
+    it("waits longer for a server that we made wait ourselves", async () => {
+        const socket = socketMock({ paused: true })
+        const report = watch(socket, "download")
+        await wait(WAIT)
+        assert.strictEqual(report.stalls, 0, "no stall while our destination is holding up the transfer")
+        socket.isPaused = () => false
+        await wait(TIMEOUT * 1.5)
+        assert.strictEqual(report.stalls, 0, "no stall while the server is recovering from our pause")
+        await wait(WAIT)
+        assert.ok(report.stalls > 0, "stall once the server stayed silent beyond that")
+    })
+
+    it("stops granting extra time once the server responded", async () => {
+        const socket = socketMock({ paused: true })
+        const report = watch(socket, "download")
+        await wait(TIMEOUT)
+        socket.isPaused = () => false
+        socket.bytesRead += 100 // the server picked up again
+        await wait(WAIT)
+        assert.ok(report.stalls > 0, "a server going silent afterwards stalls after the plain timeout")
+    })
+
     it("is disabled with a timeout of 0", async () => {
         assert.strictEqual(await reportsStall(socketMock(), "download", 0), false)
     })
