@@ -92,14 +92,16 @@ describe("ProFTPD integration", () => {
             /** @type {Client} */
             let client;
 
+            // The user's home starts out with dotfiles and a test may leave files behind, so
+            // establish the empty directory every test expects instead of inheriting whatever
+            // the test before it happened to clean up.
             beforeEach(async () => {
                 client = makeClient();
                 await connect(client);
+                await client.clearWorkingDir();
             });
 
-            afterEach(async () => {
-                try { await client.clearWorkingDir(); }
-                catch { /* ignore – client may be in a bad state after a failed test */ }
+            afterEach(() => {
                 client.close();
             });
 
@@ -386,6 +388,7 @@ describe("ProFTPD integration", () => {
                         maxVersion: "TLSv1.3",
                     }
                 });
+                await client.clearWorkingDir();
 
                 // Confirm the control channel actually negotiated TLS 1.3 –
                 // if the handshake fell back to 1.2 the test would be vacuous.
@@ -422,9 +425,6 @@ describe("ProFTPD integration", () => {
                 );
             }
             finally {
-                try {
-                    for (let i = 1; i <= 4; i++) await client.remove(`ticket-test-${i}.txt`);
-                } catch (_) {}
                 client.close();
             }
         });
