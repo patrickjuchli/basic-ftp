@@ -2,6 +2,7 @@ import { FileInfo } from "./FileInfo"
 import * as dosParser from "./parseListDOS"
 import * as unixParser from "./parseListUnix"
 import * as mlsdParser from "./parseListMLSD"
+import * as eplParser from "./parseListEPLF"
 
 interface Parser {
     testLine(line: string): boolean
@@ -16,6 +17,7 @@ interface Parser {
 const availableParsers: Parser[] = [
     dosParser,
     unixParser,
+    eplParser,
     mlsdParser // Keep MLSD last, may accept filename only
 ]
 
@@ -47,7 +49,8 @@ export function parseList(rawList: string): FileInfo[] {
     const testLine = lines[lines.length - 1]
     const parser = firstCompatibleParser(testLine, availableParsers)
     if (!parser) {
-        throw new Error("This library only supports MLSD, Unix- or DOS-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
+        console.debug("DEBUG:", { testLine: testLine, availableParsers: availableParsers } )
+        throw new Error("This library only supports MLSD, Unix-, DOS-, or EPLF-style directory listing. Your FTP server seems to be using another format. You can see the transmitted listing when setting `client.ftp.verbose = true`. You can then provide a custom parser to `client.parseList`, see the documentation for details.")
     }
     const files = lines
         .map(parser.parseLine)
