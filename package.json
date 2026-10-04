@@ -39,13 +39,13 @@
     "node": ">=10.0.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.6",
+    "@eslint/eslintrc": "3.3.7",
     "@eslint/js": "10.0.1",
-    "@types/node": "26.3.0",
-    "@typescript-eslint/eslint-plugin": "8.68.0",
-    "@typescript-eslint/parser": "8.68.0",
-    "eslint": "10.9.1",
-    "testcontainers": "12.1.0",
+    "@types/node": "26.6.4",
+    "@typescript-eslint/eslint-plugin": "8.71.0",
+    "@typescript-eslint/parser": "8.71.0",
+    "eslint": "10.12.0",
+    "testcontainers": "12.2.0",
     "typescript": "6.0.3"
   }
 }
