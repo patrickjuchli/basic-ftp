@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.2
+
+- Fixed: Protect against excessive CPU use when detecting an MLSD directory listing or parsing a PASV response, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-5rfr-xx34-2xxv.
+
 ## 6.2.1
 
 - Fixed: Protect against excessive CPU use when parsing a directory listing, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-c475-qrg2-pj4r.

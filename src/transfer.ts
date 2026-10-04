@@ -99,7 +99,9 @@ export async function enterPassiveModeIPv4_forceControlHostIP(ftp: FTPContext): 
  */
 export function parsePasvResponse(message: string): { host: string, port: number } {
     // Get host and port from PASV response, e.g. "227 Entering Passive Mode (192,168,1,100,10,229)"
-    const groups = message.match(/([-\d]+,[-\d]+,[-\d]+,[-\d]+),([-\d]+),([-\d]+)/)
+    // Only start a match at the beginning of a number: retrying at every digit of a long number
+    // without commas would cost O(n²), which a server could use to block the event loop.
+    const groups = message.match(/(?<![-\d])([-\d]+,[-\d]+,[-\d]+,[-\d]+),([-\d]+),([-\d]+)/)
     if (groups === null || groups.length !== 4) {
         throw new Error(`Can't parse response to 'PASV': ${message}`)
     }

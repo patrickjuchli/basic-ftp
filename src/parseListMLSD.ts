@@ -115,9 +115,12 @@ function splitStringOnce(str: string, delimiter: string): [string, string] {
  *
  * - Example 1: `size=15227;type=dir;perm=el;modify=20190419065730; test one`
  * - Example 2: ` file name` (leading space)
+ *
+ * Keep `=` out of the fact name: if both sides of the first `=` could contain it, a long line of `=`
+ * without `;` would be retried at every split point, costing O(n²) and blocking the event loop.
  */
 export function testLine(line: string): boolean {
-    return /^\S+=\S+;/.test(line) || line.startsWith(" ")
+    return /^[^\s=]+=\S+;/.test(line) || line.startsWith(" ")
 }
 
 /**

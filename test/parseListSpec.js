@@ -614,4 +614,11 @@ describe("Directory listing DoS resistance", function() {
         assert.deepEqual(files.map(file => file.name), ["myDir", "MYFILE.INI"]);
         assert.ok(duration < maxDuration, `Parsing took ${duration}ms, expected less than ${maxDuration}ms`);
     });
+
+    it("rejects a long line of '=' without ';' that decides the list type", function() {
+        const start = Date.now();
+        assert.throws(() => parseList("=".repeat(256 * 1024)), /only supports MLSD, Unix- or DOS-style/);
+        const duration = Date.now() - start;
+        assert.ok(duration < maxDuration, `Parsing took ${duration}ms, expected less than ${maxDuration}ms`);
+    });
 });
