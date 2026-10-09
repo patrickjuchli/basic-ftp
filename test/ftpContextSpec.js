@@ -186,4 +186,42 @@ describe("FTPContext", { timeout: 100 }, () => {
             assert.equal(c.socket.timeout, 0, "timeout after resolving task");
         });
     });
+
+    it("rejects command with control characters and stays usable", async () => {
+        ftp.socket.connect();
+        await assert.rejects(() => ftp.request("CWD a\r\nb"), {
+            message: "Invalid command: Contains control characters. (CWD a\r\nb)"
+        });
+        assert.equal(ftp.closed, false);
+        assert.equal(ftp.socket.timeout, 0);
+        const next = ftp.request("PWD");
+        ftp.socket.emit("data", "257 \"/\"");
+        assert.equal((await next).code, 257);
+    });
+
+    it("doesn't reveal password when rejecting command with control characters", () => {
+        return assert.rejects(() => ftp.request("PASS secret\r\nDELE file"), {
+            message: "Invalid command: Contains control characters. (PASS ###)"
+        });
+    });
+
+    it("rejects task and closes if response handler throws", async () => {
+        ftp.socket.connect();
+        const task = ftp.handle(undefined, () => {
+            throw new Error("Handler failed");
+        });
+        ftp.socket.emit("data", "200 OK");
+        await assert.rejects(task, { message: "Handler failed" });
+        assert.equal(ftp.closed, true);
+    });
+
+    it("rejects task if response handler throws while sending a command", async () => {
+        ftp.socket.connect();
+        const task = ftp.handle(undefined, () => ftp.send("PASS secret\r\nDELE file"));
+        ftp.socket.emit("data", "331 Need password");
+        await assert.rejects(task, {
+            message: "Invalid command: Contains control characters. (PASS ###)"
+        });
+        assert.equal(ftp.closed, true);
+    });
 });

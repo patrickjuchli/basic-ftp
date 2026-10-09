@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.3
+
+- Fixed: A password or a path of a resumed download containing control characters could throw an uncaught exception and terminate the process, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-r4jh-29pc-gfqr.
+- Fixed: A command rejected for containing control characters left the client unusable.
+- Fixed: The error for a rejected `PASS` command included the password.
+
 ## 6.2.2
 
 - Fixed: Protect against excessive CPU use when detecting an MLSD directory listing or parsing a PASV response, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-5rfr-xx34-2xxv.

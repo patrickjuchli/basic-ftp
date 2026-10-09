@@ -230,13 +230,13 @@ export class FTPContext {
      * Send an FTP command without waiting for or handling the result.
      */
     send(command: string) {
+        const containsPassword = command.startsWith("PASS")
+        const description = containsPassword ? "PASS ###" : command
         // Reject control character injection attempts.
         if (/[\r\n\0]/.test(command)) {
-            throw new Error(`Invalid command: Contains control characters. (${command})`);
+            throw new Error(`Invalid command: Contains control characters. (${description})`);
         }
-        const containsPassword = command.startsWith("PASS")
-        const message = containsPassword ? "> PASS ###" : `> ${command}`
-        this.log(message)
+        this.log(`> ${description}`)
         this._socket.write(command + "\r\n", this.encoding)
     }
 
@@ -307,7 +307,13 @@ export class FTPContext {
             // the default socket behaviour which is not expected by most users.
             this.socket.setTimeout(this.timeout)
             if (command) {
-                this.send(command)
+                // Nothing has been sent if this fails, so the task can be rejected without closing the client.
+                try {
+                    this.send(command)
+                }
+                catch (err) {
+                    this._task.resolver.reject(err as Error)
+                }
             }
         })
     }
@@ -371,8 +377,17 @@ export class FTPContext {
      * @protected
      */
     protected _passToHandler(response: Error | FTPResponse) {
-        if (this._task) {
-            this._task.responseHandler(response, this._task.resolver)
+        const task = this._task
+        if (task) {
+            // Handlers run during socket events where nobody could catch an error. Report it to the
+            // task instead and close because the state of the session is unknown at this point.
+            try {
+                task.responseHandler(response, task.resolver)
+            }
+            catch (err) {
+                task.resolver.reject(err as Error)
+                this.closeWithError(err as Error)
+            }
         }
         // Errors other than FTPError always close the client. If there isn't an active task to handle the error,
         // the next one submitted will receive it using `_closingError`.
