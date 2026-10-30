@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.4
+
+- Fixed: Prevent __proto__ injection when looking up MLSD fact handlers.
+
 ## 6.2.3
 
 - Fixed: A password or a path of a resumed download containing control characters could throw an uncaught exception and terminate the process, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-r4jh-29pc-gfqr.
