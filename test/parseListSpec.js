@@ -109,6 +109,16 @@ describe("Directory listing", function() {
             ]
         },
         {
+            title: "MLSD ignore facts named like Object.prototype properties",
+            list: `__proto__=x;__PROTO__=x;constructor=x;type=file;size=10; evil.txt`,
+            exp: [
+                (f = new FileInfo("evil.txt"),
+                f.size = 10,
+                f.type = FileType.File,
+                f)
+            ]
+        },
+        {
             title: "MLSD handle 'sizd' (Issue 95)",
             list: `sizd=4096; filename`,
             exp: [

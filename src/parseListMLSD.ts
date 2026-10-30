@@ -138,11 +138,12 @@ export function parseLine(line: string): FileInfo | undefined {
         if (!factValue) {
             continue
         }
-        const factHandler = factHandlersByName[factName.toLowerCase()]
-        if (!factHandler) {
+        // The fact name comes from the server, only accept own keys and not ones like `__proto__`.
+        const key = factName.toLowerCase()
+        if (!Object.prototype.hasOwnProperty.call(factHandlersByName, key)) {
             continue
         }
-        const result = factHandler(factValue, info)
+        const result = factHandlersByName[key](factValue, info)
         if (result === FactHandlerResult.IgnoreFile) {
             return undefined
         }
