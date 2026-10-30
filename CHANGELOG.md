@@ -2,7 +2,7 @@
 
 ## 6.2.4
 
-- Fixed: Prevent __proto__ injection when looking up MLSD fact handlers. Fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-5pm8-86m8-9m6r.
+- Fixed: A fact named `__proto__` in an MLSD directory listing made listing a directory fail with a TypeError, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-5pm8-86m8-9m6r.
 
 ## 6.2.3
 
