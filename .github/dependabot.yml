@@ -4,3 +4,6 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    # Most compromised releases are found and pulled within days
+    cooldown:
+      default-days: 7

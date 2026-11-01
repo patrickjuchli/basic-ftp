@@ -50,7 +50,8 @@ jobs:
             echo
             echo "https://github.com/$GITHUB_REPOSITORY/compare/$PREVIOUS...$GITHUB_SHA"
           } >> "$GITHUB_STEP_SUMMARY"
-      - run: npm ci
+      # This job can stage on npm, so don't run install scripts of dependencies.
+      - run: npm ci --ignore-scripts
       # Runs prepublishOnly: clean, lint, tsc and unit tests
       - run: npm test
       - run: npm stage publish
