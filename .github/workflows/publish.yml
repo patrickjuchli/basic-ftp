@@ -1,0 +1,78 @@
+name: Stage release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Lets npm exchange a GitHub OIDC token for a short-lived token that can
+      # only stage a version. Approving it on npm still requires 2FA.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          # Staged publishing needs npm >= 11.15.0
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Check tag, version, branch and changelog
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $VERSION"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/master; then
+            echo "Tagged commit $GITHUB_SHA is not on master"
+            exit 1
+          fi
+          node .github/scripts/changelog-entry.js > /dev/null
+      - name: Write review summary
+        run: |
+          PREVIOUS="$(git describe --tags --abbrev=0 --match 'v*' "$GITHUB_SHA^")"
+          {
+            echo "### Review before approving on npm"
+            echo
+            echo "Compare the commit in this run's header with the one below. Then review every changed file:"
+            echo
+            echo "https://github.com/$GITHUB_REPOSITORY/compare/$PREVIOUS...$GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - run: npm ci
+      # Runs prepublishOnly: clean, lint, tsc and unit tests
+      - run: npm test
+      - run: npm stage publish
+
+  draft-release:
+    needs: stage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Create draft GitHub release from changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node .github/scripts/changelog-entry.js > notes.md
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --verify-tag \
+            --title "${GITHUB_REF_NAME#v}" \
+            --notes-file notes.md
