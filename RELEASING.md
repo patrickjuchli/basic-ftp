@@ -7,7 +7,8 @@ Releases are built on GitHub Actions and staged on npm. A staged version is only
 1. Add a `## x.y.z` entry to CHANGELOG.md.
 2. Bump the version: `npm version x.y.z --no-git-tag-version`
 3. Commit both and push to master.
-4. Tag and push: `git tag vx.y.z && git push origin vx.y.z`
+4. Wait for the Node.js CI and Integration Tests runs for that commit to pass.
+5. Tag and push: `git tag vx.y.z && git push origin vx.y.z`
 
 Never run `npm publish` or `npm stage publish` locally, and stay logged out of npm on this machine (`npm logout`). A version without provenance is not ours.
 
@@ -22,21 +23,25 @@ The [Stage release](.github/workflows/publish.yml) workflow runs on the tag. It:
 
 ## 3. Review (trusted device)
 
-1. Open the workflow run in the Actions tab. Note the commit SHA in the run's header, and check that the compare link in the run summary ends with that SHA. Don't rely on the summary alone, since the workflow itself writes it.
+1. Open the workflow run in the Actions tab. Note the commit SHA in the run's header and check that the "Run npm stage publish" step succeeded.
 2. Check that the Node.js CI and Integration Tests runs on master passed for that SHA.
-3. Open the compare link and review every changed file, not just `src/`:
+3. Check the compare link in the run summary. It must start with the previous release tag and end with the SHA from the header. Don't rely on the summary alone, since the workflow itself writes it. Alternatively, type the link yourself: `https://github.com/patrickjuchli/basic-ftp/compare/v<previous>...<sha>`
+4. Open the compare link and review every changed file, not just `src/`. Expand collapsed diffs.
+   - **Code that runs during the build**: test files, `eslint.config.mjs` and `tsconfig.json`. Tests run after the build and could change `dist/` before it's staged.
    - **package-lock.json**: every version change is one you made, and every `resolved` URL points to `https://registry.npmjs.org/`.
    - **.github/**: no unexpected changes to workflows or scripts.
    - **package.json**: no new scripts, dependencies or changes to `files`.
    - **Commits**: no commits you don't recognize.
-4. Optional: `npm stage download <stage-id>` to inspect the staged tarball.
+5. On npmjs.com under "Staged Packages" in the user menu at the top right, the version must match the tag and be the only staged entry.
+6. Optional: `npm stage download <stage-id>` to inspect the staged tarball.
 
-If anything is unexpected, reject the staged version on npm and investigate before doing anything else.
+If anything is unexpected, reject all staged versions on npm and investigate before doing anything else.
 
 ## 4. Publish (trusted device)
 
-1. Approve the staged version on npmjs.com under "Staged Packages", with 2FA.
-2. Publish the draft release on GitHub.
+1. Approve the staged version under "Staged Packages", with 2FA.
+2. Check that the version's page on npmjs.com shows provenance with the commit SHA you reviewed.
+3. Publish the draft release on GitHub.
 
 ## If something fails
 
