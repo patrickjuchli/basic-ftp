@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.5
+
+- Changed: Releases are now built on GitHub Actions and published with npm provenance. Read RELEASING.md for the complete process.
+
 ## 6.2.4
 
 - Fixed: A fact named `__proto__` in an MLSD directory listing made listing a directory fail with a TypeError, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-5pm8-86m8-9m6r.
