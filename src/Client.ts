@@ -1,5 +1,5 @@
 import { close, createReadStream, createWriteStream, fstat, mkdir, open, readdir, stat, unlink } from "fs"
-import { basename, join } from "path"
+import { join } from "path"
 import { Readable, Writable } from "stream"
 import { connect as connectTLS, ConnectionOptions as TLSConnectionOptions } from "tls"
 import { promisify } from "util"
@@ -10,6 +10,7 @@ import { isMultiline, positiveCompletion } from "./parseControlResponse"
 import { parseList as parseListAutoDetect } from "./parseList"
 import { parseMLSxDate } from "./parseListMLSD"
 import { ProgressHandler, ProgressTracker } from "./ProgressTracker"
+import { isSafePathName } from "./safePathNames"
 import { StringWriter } from "./StringWriter"
 import { downloadTo, enterPassiveModeIPv4, enterPassiveModeIPv4_forceControlHostIP, enterPassiveModeIPv6, UploadCommand, uploadFrom } from "./transfer"
 
@@ -734,8 +735,7 @@ export class Client {
     protected async _downloadFromWorkingDir(localDirPath: string): Promise<void> {
         await ensureLocalDirectory(localDirPath)
         for (const file of await this.list()) {
-            const hasInvalidName = !file.name || basename(file.name) !== file.name
-            if (hasInvalidName) {
+            if (!isSafePathName(file.name)) {
                 const safeName = JSON.stringify(file.name)
                 this.ftp.log(`Invalid filename from server listing, will skip file. (${safeName})`)
                 continue
