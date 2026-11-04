@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.6
+
+- Fixed: Path traversal in `downloadToDir()`, fixes https://github.com/patrickjuchli/basic-ftp/security/advisories/GHSA-2w5v-vj22-jp27.
+
 ## 6.2.5
 
 - Changed: Releases are now built on GitHub Actions and published with npm provenance. Read RELEASING.md for the complete process.
