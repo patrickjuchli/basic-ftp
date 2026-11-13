@@ -133,6 +133,58 @@ describe("Simple commands", () => {
         })
     })
 
+    describe("ensureDir", () => {
+        it("reports the failed creation when the directory cannot be entered", async () => {
+            server.addHandlers({
+                mkd: () => "550 Access is denied.",
+                cwd: () => "550 The system cannot find the file specified."
+            })
+            await assert.rejects(() => client.ensureDir("a/b"), {
+                name: "FTPError", code: 550, message: "550 Access is denied."
+            })
+            assert.deepEqual(server.receivedCommands.slice(-2), ["MKD a", "CWD a"])
+        })
+
+        it("can enter an existing directory when creation is refused", async () => {
+            server.addHandlers({
+                mkd: () => "550 Directory already exists.",
+                cwd: () => "250 Directory changed."
+            })
+            await client.ensureDir("a/b")
+            assert.deepEqual(server.receivedCommands.slice(-4), ["MKD a", "CWD a", "MKD b", "CWD b"])
+        })
+
+        it("keeps the change-directory error after successful creation", async () => {
+            server.addHandlers({
+                mkd: () => '257 "a" created.',
+                cwd: () => "550 Directory cannot be entered."
+            })
+            await assert.rejects(() => client.ensureDir("a"), {
+                name: "FTPError", code: 550, message: "550 Directory cannot be entered."
+            })
+        })
+
+        it("does not replace a lost connection with a creation error", async () => {
+            server.addHandlers({
+                mkd: () => "550 Directory already exists.",
+                cwd: () => server.ctrlConn.destroy()
+            })
+            await assert.rejects(() => client.ensureDir("a"), {
+                name: "Error", message: "Server sent FIN packet unexpectedly, closing connection."
+            })
+            assert.strictEqual(client.closed, true)
+        })
+
+        it("creates and enters every component of an absolute path", async () => {
+            server.addHandlers({
+                mkd: () => '257 "directory" created.',
+                cwd: () => "250 Directory changed."
+            })
+            await client.ensureDir("/a//b/")
+            assert.deepEqual(server.receivedCommands.slice(-5), ["CWD /", "MKD a", "CWD a", "MKD b", "CWD b"])
+        })
+    })
+
     it.todo("can remove a file")
     it.todo("can change directory")
     it.todo("can get the current working directory")

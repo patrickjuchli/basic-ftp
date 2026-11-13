@@ -773,8 +773,16 @@ export class Client {
      * @protected
      */
     protected async _openDir(dirName: string) {
-        await this.sendIgnoringError("MKD " + dirName)
-        await this.cd(dirName)
+        const creation = await this.sendIgnoringError("MKD " + dirName)
+        try {
+            await this.cd(dirName)
+        }
+        catch (err) {
+            if (err instanceof FTPError && creation.code >= 400) {
+                throw new FTPError(creation)
+            }
+            throw err
+        }
     }
 
     /**
